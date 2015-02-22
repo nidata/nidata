@@ -1,0 +1,335 @@
+.. -*- mode: rst -*-
+.. vim:syntax=rst
+
+.. _changelog:
+
+NiBabel Development Changelog
+-----------------------------
+
+NiBabel is the successor to the much-loved PyNifti package. Here we list the
+releases for both packages.
+
+'Close gh-' statements refer to GitHub issues that are available at::
+
+  http://github.com/hanke/nibabel/issues
+
+The full VCS changelog is available here:
+
+  http://github.com/hanke/nibabel/commits/master
+
+Releases
+~~~~~~~~
+
+NiBabel
++++++++
+
+Most work on NiBabel so far has been by Matthew Brettt (MB) and Michael Hanke
+(MH).
+
+* 1.0.2 (Thursday 14 April 2011)
+
+  * Bugfix release
+  * Make inference of data type more robust to changes in numpy dtype hashing
+  * Fix incorrect thresholds in quaternion calculation (thanks to Yarik H for
+    pointing this one out)
+  * Make parrec2nii pass over errors more gracefully
+  * More explicit checks for missing or None field in trackvis and other
+    classes - thanks to Marc-Alexandre Cote
+  * Make logging and error level work as expected - thanks to Yarik H
+  * Loading an image does not change qform or sform - thanks to Yarik H
+  * Allow 0 for nifti scaling as for spec - thanks to Yarik H
+  * nifti1.save now correctly saves single or pair images
+
+* 1.0.1 (Wednesday 23 Feb 2011)
+
+  * Bugfix release
+  * Fix bugs in tests for data package paths
+  * Fix leaks of open filehandles when loading images (thanks to Gael
+    Varoquaux for the report)
+  * Skip rw tests for SPM images when scipy not installed
+  * Fix various windows-specific file issues for tests
+  * Fix incorrect reading of byte-swapped trackvis files
+  * Workaround for odd numpy dtype comparisons leading to header errors for
+    some loaded images (thanks to Cindee Madison for the report)
+
+* 1.0.0 (Thursday, 13, Oct 2010)
+
+  * This is the first public release of the NiBabel package.
+  * NiBabel is a complete rewrite of the PyNifti package in pure python.  It was
+    designed to make the code simpler and easier to work with. Like PyNifti,
+    NiBabel has fairly comprehensive NIfTI read and write support.
+  * Extended support for SPM Analyze images, including orientation affines from
+    matlab ``.mat`` files.
+  * Basic support for simple MINC 1.0 files (MB).  Please let us know if you
+    have MINC files that we don't support well.
+  * Support for reading and writing PAR/REC images (MH)
+  * ``parrec2nii`` script to convert PAR/REC images to NIfTI format (MH)
+  * Very preliminary, limited and highly experimental DICOM reading support (MB,
+    Ian Nimmo Smith).
+  * Some functions (`nibabel.funcs`) for basic image shape changes, including
+    the ability to transform to the image with data closest to the cononical
+    image orientation (first axis left-to-right, second back-to-front, third
+    down-to-up) (MB, Jonathan Taylor)
+  * Gifti format read and write support (preliminary) (Stephen Gerhard) 
+  * Added utilities to use nipy-style data packages, by rip then edit of nipy
+    data package code (MB)
+  * Some improvements to release support (Jarrod Millman, MB, Fernando Perez)
+  * Huge downward step in the quality and coverage by the docs, caused by MB,
+    mostly fixed by a lot of good work by MH.
+  * NiBabel will not work with Python < 2.5, and we haven't even tested it with
+    Python 3.  We will get to it soon...
+
+PyNifti
++++++++
+
+Modifications are done by Michael Hanke, if not indicated otherwise. 'Closes'
+statement IDs refer to the Debian bug tracking system and can be queried by
+visiting the URL::
+
+  http://bugs.debian.org/<bug id>
+
+* 0.20100706.1 (Tue, 6 Jul 2010)
+  * Bugfix: NiftiFormat.vx2s() used the qform not the sform. Thanks to Tom
+    Holroyd for reporting.
+
+* 0.20100412.1 (Mon, 12 Apr 2010)
+  * Bugfix: Unfortunate interaction between Python garbage collection and C
+    library caused memory problems. Thanks to Yaroslav Halchenko for the
+    diagnose and fix.
+
+* 0.20090303.1 (Tue, 3 Mar 2009)
+
+  * Bugfix: Updating the NIfTI header from a dictionary was broken.
+  * Bugfix: Removed left-over print statement in extension code.
+  * Bugfix: Prevent saving of bogus 'None.nii' images when the filename
+    was previously assign, before calling NiftiImage.save() (Closes: #517920).
+  * Bugfix: Extension length was to short for all `edata` whos length matches
+    n*16-8, for all integer n.
+
+* 0.20090205.1 (Thu, 5 Feb 2009)
+
+  * This release is the first in a series that aims stabilize the API and
+    finally result in PyNIfTI 1.0 with full support of the NIfTI1 standard.
+  * The whole package was restructured. The included renaming
+    `nifti.nifti(image,format,clibs)` to `nifti.(image,format,clibs)`. Redirect
+    modules make sure that existing user code will not break, but they will
+    issue a DeprecationWarning and will be removed with the release of PyNIfTI
+    1.0.
+  * Added a special extension that can embed any serializable Python object
+    into the NIfTI file header. The contents of this extension is
+    automatically expanded upon request into the `.meta` attribute of each
+    NiftiImage. When saving files to disk the content of the dictionary is also
+    automatically dumped into this extension.
+    Embedded meta data is not loaded automatically, since this has security
+    implications, because code from the file header is actually executed.
+    The documentation explicitely mentions this risk.
+  * Added :class:`~nifti.extensions.NiftiExtensions`. This is a container-like
+    handler to access and manipulate NIfTI1 header extensions.
+  * Exposed :class:`~nifti.image.MemMappedNiftiImage` in the root module.
+  * Moved :func:`~nifti.utils.cropImage` into the :mod:`~nifti.utils` module.
+  * From now on Sphinx is used to generate the documentation. This includes a
+    module reference that replaces that old API reference.
+  * Added methods :meth:`~nifti.format.NiftiFormat.vx2q` and
+    :meth:`~nifti.format.NiftiFormat.vx2s` to convert voxel indices into
+    coordinates defined by qform or sform respectively.
+  * Updating the `cal_min` and `cal_max` values in the NIfTI header when
+    saving a file is now conditional, but remains enabled by default.
+  * Full set of methods to query and modify axis units. This includes
+    expanding the previous `xyzt_units` field in the header dictionary into
+    editable `xyz_unit` and `time_unit` fields. The former `xyzt_units` field
+    is no longer available. See:
+    :meth:`~nifti.format.NiftiFormat.getXYZUnit`,
+    :meth:`~nifti.format.NiftiFormat.setXYZUnit`,
+    :meth:`~nifti.format.NiftiFormat.getTimeUnit`,
+    :meth:`~nifti.format.NiftiFormat.setTimeUnit`,
+    :attr:`~nifti.format.NiftiFormat.xyz_unit`,
+    :attr:`~nifti.format.NiftiFormat.time_unit`
+  * Full set of methods to query and manuipulate qform and sform codes. See:
+    :meth:`~nifti.format.NiftiFormat.getQFormCode`,
+    :meth:`~nifti.format.NiftiFormat.setQFormCode`,
+    :meth:`~nifti.format.NiftiFormat.getSFormCode`,
+    :meth:`~nifti.format.NiftiFormat.setSFormCode`,
+    :attr:`~nifti.format.NiftiFormat.qform_code`,
+    :attr:`~nifti.format.NiftiFormat.sform_code`
+  * Each image instance is now able to generate a human-readable dump of its
+    most important header information via `__str__()`.
+  * :class:`~nifti.image.NiftiImage` objects can now be pickled.
+  * Switched to NumPy's distutils for building the package. Cleaned and
+    simplified the build procedure. Added optimization flags to SWIG call.
+  * :attr:`nifti.image.NiftiImage.filename` can now also be used to assign a
+    filename.
+  * Introduced :data:`nifti.__version__` as canonical version string.
+  * Removed `updateQFormFromQuarternion()` from the list of public methods of
+    :class:`~nifti.format.NiftiFormat`. This is an internal method that
+    should not be used in user code. However, a redirect to the new method
+    will remain in-place until PyNIfTI 1.0.
+  * Bugfix: :meth:`~nifti.image.NiftiImage.getScaledData` returns a
+    unmodified data array if `slope` is set to zero (as required by the NIfTI
+    standard). Thanks to Thomas Ross for reporting.
+  * Bugfix: Unicode filenames are now handled properly, as long as they do not
+    contain pure-unicode characters (since the NIfTI library does not support
+    them). Thanks to Gaël Varoquaux for reporting this issue.
+
+* 0.20081017.1 (Fri, 17 Oct 2008)
+
+  * Updated included minimal copy of the nifticlibs to version 1.1.0.
+  * Few changes to the Makefiles to enhance Posix compatibility. Thanks to
+    Chris Burns.
+  * When building on non-Debian systems, only add include and library paths
+    pointing to the local nifticlibs copy, when it is actually built.
+    On Debian system the local copy is still not used at all, as a proper
+    nifticlibs package is guaranteed to be available.
+  * Added minimal setup_egg.py for setuptools users. Thanks to Gaël Varoquaux.
+  * PyNIfTI now does a proper wrapping of the image data with NumPy arrays,
+    which no longer leads to accidental memory leaks, when accessing array
+    data that has not been copied before (e.g. via the *data* property of
+    NiftiImage). Thanks to Gaël Varoquaux for mentioning this possibility.
+
+* 0.20080710.1 (Thu, 7 Jul 2008)
+
+  * Bugfix: Pointer bug introduced by switch to new NumPy API in 0.20080624
+    Thanks to Christopher Burns for fixing it.
+  * Bugfix: Honored DeprecationWarning: sync() -> flush() for memory mapped
+    arrays. Again thanks to Christopher Burns.
+  * More unit tests and other improvements (e.g. fixed circular imports) done
+    by Christopher Burns.
+
+* 0.20080630.1 (Tue, 30 Jun 2008)
+
+  * Bugfix: NiftiImage caused a memory leak by not calling the NiftiFormat
+    destructor.
+  * Bugfix: Merged bashism-removal patch from Debian packaging.
+
+
+* 0.20080624.1 (Tue, 24 Jun 2008)
+
+  * Converted all documentation (including docstrings) into the restructured
+    text format.
+  * Improved Makefile.
+  * Included configuration and Makefile support for profiling, API doc
+    generation (via epydoc) and code quality checks (with PyLint).
+  * Consistently import NumPy as N.
+  * Bugfix: Proper handling of [qs]form codes, which previously have not been
+    handled at all. Thanks to Christopher Burns for pointing it out.
+  * Bugfix: Make NiftiFormat work without setFilename(). Thanks to Benjamin
+    Thyreau for reporting.
+  * Bugfix: setPixDims() stored meaningless values.
+  * Use new NumPy API and replace deprecated function calls
+    (`PyArray_FromDimsAndData`).
+  * Initial support for memory mapped access to uncompressed NIfTI files
+    (`MemMappedNiftiImage`).
+  * Add a proper Makefile and setup.cfg for compiling PyNIfTI under Windows
+    with MinGW.
+  * Include a minimal copy of the most recent nifticlibs (just libniftiio and
+    znzlib; version 1.0), to lower the threshold to build PyNIfTI on systems
+    that do not provide a developer package for those libraries.
+
+
+* 0.20070930.1 (Sun, 30 Sep 2007)
+
+  * Relicense under the MIT license, to be compatible with SciPy license.
+    http://www.opensource.org/licenses/mit-license.php
+  * Updated documentation.
+
+
+* 0.20070917.1 (Mon, 17 Sep 2007)
+
+  * Bugfix: Can now update NIfTI header data when no filename is set
+    (Closes: #442175).
+  * Unloading of image data without a filename set is no checked and prevented
+    as it would damage data integrity and the image data could not be
+    recovered.
+  * Added 'pixdim' property (Yaroslav Halchenko).
+
+
+* 0.20070905.1  (Wed, 5 Sep 2007)
+
+  * Fixed a bug in the qform/quaternion handling that caused changes to the
+    qform to vanish when saving to file (Yaroslav Halchenko).
+  * Added more unit tests.
+  * 'dim' vector in the NIfTI header is now guaranteed to only contain
+    non-zero elements. This caused problems with some applications.
+
+
+* 0.20070803.1 (Fri, 3 Aug 2007)
+
+  * Does not depend on SciPy anymore.
+  * Initial steps towards a unittest suite.
+  * pynifti_pst can now print the peristimulus signal matrix for a single
+    voxel (onsets x time) for easier processing of this information in
+    external applications.
+  * utils.getPeristimulusTimeseries() can now be used to compute mean and
+    variance of the signal (among others).
+  * pynifti_pst is able to compute more than just the mean peristimulus
+    timeseries (e.g. variance and standard deviation).
+  * Set default image description when saving a file if none is present.
+  * Improved documentation.
+
+
+* 0.20070425.1 (Wed, 25 Apr 2007)
+
+  * Improved documentation. Added note about the special usage of the header
+    property. Also added notes about the relevant properties in the docstring
+    of the corresponding accessor methods.
+  * Added property and accessor methods to access/modify the repetition time
+    of timeseries (dt).
+  * Added functions to manipulate the pixdim values.
+  * Added utils.py with some utility functions.
+  * Added functions/property to determine the bounding box of an image.
+  * Fixed a bug that caused a corrupted sform matrix when converting a NumPy
+    array and a header dictionary into a NIfTI image.
+  * Added script to compute peristimulus timeseries (pynifti_pst).
+  * Package now depends on python-scipy.
+
+
+* 0.20070315.1 (Thu, 15 Mar 2007)
+
+  * Removed functionality for "NiftiImage.save() raises an IOError
+    exception when writing the image file fails." (Yaroslav Halchenko)
+  * Added ability to force a filetype when setting the filename or saving 
+    a file.
+  * Reverse the order of the 'header' and 'load' argument in the NiftiImage
+    constructor. 'header' is now first as it seems to be used more often.
+  * Improved the source code documentation.
+  * Added getScaledData() method to NiftiImage that returns a copy of the data
+    array that is scaled with the slope and intercept stored in the NIfTI
+    header.
+
+
+* 0.20070301.2 (Thu, 1 Mar 2007)
+
+  * Fixed wrong link to the source tarball in README.html. 
+
+
+* 0.20070301.1 (Thu, 1 Mar 2007)
+
+  * Initial upload to the Debian archive. (Closes: #413049)
+  * NiftiImage.save() raises an IOError exception when writing the image file
+    fails.
+  * Added extent, volextent, and timepoints properties to NiftiImage
+    class (Yaroslav Halchenko).
+
+
+* 0.20070220.1 (Tue, 20 Feb 2007)
+
+  * NiftiFile class is renamed to NiftiImage.
+  * SWIG-wrapped libniftiio functions are no available in the nifticlib
+    module.
+  * Fixed broken NiftiImage from Numpy array constructor.
+  * Added initial documentation in README.html.
+  * Fulfilled a number of Yarik's wishes ;)
+
+
+* 0.20070214.1 (Wed, 14 Feb 2007)
+
+  * Does not depend on libfslio anymore.
+  * Up to seven-dimensional dataset are supported (as much as NIfTI can do).
+  * The complete NIfTI header dataset is modifiable.
+  * Most image properties are accessable via class attributes and accessor
+    methods.
+  * Improved documentation (but still a long way to go).
+
+
+* 0.20061114 (Tue, 14 Nov 2006)
+
+  * Initial release.
