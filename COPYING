@@ -1,0 +1,86 @@
+.. -*- mode: rst; fill-column: 78; indent-tabs-mode: nil -*-
+.. vi: set ft=rst sts=4 ts=4 sw=4 et tw=79:
+
+.. _chap_license:
+
+*******
+License
+*******
+
+The PyMVPA package, including all examples, code snippets and attached
+documentation is covered by the MIT license.
+
+::
+
+  The MIT License
+
+  Copyright (c) 2006-2014 Michael Hanke
+                2007-2014 Yaroslav Halchenko
+                2012-2014 Nikolaas N. Oosterhof
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+
+
+==============
+3rd Party Code
+==============
+
+Some code distributed within PyMVPA was not developed by PyMVPA team, hence
+you should adhere to the copyright and license terms of respective authors if
+you are to use corresponding parts.
+
+LIBSVM
+------
+
+::
+
+  Files: 3rd/libsvm/*
+
+  BSD-3 License
+
+  Copyright (c) 2000-2009 Chih-Chung Chang and Chih-Jen Lin.
+
+
+NIPY
+----
+
+::
+
+   Files: mvpa2/support/nipy/_*py, mvpa2/tests/test_emp_null.py
+
+   BSD-3 License
+
+   Copyright (c) 2006-2010, NIPY Developers
+
+
+PDFBook
+-------
+
+::
+
+  Files: tools/pdfbook.c
+
+  GPL version 2 License
+
+  Copyright:
+    Tigran Aivazian <tigran at aivazian.fsnet.co.uk>
+    Jaap Eldering <eldering at a-eskwadraat.nl>
+    Roman Buchert <roman.buchert at arcor.de>
+    Pierre Francois <pf at romanliturgy.org>
+

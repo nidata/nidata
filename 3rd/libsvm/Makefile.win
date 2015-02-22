@@ -1,0 +1,23 @@
+# Minimalistic makefile for libsvm
+LIB=libsvm.a
+MISC=svm.cpp
+
+LIBFLAGS=
+CFLAGS=-Wall -O2
+
+TDIR=..\\..\\build\\libsvm
+
+all: prep $(LIB)
+
+prep:
+	-@mkdir ..\\..\\build
+	-@mkdir ..\\..\\build\\libsvm
+
+.cpp.o:
+	g++ $(CFLAGS) $(LIBFLAGS) -c $^ -o $(TDIR)\\$(^:.cpp=.o)
+
+$(LIB): $(MISC:.cpp=.o)
+	ar cur $(TDIR)\\$@ $(TDIR)\\$^
+
+clean:
+	-rmdir /S /Q $(TDIR)

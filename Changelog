@@ -1,0 +1,938 @@
+.. -*- mode: rst -*-
+
+.. _chap_changelog:
+
+.. index:: changelog
+
+*********************
+Development Changelog
+*********************
+
+This changelog only lists rather macroscopic changes to PyMVPA. The full VCS
+changelog for 2.x series of PyMVPA is available here:
+
+  https://github.com/PyMVPA/PyMVPA/commits/master
+
+.. note::
+   You could find relevant information on 0.4.x series at
+   http://v04.pymvpa.org .
+
+In addition there is also a somewhat unconventional `visual changelog`_.
+
+.. _visual changelog: http://www.pymvpa.org/history.html
+
+'Closes' and 'Fixes' statement IDs refer to the Debian and Github bug
+tracking systems accordingly and can be queried by visiting the URLs::
+
+  http://bugs.debian.org/<closed bug id>
+
+  https://github.com/PyMVPA/PyMVPA/issues/<fixed bug id>
+
+Releases
+========
+
+* 2.3.2 (???, ? ? ?)
+
+  * Don't wait too long listing the changes...
+
+  * New functionality
+
+    - Support for CoSMoMVPA (http://cosmomvpa.org) in
+      :mod:`~mvpa2.datasets.cosmo` providing dataset input/output
+      (:meth:`~mvpa2.datasets.cosmo.cosmo_dataset` and
+      :meth:`~mvpa2.datasets.cosmo.map2cosmo`) and neighborhood input
+      (:class:`~mvpa2.datasets.cosmo.CosmoQueryEngine`). This allows for
+      for running searchlights (:class:`mvpa2.datasets.cosmo.CosmoSearchlight`)
+      on data from CoSMoMVPA (fMRI and MEEG).
+    - :func:`~mvpa2.datasets.miscfx.remove_nonfinite_features` removes
+      features with non-finite values, i.e. NaNs or Infs, for any sample.
+    - :func:`~mvpa2.misc.stats.binomial_proportion_ci` for computing
+      confidence intervals on proportions of Bernoulli trial outcomes.
+
+  * API changes
+
+  * Enhancements (?? ENH, OPT, and NF commits)
+
+    - :class:`~mvpa2.mappers.flatten.ProductFlattenMapper` accepts explicit names of factors in the constructor.
+
+  * Fixes
+
+    - :class:`~mvpa2.algorithms.hyperalignment.Hyperalignment` with regularization
+      (alpha != 1.0) was producing incorrect transformations because they were
+      driven by offsets of the last subject.  Fixed by not "auto_train"ing
+      regularization projection
+    - :func:`~mvpa2.misc.plot.lightbox.plot_lightbox` should take a
+      slice index from the last dimension, not the leading one if no
+      `slices` argument was provided
+    - Improved Python3k compatibility in :mod:`~mvpa2.base.state`, :mod:`~mvpa2.tests.test_testing.py`, :mod:`~mvpa2.tests`, and :mod:`~mvpa2.clfs.stats` modules, and in libsvmlrc msvc building.
+    - Partial fix for compatibility with ancient scipy on SPARC using :mod:`~mvpa2.datasets.cosmo`.
+
+
+* 2.3.1 (Tue, 20 May 2014)
+
+  Primarily a bugfix release pushed out to avoid mvpa2.suite meltdown
+  if new scipy 1.4.0 is used.
+
+  * API changes
+
+    - Deprecation: :class:`~mvpa2.base.param.Parameter` now uses `constraints` argument
+      of type :class:`~mvpa2.base.constraints.Constraint` instead of string
+      `allowedtype`.  `allowedtype` argument will be removed completely in the
+      future 2.4 release.
+
+  * New changes
+
+    - :mod:`~mvpa2.clfs.dummies` now provides utterly useful
+      :class:`~mvpa2.clfs.dummies.RandomClassifier` and others for code testing
+      which could also be used to verify absent double-dipping etc.
+
+  * Enhancements
+
+    - :class:`~mvpa2.mappers.fx.FxMapper` now will provide consistent order
+      of groups of items.  It also got a new argument `order` with available
+      value of 'occurrence' to that groups would get ordered by their occurance
+      in the original dataset.
+
+  * Fixes
+
+    - :class:`~mvpa2.mappers.corrstability.CorrStability` should be able to
+      deal with other sample attributes (not only 'targets') and should divide
+      by variance correctly to provide correlation coefficient as output.
+    - robustify check scipy's rdist which should avoid crash upon import of
+      mvpa2.suite because of stripped down scipy 1.4.0 API.
+    - various typos in docstrings (we do welcome contributions ;) ).
+
+* 2.3.0 (Thu, 5 March 2014)
+
+  * **Warning**: Due to a significant number of new features and some internal
+    changes, loading of HDF5 files saved with previous versions might be
+    impaired.
+
+  * New functionality (>73 commits)
+
+    - Multi-threaded, surface-based searchlight queryengine
+      :func:`~mvpa2.misc.surfing.queryengine.disc_surface_queryengine`
+      supporting as output space either surfaces
+      (:class:`~mvpa2.misc.surfing.queryengine.SurfaceVerticesQueryEngine`;
+      recommended) or volumes
+      (:class:`~mvpa2.misc.surfing.queryengine.SurfaceVoxelsQueryEngine`).
+    - :class:`~mvpa2.misc.plot.flat_surf.FlatSurfacePlotter` supporting
+      flattened cortical surfaces.
+    - I/O support for AFNI NIML (dset,
+      :mod:`~mvpa2.support.nibabel.afni_niml_dset`; annotation,
+      :mod:`~mvpa2.support.nibabel.afni_niml_annot`), AFNI 1D datasets
+      (:mod:`~mvpa2.support.nibabel.afni_suma_1d`), SUMA surface specification
+      (:mod:`~mvpa2.support.nibabel.afni_suma_spec`), Freesurfer ASCII surfaces
+      (:mod:`~mvpa2.support.nibabel.surf_fs_asc`), GIFTI surfaces
+      (:mod:`~mvpa2.support.nibabel.surf_gifti` through nibabel).
+      Input support for Caret
+      binary surfaces (:mod:`~mvpa2.support.nibabel.surf_caret`), EEGlab ASCII
+      (:meth:`mvpa2.datasets.eeglab.eeglab_dataset`), AFNI NIML ( ROI,
+      :mod:`~mvpa2.support.nibabel.afni_niml_roi`).
+    - Experimental support for saving AttrDataset files directly to NIML format
+      using :mod:`~mvpa2.datasets.niml`.
+    - Freesurfer/AFNI/SUMA preprocessing wrapper script
+      ``pymvpa2-prep-afni-surf`` for surface-based analyses.
+    - Winner-take-all measures :mod:`~mvpa2.measures.winner`.
+    - New command line interface that provides access to the most commonly
+      used functionality (dataset creation, pre-processing, cross-vlaidation,
+      searchlights and data export).
+    - :class:`~mvpa2.mappers.glm.GLMMapper for data transformation into
+      parameter estimates of a general linear model (built from pre-defined
+      regressors and/or dataset sample attributes. Two implementations with
+      different features are provided:
+      :class:`~mvpa2.mappers.glm.statsmodels_glm.StatsmodelsGLMMapper` and
+      :class:`~mvpa2.mappers.glm.nipy_glm.NiPyGLMMapper`.
+    - Spectral filtering mapper :class:`~mvpa2.mappers.filters.IIRFilter`.
+
+  * Enhancements (>130 commits)
+
+    - :func:`~mvpa2.datasets.mri.fmri_dataset` load support for AFNI NIFTI
+      volumes with time in the fifth dimension (data is automagically squeezed
+      to 4D).
+    - :func:`~mvpa2.datasets.mri.map2nifti` sets ``cal_`` fields to correspond
+      to the range of the data.
+    - Many parts of the tutorial were reworked, set of examples expanded, and
+      also converted to IPython notebooks.
+    - :func:`~mvpa2.datasets.eventrelated` extended to output GLM regression
+      fits as features from HRF models (relying on NiPy for GLM modeling).
+    - Class parameters now support programatic validation of values,
+      auto-generated documentation and improved error messages.
+    - More informative progress bar for long running processes, such as
+      searchlights.
+    - Replace all (broken) implementations for similarity structure analyses
+      with new measures for computing pairwise pattern distances, and their
+      consistency, or similarity to a target structure
+      (:mod:`~mvpa2.measures.rsa`).
+    - New examples to show integration with scikit-learn implementations of
+      classification, regression, and data transformation algorithm.
+
+  * Fixes (>88 commits)
+
+    - Makefile fetch-data retrieves the data correctly.
+    - HDF5 backend fixes to deal with nested/recursive structures and higher
+      tollerance in loading HDF5 from older version
+
+
+* 2.2.0 (Sun, Sep 16 2012)
+
+  * New functionality (14 commits)
+
+   - New HDF5-based storage backend for
+     :class:`~mvpa2.measures.searchlight.Searchlight` the can significantly
+     speed up serialization of large result dataset in parallelized
+     computations.
+   - New fast searchlight
+     :class:`~mvpa2.measures.nnsearchlight.M1NNSearchlight` (and
+     helper :func:`~mvpa2.measures.nnsearchlight.sphere_m1nnsearchlight`) to
+     run mean-1-nearest-neighbor searchlights.
+   - New mappers for adding an axis to a dataset
+     (:class:`~mvpa2.mappers.shape.AddAxisMapper`), and for transposing a
+     dataset (:class:`~mvpa2.mappers.shape.TransposeMapper`).
+   - Improved implementation of SciPy's :func:`~mvpa2.misc.stats.ttest_1samp`
+     with support for masked arrays and alternative hypotheses.
+   - Individual tutorial chapters are now available for download as IPython
+     notebooks. A ``rst2ipynb`` converter is available in ``tools/``.
+   - New ``pymvpa2-tutorial`` command line utility to start a PyMVPA tutorial
+     session, either in a console IPython session, or using the IPython
+     notebook server.
+   - New wrapper functions for data generators/loaders in ``sklearn.datasets``,
+     available in :mod:`mvpa2.datasets.sources.sklearn_data`.
+
+  * Enhancements (89 commits)
+
+    - Initial Python 3 compatibility (spear-headed by Tiziano Zito).
+    - Bayesian hypothesis testing with
+      :class:`~mvpa2.clfs.transerror.BayesConfusionHypothesis` now supports
+      literal hypotheses specification, custom hypotheses subsets, and
+      computing of posterior probabilities.
+    - Allow for accessing fitted distributions in
+      :class:`~mvpa2.clfs.stats.MCNullDist`.
+    - Extensions and improvements to the tutorial chapter on statistical
+      evaluation.
+    - Expose distance function as a property `dfx` of
+      :class:`~mvpa2.clfs.knn.kNN`.
+    - Extended :class:`~mvpa2.generators.base.Sifter` with ability to discard
+      unbalanced partitions.
+    - :func:`~mvpa2.base.hdf5.h5save` now creates missing directories
+      automatically by default.
+    - Dedicated training for
+      :class:`~mvpa2.algorithms.hyperalignment.Hyperalignment`, and new
+      auto-train capability.
+    - :class:`~mvpa2.clfs.transerror.BayesConfusionHypothesis` now computes
+      optional posterior probabilities, and supports hypothesis definitions
+      using literal labels.
+
+  * API changes
+
+    - All command line tools have been renamed to have a consistent 'pymvpa2-'
+      prefix.
+
+  * Fixes (77 commits)
+
+    - HDF5 now properly stores object-type ndarray, where it the array shape
+      was unintentionally modified on-load before (Fixes #84).
+    - HDF5 can now reconstruct 'builtin' objects (Fixes #86).
+    - Check value data type and convert to float when collecting performance
+      statistics to avoid numerical problems.
+    - Do not fail in :class:`~mvpa2.clfs.transerror.BayesConfusionHypothesis`
+      when a dataset does not provide class labels.
+
+* 2.1.0 (Fri, June 29 2012)
+
+  * Fixes
+
+    - :func:`~mvpa2.misc.support.mask2slice` failed to convert an array of
+      ``False`` values into ``slice(None, 0, None)`` (Fixes #56).
+    - A number of fixes to the HDF5 IO code that ignored parts of an object's
+      state when custom ``__reduce__()`` implementations were used (Fixes #42),
+      and had problems storing metaclass types (Fixes #78).
+    - Proper single quotes in documentation code snippets within PDFs.
+    - Memory leak (model pointer) in LIBSVM bindings.
+
+  * Enhancements
+
+    - All searchlight implementations can now optionally store the IDs of all
+      features for each generated ROI (conditional attr. ``roi_feature_ids``)
+    - Add :func:`~mvpa2.misc.neighborhood.scatter_neighborhoods` to aid
+      sparse sampling of spaces.
+    - Add :class:`~mvpa2.clfs.transerror.ConfusionMatrixError` to compute
+      confusion matrices with an error function interface (e.g. for
+      ``CrossValidation(errorfx=...)``). This class existed for a long time, but
+      was hidden in the unit tests.
+    - Add :class:`~mvpa2.clfs.transerror.Confusion` to compute
+      confusion matrices with a Node interface (e.g. for
+      ``CrossValidation(postproc=...)``). This is useful if confusion matrices
+      are necessary as an intermediate result and further processing with
+      other nodes is desired.
+
+  * New functionality
+
+    - Add :class:`~mvpa2.clfs.transerror.BayesConfusionHypothesis` to perform
+      Bayesian hypothesis testing of multi-class confusion statistics. This is
+      useful to assess the likelihood of a particular (or all possible)
+      grouping of classes being distinguishable.
+    - Add :class:`~mvpa2.mappers.fxy.FxyMapper` to perform arbitrary
+      computations involving two datasets.
+    - Add :class:`~mvpa2.mappers.base.CombinedMapper` to run a dataset through
+      a set of mappers and combine their outputs.
+    - Add :class:`~mvpa2.measures.statsmodels_adaptor.UnivariateStatsModels` a wrapper
+      for using models from the statsmodels_ package as a
+      FeaturewiseMeasure.
+    - Add :class:`~mvpa2.misc.dcov.dCOV` and
+      :func:`~mvpa2.misc.dcov.dcorcoef` to quantify independence of
+      (multivariate) signals.
+
+  * API changes
+
+    - Deprecating ``GLM`` that is now implemented with UnivariateStatsModels.
+      This deprecated GLM class no longer supports the ``zstat`` calculation,
+      and none of its previous conditional attributes are available anymore.
+
+* 2.0.1 (Tue, Mar 27 2012)
+
+  Primarily a bugfix release
+
+  * Fixes (21 BF commits)
+
+    - HDF5 storage -- handle loading of objects with bound
+      ``builtin_function_or_method``.
+    - Use system-wide ``autosummary/generate.py`` for sphinx >= 1.1.2
+      (Closes: #658593).
+    - :class:`~mvpa2.base.state.ConditionalAttribute` should not loose
+      value in deepcopy when default off (Fixes #63).
+    - Correct handling of scalar mean/std values for
+      :class:`~mvpa2.mappers.zscore.ZScoreMapper`.
+    - MRI data import via _img2data now works with unicode
+      filenames (Fixes #60).
+    - Should work with IPython >= 0.11 now (Fixes #59).
+    - Various small fixes to improve tests and functionality.
+    - Fix :class:`SMLR` segfaults on Windows (Thanks cgohlke for the patch).
+
+  * Enhancements (29 ENH, OPT, and NF commits)
+
+    - :class:`~mvpa2.mappers.fx.FxMapper` calls functions natively
+      (instead of a slow row/column at a time) if they carry ``axis``
+      as the 2nd argument.  Provides tremendous speed up for
+      :func:`mean_sample` etc.
+    - :func:`~mvpa2.misc.support.xrandom_unique_combinations`
+      generator for random unique combinations.
+    - :func:`~mvpa2.misc.fx.dual_gaussian` made more robust by not
+      handling negative values for the standard deviations.
+    - :func:`~mvpa2.misc.fx.dual_positive_gaussian`.
+    - Expose "sensitivities" for :class:`PLR`.
+    - :class:`~mvpa2.generators.partition.NFoldPartitioner` float
+      option for ``cvtype`` and intelligent behavior on 'random'
+      limited by 'count' given a large number of folds.
+    - Add few additional learners from :mod:`sklearn` to the warehouses:
+      ExtraTrees, RandomForest, LassoLarsIC.
+    - ``__repr__`` for :class:`Partitioner`s.
+    - Add new performance metric -- F1 score -- in the confusion matrix
+      summary stats.
+    - :class:`CachedQueryEngine` does not rely now on id but on the
+      exact value of the query parameters (converted to hashable
+      types). Before it could behave incorrectly on rare occasions.
+
+  * API changes
+
+    - Deprecating ``.splitattr`` if favor of ``.attr`` in
+      :class:`mvpa2.generators.partition.Partitioner`
+
+* 2.0.0 (Mon, Dec 19 2011)
+
+  This release aggregates all the changes occurred between official
+  releases in 0.4 series and various snapshot releases (in 0.5 and 0.6
+  series).  To get better overview of high level changes see
+  :ref:`release notes for 0.5 <chap_release_notes_0.5>` and :ref:`0.6
+  <chap_release_notes_0.6>` as well as summaries of release candidates
+  below
+
+  * Fixes (23 BF commits)
+
+    - Significance level in the right tail was fixed to include the
+      value tested -- otherwise resulted in optimistic bias (or
+      absurdly high significance in improbable case if all estimates
+      having the same value).
+    - Compatible with the upcoming IPython 0.12 and renamed sklearn
+      (Fixes #57).
+    - Do not double-train ``slave`` classifiers while assessing
+      sensitivities (Fixes #53).
+
+  * Enhancements (30 ENH + 3 NF commits)
+
+    - Resolving voting ties in kNN based on mean distance, and
+      randomly in SMLR.
+    - :class:`kNN`\'s ``ca.estimates`` now contains dictionaries with
+      votes for each class.
+    - Consistent zscoring in :class:`Hyperalignment`.
+
+* 2.0.0~rc5 (Wed, Oct 19 2011)
+
+  * **Major**: to allow easy co-existence of stable PyMVPA 0.4.x, 0.6
+    development ``mvpa`` module was renamed into mod:`mvpa2`.
+
+  * Fixes
+
+    - Compatible with the new Shogun 1.x series.
+    - Compatible with the new h5py 2.x series.
+    - :file:`mvpa-prep-fmri` -- various compatibility fixes and smoke testing.
+    - Deepcopying :class:`SummaryStatistics` during __add__.
+
+  * Enhancements
+
+    - Tutorial uses :mod:`mvpa2.tutorial_suite` now.
+    - Better suppression of R warnings when needed.
+    - Internal attributes of many classes were exposed as properties.
+    - More unification of ``__repr__`` for many classes.
+
+* 0.6.0~rc4 (Wed, Jun 14 2011)
+
+  * Fixes
+
+    - Finished transition to :mod:`nibabel` conventions in `plot_lightbox`.
+    - Addressed :mod:`matplotlib.hist` API change.
+    - Various adjustments in the tests batteries (:mod:`nibabel` 1.1.0
+      compatibility, etc)
+
+  * New functionality
+
+    -  Explicit new argument ``flatten`` to from_wizard -- default
+       behavior changed if mapper was provided as well
+
+  * Enhancements
+
+    - Elaborated ``__str__`` and ``__repr__`` for some Classifiers and
+      Measures
+
+* 0.6.0~rc3 (Thu, Apr 12 2011)
+
+  * Fixes
+
+    - Bugfixes regarding the interaction of FlattenMapper and
+      BoxcarMapper that affected event-related analyses.
+    - `Splitter` now handles attribute value `None` for splitting
+      properly.
+    - `GNBSearchlight` handling of  ``roi_ids``.
+    - More robust detection of mod:`scikits.learn` and :mod:`nipy`
+      externals.
+
+  * New functionality
+
+    - Added a `Repeater` node to yield a dataset multiple times and
+      `Sifter` node to exclude some datasets. Consequently, the
+      "nosplitting" mode of `Splitter` got removed at the same time.
+    - :file:`tools/niils` -- little tool to list details
+      (dimensionality, scaling, etc) of the files in nibabel-supported formats.
+
+  * Enhancements
+
+    - Numerous documentation fixes.
+    - Various improvements and increased flexibility of null distribution
+      estimation of Measures.
+    - All attribute are now reported in sorted order when printing a dataset.
+    - `fmri_dataset` now also stores the input image type.
+    - `Crossvalidation` can now take a custom `Splitter` instance. Moreover, the
+      default splitter of CrossValidation is more robust in terms of number and
+      type of created splits for common usage patterns (i.e. together with
+      partitioners).
+    - `CrossValidation` takes any custom Node as ``errorfx`` argument.
+    - `ConfusionMatrix` can now be used as an ``errorfx`` in Crossvalidation.
+    - ``LOE(ACC): Linear Order Effect in ACC`` was added to
+      `ConfusionMatrix` to detect trends in performances across
+      splits.
+    - A `Node`\ s postproc is now accessible as a property.
+    - `RepeatedMeasure` has a new 'concat_as' argument that allows results to be
+      concatenated along the feature axis. The default behavior, stacking as
+      multiple samples, is unchanged.
+    - `Searchlight` now has the ability to mark the center/seed of an ROI in
+      with a feature attribute in the generated datasets.
+    - ``debug`` takes ``args`` parameter for delayed string
+      comprehensions.  It should reduce run-time impact of ``debug()``
+      calls in regular, non ``-O`` mode of Python operation.
+    - String summaries and representations (provided by ``__str__``
+      and ``__repr__``) were made more exhaustive and more coherent.
+      Additional properties to access initial constructor arguments
+      were added to variety of classes.
+
+  * Internal changes
+
+    - New debug target ``STDOUT`` to allow attaching metrics
+      (e.g. traceback, timestamps) to regular output printed to stdout
+    - New set of decorators to help with unittests
+
+      - ``@nodebug`` to disable specific debug targets for the duration
+        of the test.
+      - ``@reseed_rng`` to guarantee consistent random data given
+        initial seeding.
+      - ``@with_tempfile`` to provide a tempfile name which would get
+        removed upon completion (test success or failure)
+
+    - Dropping daily testing of ``maint/0.5`` branch -- RIP.
+    - `Collection`\ s were provided with adequate ``(deep|)copy``.
+      And `Dataset` was refactored to use `Collection`\ s ``copy``
+      method.
+    - ``update-*`` Makefile rules automatically should fast-forward
+      corresponding ``website-updates`` branch
+    - `MVPA_TESTS_VERBOSITY` controls also :mod:`numpy` warnings now.
+    - `Dataset.__array__` provides original array instead of copy
+      (unless dtype is provided)
+
+  Also adapts changes from 0.4.6 and 0.4.7 (see corresponding
+  changelogs).
+
+* 0.6.0~rc2 (Thu, Mar 3 2011)
+
+  * Various fixes in the mvpa.atlas module.
+
+* 0.6.0~rc1 (Thu, Feb 24 2011)
+
+  * Many, many, many
+  * For an overview of the most drastic changes :ref:`see constantly
+    evolving release notes for 0.6 <chap_release_notes_0.6>`
+
+* 0.5.0 (sometime in March 2010)
+
+  This is a special release, because it has never seen the general public.
+  A summary of fundamental changes introduced in this development version
+  can be seen in the :ref:`release notes <chap_release_notes_0.5>`.
+
+  Most notably, this version was to first to come with a comprehensive two-day
+  workshop/tutorial.
+
+* 0.4.7 (Tue, Mar 07 2011) (Total: 12 commits)
+
+  A bugfix release
+
+  * Fixed
+
+    - Addressed the issue with input NIfTI files having ``scl_`` fields
+      set: it could result in incorrect analyses and
+      map2nifti-produced NIfTI files.  Now input files account for
+      scaling/offset if ``scl_`` fields direct to do so. Moreover upon
+      map2nifti, those fields get reset.
+    - :file:`doc/examples/searchlight_minimal.py` - best error is the
+      minimal one
+
+  * Enhancements
+
+    - :class:`~mvpa.clfs.gnb.GNB` can now tolerate training datasets
+      with a single label
+    - :class:`~mvpa.clfs.meta.TreeClassifier` can have trailing nodes
+      with no classifier assigned
+
+* 0.4.6 (Tue, Feb 01 2011) (Total: 20 commits)
+
+  A bugfix release
+
+  * Fixed (few BF commits):
+
+    - Compatibility with numpy 1.5.1 (histogram) and scipy 0.8.0
+      (workaround for a regression in legendre)
+    - Compatibility with libsvm 3.0
+    - :class:`~mvpa.clfs.plr.PLR` robustification
+
+  * Enhancements
+
+    - Enforce suppression of numpy warnings while running unittests.
+      Also setting verbosity >= 3 enables all warnings (Python, NumPy,
+      and PyMVPA)
+    - :file:`doc/examples/nested_cv.py` example (adopted from 0.5)
+    - Introduced base class :class:`~mvpa.clfs.base.LearnerError` for
+      classifiers' exceptions (adopted from 0.5)
+    - Adjusted example data to live upto nibabel's warranty of NIfTI
+      standard-compliance
+    - More robust operation of MC iterations -- skip iterations where
+      classifier experienced difficulties and raise an exception
+      (e.g. due to degenerate data)
+
+* 0.4.5 (Fri, Oct 01 2010) (Total: 27 commits)
+
+  A bugfix release
+
+  * Fixed (13 BF commits):
+
+    - Compatible with LIBSVM >= 2.91 (Closes: #583018)
+    - No string exceptions raised (Python 2.6 compatibility)
+    - Setting of shrinking parameter in :mod:`~mvpa.clfs.sg` interface
+    - Deducing number of SVs for SVR (LIBSVM)
+    - Correction of significance in the tails of non-parametric
+      tests
+
+  * Miscellaneous:
+
+    - Development repository moved to http://github.com/PyMVPA/PyMVPA
+
+* 0.4.4 (Mon, Feb 2 2010) (Total: 144 commits)
+
+  Primarily a bugfix release, probably the last in 0.4 series since
+  development for 0.5 release is leaping forward.
+
+  * New functionality (19 NF commits):
+
+    - :class:`~mvpa.clfs.gnb.GNB` implements Gaussian Naïve Bayes
+      Classifier.
+    - :func:`~mvpa.misc.fsl.base.read_fsl_design` to read FSL FEAT design.fsf
+      files (Contributed by Russell A. Poldrack).
+    - :class:`~mvpa.datasets.miscfx.SequenceStats` to provide basic
+      statistics on labels sequence (counter-balancing,
+      autocorrelation).
+    - New exceptions :class:`~mvpa.clfs.base.DegenerateInputError` and
+      :class:`~mvpa.clfs.base.FailedToTrainError` to be thrown by
+      classifiers primarily during training/testing.
+    - Debug target `STATMC` to report on progress of Monte-Carlo
+      sampling (during permutation testing).
+
+  * Refactored (15 RF commits):
+
+    - To get users prepared to 0.5 release, internally and in some
+      examples/documentation, access to states and
+      parameters is done via corresponding collections, not from the
+      top level object (e.g. `clf.states.predictions` instead of
+      soon-to-be-deprecated `clf.predictions`).  That should lead also
+      to improved performance.
+    - Adopted copy.py from python2.6 (support Ellipsis as well).
+
+  * Fixed (38 BF commits):
+
+    - GLM output does not depend on the enabled states any more.
+    - Variety of docstrings fixed and/or improved.
+    - Do not derive NaN scaling for SVM's C whenever data is
+      degenerate (lead to never finishing SVM training).
+    - :mod:`~mvpa.clfs.sg` :
+
+      + KRR is optional now -- avoids crashing if KRR is not available.
+      + tolerance to absent `set_precompute_matrix` in svmlight in
+        recent shogun versions.
+      + support for recent (present in 0.9.1) API change in exposing
+        debug levels.
+
+    - Python 2.4 compatibility issues: :class:`~mvpa.clfs.knn.kNN` and
+      :class:`~mvpa.featsel.ifs.IFS`
+
+
+* 0.4.3 (Sat, 5 Sep 2009) (Total: 165 commits)
+
+  * Online documentation editor is no longer available due to low
+    demand -- please submit changes via email.
+
+  * Performance (Contributed by Valentin Haenel) (3 OPT commits):
+
+    - Further optimized LIBSVM bindings.
+    - Copy-if-sorted in
+      :class:`~mvpa.datasets.base.Dataset.selectFeatures`.
+
+  * New functionality (25 NF commits):
+
+    - :class:`~mvpa.mappers.procrustean.ProcrusteanMapper` with
+      orthogonal and oblique transformations.
+    - Ability to generate simple reports using :mod:`reportlab`.
+      See/run :file:`examples/match_distribution.py` for example.
+    - :class:`~mvpa.clfs.meta.TreeClassifier` -- construct simple
+      hierarchies of classifiers.
+    - :func:`~mvpa.base.info.wtf` to report information about the
+      system/PyMVPA to be included in the bug reports.
+    - Parameter 'reverse' to swap training/testing splits in
+      :class:`~mvpa.datasets.splitters.Splitter` .
+    - Example code for the analysis of event-related dataset using
+      :class:`~mvpa.datasets.nifti.ERNiftiDataset`.
+    - :meth:`~mvpa.misc.io.base.SampleAttributes.toEvents` to create
+      lists of :class:`~mvpa.misc.support.Event`.
+    - :file:`mvpa-prep-fmri` was extended with plotting of motion
+      correction parameters.
+    - :class:`~mvpa.misc.io.base.ColumnData` can be explicitly told
+      either file contains a header.
+    - In :class:`~mvpa.atlases.base.XMLBasedAtlas`
+      (e.g. :mod:`~mvpa.atlases.fsl` atlases) it is now possible to
+      provide custom 'image_file' to get maps or
+      indexes for the areas given an atlas's volume registered into
+      subject space.
+    - Updated included LIBSVM version to 2.89 and provided support for
+      its "silencing".
+
+  * Refactored (27 RF commits):
+
+    - Dataset's :meth:`~mvpa.datasets.base.Dataset.copy` with
+      deep=False allows for shallow copying the dataset.
+    - :class:`~mvpa.clfs.meta.FeatureSelectionClassifier` s in
+      :mod:`~mvpa.clfs.warehouse` not to reuse the same classifiers,
+      but to use clones.
+
+  * Fixed (70 BF commits):
+
+    - :class:`~mvpa.measures.anova.OneWayAnova`: previously degrees of
+      freedom were not considered while computing F-scores.
+    - Majority voting strategy in :class:`~mvpa.clfs.knn.kNN`: it was
+      not working.
+    - Various fixes to ensure cross-platform building (:mod:`numpy` header
+      locations, etc).
+    - Stability fixes in :class:`~mvpa.clfs.transerror.ConfusionMatrix`.
+    - :meth:`~mvpa.datasets.base.Dataset.idsonboundaries`: samples
+      at the end of the sequence were not handled properly.
+    - Proper "untraining" of
+      :class:`~mvpa.clfs.meta.FeatureSelectionClassifier` s
+      classifiers which use sensitivities: it could lead to various
+      unpleasant side-effects if the same slave classifier was used
+      simultaneously by multiple :class:`MetaClassifiers` (like
+      :class:`~mvpa.clfs.meta.TreeClassifier`).
+
+  * Documentation (25 DOC commits): citations, spelling corrections,
+    etc.
+
+
+* 0.4.2 (Mon, 25 May 2009)
+
+  * New correlation stability measure
+    (:class:`~mvpa.measures.corrstability.CorrStability`).
+  * New elastic net classifier (:class:`~mvpa.clfs.enet.ENET`).
+  * New GLM-Net regression/classifier (:class:`~mvpa.clfs.glmnet.GLMNET`).
+  * New measure :class:`~mvpa.measures.anova.CompoundOneWayAnova`.
+  * New measure :class:`~mvpa.measures.ds.DSMDatasetMeasure`.
+  * New meta-measure
+    :class:`~mvpa.measures.splitmeasure.TScoredFeaturewiseMeasure`.
+  * New basic :class:`~mvpa.measures.glm.GLM` implementation.
+  * New examples for Gaussian process regression.
+  * New example showing a searchlight analysis employing a dissimilarity
+    matrix based measure.
+  * New :class:`~mvpa.mappers.zscore.ZScoreMapper`.
+  * New import helper for FSL design matrices
+    (:class:`~mvpa.misc.fsl.base.FslGLMDesign`).
+  * New implementation of a mapper using a self-organizing map
+    (:class:`~mvpa.mappers.som.SimpleSOMMapper`) and a corresponding example.
+  * Matplotlib backend is now configurable via
+    :envvar:`MVPA_MATPLOTLIB_BACKEND`.
+  * PyMVPA version is now avialable from :data:`mvpa.__version__`.
+  * Renamed `mvpa.misc.plot.errLinePLot` to
+    :func:`~mvpa.misc.plot.plotErrLine` for consistency.
+  * Fixed :class:`~mvpa.datasets.splitters.NFoldSplitter` to support N-3 and
+    larger splits.
+  * Improved speed of LIBSVM backend. Thanks to Valentin Haenel and Tiziano
+    Zito.
+  * Updated included LIBSVM version to 2.89.
+  * Adjust LIBSVM Python interface for recent NumPy API and latest LIBSVM
+    release 2.89.
+  * Refactored examples parser into a standalone tool to turn PyMVPA examples
+    into restructured text sources.
+
+* 0.4.1 (Sat, 24 Jan 2009)
+
+  * Unit tests and example data are now also installed. In conjunction with
+    :func:`mvpa.test`, this allow to easily run unittests from within Python.
+  * :class:`~mvpa.datasets.nifti.NiftiDataset` capable to handle files
+    with less than 4 dimensions, which can, optionally, be provided as
+    a list of filenames or :class:`~nifti.NiftiImage` objects. That
+    makes it easy to load data from a sequence of files.
+
+  * Changes (code refactorings) which *might impact* any user who
+    imports from :mod:`~mvpa.suite`:
+
+    - Pre-populated warehouses of classifiers and regressions are
+      renamed from clfs and regrs into
+      :data:`~mvpa.clfs.warehouse.clfswh` and
+      :data:`~mvpa.clfs.warehouse.regrswh` respectively.
+    - :class:`~mvpa.misc.io.hamster.Hamster` is not derived from
+      :class:`dict` any longer -- just from a basic :class:`object` class.
+      API includes methods 'dump', 'asdict' and a property 'registered'.
+
+  * Changes (code refactorings) which *should not impact* any user who
+    imports from :mod:`~mvpa.suite`:
+
+    - Meta classifiers definitions moved from :mod:`~mvpa.clfs.base` into
+      :mod:`~mvpa.clfs.meta`.
+    - Splitters definitions moved from :mod:`~mvpa.datasets.splitter` into
+      :mod:`~mvpa.datasets.splitters`
+
+
+* 0.4.0 (Sat, 15 Nov 2008)
+
+  * Add :class:`~mvpa.misc.io.hamster.Hamster`, as a simple facility to easily
+    store any serializable objects in a compressed file and later on resurrect
+    all of them with a single line of code.
+  * SVM backend is now configurable via :envvar:`MVPA_SVM_BACKEND` (libsvm or
+    shogun).
+  * Non-deterministic tests in the unittest battery are now configurable via
+    :envvar:`MVPA_TESTS_LABILE`.
+  * New helper to determine and plot the best matching distribution(s) for
+    the data (matchDistribution, plotDistributionMatches). It is WiP
+    thus API can change in the upcoming release.
+  * Simplifies API of mappers.
+  * Splitters can now limit the number of splits automatically.
+  * New :class:`~mvpa.mappers.base.CombinedMapper` to map between multiple,
+    independent dataspace and a common feature space.
+  * New :class:`~mvpa.mappers.base.ChainMapper` to create chains of mappers
+    of abitrary lenght (e.g. to build preprocessing pipelines).
+  * New :class:`~mvpa.datasets.event.EventDataset` to rapidly extract
+    boxcar-shaped samples from data array using a simple list of
+    :class:`~mvpa.misc.support.Event` definitions.
+  * Removed obsolete MetricMapper class. :class:`~mvpa.mappers.base.Mapper`
+    itself provides the facilities for dealing with metrics.
+  * :class:`~mvpa.mappers.boxcar.BoxcarMapper` can now handle data with more
+    than four dimensions/axis and also performs reverse mapping of single
+    boxcar samples.
+  * :class:`~mvpa.misc.fsl.base.FslEV3` can now convert EV3 files into
+    a list of :class:`~mvpa.misc.support.Event` instances.
+  * Results of tests for external dependencies are now stored in PyMVPA's
+    config manager (`mvpa.cfg`) and can be stored to a file (not done
+    automatically at the moment). This will significantly decrease the time
+    needed to import the `mvpa` module, as it prevents the repeated and lengthy
+    tests for working externals.
+  * Initial support for ROC computing and AUC as an accuracy measure.
+  * Weights of LARS are now available via :class:`~mvpa.clfs.lars.LARSWeights`.
+  * Added an initial list of MVPA-related references to the manual, tagged with
+    keywords and comments as well is DOI or similar URL reference to the
+    original document.
+  * Added initial glossary to the manual.
+  * New 'Module reference', as a middle-ground between manual and API
+    reference.
+  * New manual section about meta-classifiers (contributed by James M.
+    Hughes).
+  * New minimal example for a 'getting started' section in the manual.
+  * Former :envvar:`MVPA_QUICKTEST` was renamed to :envvar:`MVPA_TESTS_QUICK`.
+  * Update installation instructions for RPM-based distributions to make use
+    of the OpenSUSE Build Service.
+  * Updated install instructions for several RPM-based GNU/Linux
+    distributions.
+  * Switch from distutils to numpy.distutils (no change in dependencies).
+  * Depend on PyNIfTI >= 0.20081017.1 and gain a smaller memory footprint when
+    accessing NIfTI files via all datasets with NIfTI support.
+  * Added workaround to make PyMVPA work with older Shogun releases and those
+    from 0.6.4 on, which introduced backward-incompatible API changes.
+
+
+* 0.3.1 (Sun, 14 Sep 2008)
+
+  * New manual section about feature selection with a focus on RFE.
+    Contributed by James M. Hughes.
+  * New dataset type :class:`~mvpa.datasets.channel.ChannelDataset` for data
+    structured in channels. Might be useful for data modalities like EEG and
+    MEG. This dataset includes support for common preprocessing steps like
+    resampling and baseline signal substraction.
+  * Plotting of topographies on heads. Thanks to Ingo Fründ for contributing
+    this code. Additionally, a new example shows how to do such plots.
+  * New general purpose function for generating barplots and candlestick plots
+    with error bars (:func:`~mvpa.misc.plot.base.plotBars`).
+  * Dataset supports mapping of string labels onto numerical labels, removing
+    the need to perform this mapping manually in user code. 'clfs_examples.py'
+    is adjusted accordingly to demonstrate the new feature.
+  * New :meth:`mvpa.clfs.base.Classifier.summary` method to dump classifier
+    settings.
+  * Improved and more flexible :func:`~mvpa.misc.plot.erp.plotERPs`.
+  * New :class:`~mvpa.measures.irelief.IterativeRelief` sensitivity analyzer.
+  * Added visualization of confusion matrices via
+    :meth:`mvpa.clfs.transerror.ConfusionMatrix.plot` inspired by Ingo Fründ.
+  * The PyMVPA version is now globally available in :data:`mvpa.pymvpa_version`.
+  * BugFix: :class:`~mvpa.misc.io.meg.TuebingenMEG` reader failed in some cases.
+  * Several improvements (docs and implementation) for building PyMVPA on
+    MacOS X.
+  * New convenience accessor methods (:meth:`~mvpa.datasets.base.Dataset.select`,
+    :meth:`~mvpa.datasets.base.Dataset.where` and
+    :meth:`~mvpa.datasets.base.Dataset.__getitem__`) for
+    :class`~mvpa.datasets.base.Dataset`.
+  * New :func:`mvpa.seed()` function to configure the random number generators
+    from user code.
+  * Added reader for a MEG sensor locations format
+    (:class:`~mvpa.misc.io.meg.TuebingenMEGSensorLocations`).
+  * Initial model selection support for GRP (using openopt).
+  * And tons of minor bugfixes, additional tests and improved documentation.
+
+
+* 0.3.0 (Mon, 18 Aug 2008)
+
+  * Import of binary EEP files (used by EEProbe) and EEPDataset class.
+  * Initial version of a meta dataset class (MetaDataset). This is a container
+    for multiple datasets, which behaves like a dataset itself.
+  * Regression performance is summarized now within RegressionStatistics.
+  * Error functions: CorrErrorPFx, RelativeRMSErrorFx.
+  * Measures: CorrCoef.
+  * Data generators: chirp, wr1996
+  * Few more examples: curvefitting, kerneldemo, smellit, projections
+  * Updated kNN classifier. kNN is now able to use custom distance function
+    to determine that nearest neighbors. It also (re)gained the ability to do
+    simple majority or weighted voting.
+  * Some initial convenience functions for plotting typical results and data
+    exploration.
+  * Unified configuration handling with support for user-specific and
+    analysis-specific config files, as well as the ability to override all
+    config settings via environment variables. The configuration handling is
+    used for PyMVPA internal settings, but can also be easily used for
+    custom (user-)settings.
+  * Improved modularity, e.g. SciPy is not required anymore, but still very
+    useful.
+  * Initial implementations of ICA and PCA mapper using functionality provided
+    by MDP. These mappers are more or less untested and should be used with
+    great care.
+  * Further improved docstrings of some classes, but still a long way to go.
+  * New 'boxcar' mapper, which is the similar to the already present
+    transformWithBoxCar() function, but implemented as a mapper.
+  * New SampleGroupMapper that can be used for e.g. block averaging of
+    samples. See new FAQ item.
+  * Stripped redundant suffixes from module names, e.g.
+    mvpa.datasets.niftidataset -> mvpa.datasets.nifti
+  * mvpa.misc.cmdline variables opt* and opts* were groupped within
+    opt and optss class instances. Also names of the options were
+    changed to match 'dest' of the options. Use tools/refactor.py to
+    quickly fix your custom code.
+  * Change all references to PyMVPA website to www.pymvpa.org.
+  * Make website stylesheet compatible with sphinx 0.4.
+  * Several minor improvements of the compatibility with MacOS.
+  * Extended FAQ section of the manual.
+  * Bugfix: double_gamma_hrf() ignoring K2 argument.
+
+
+* 0.2.2 (Tue, 17 Jun 2008)
+
+  * Extended build instructions: Added section on OpenSUSE.
+  * Replaced ugly PYMVPA_LIBSVM environment variable to trigger compiling the
+    LIBSVM wrapper with a proper '--with-libsvm' switch in setup.py.
+    Additionally, setup.py now detects if included LIBSVM has been built and
+    enables LIBSVM wrapper automatically in this case.
+  * Added proper Makefiles for LIBSVM copy, with configurable compiler flags.
+  * Added 'setup.cfg' to remove the need to manually specify swig-opts
+    (Windows specific configuration is in 'setup.cfg.win').
+
+
+* 0.2.1 (Sun, 15 Jun 2008)
+
+  * Several improvements to make building PyMVPA on Windows systems easy
+    (e.g. added dedicated Makefile.win to build a binary installer).
+  * Improved and extended documentation for building and installing PyMVPA.
+  * Include a minimal copy of the required (patched) LIBSVM library (currently
+    version 2.85.0) for convenience. This copy is automatically compiled and
+    used for the LIBSVM wrapper when PyMVPA built using the `Make` approach.
+
+
+* 0.2.0 (Wed, 29 May 2008)
+
+  * New Splitter class (HalfSplitter) to split into first and second half.
+  * New Splitter class (CustomSplitter) to allow for splits with an arbitrary
+    number of datasets per split and the ability to specify the association
+    of samples with any of those datasets (not just the validation set).
+  * New sparse multinomial logistic regression (SMLR) classifier and
+    associated sensitivity analyzer.
+  * New least angle regression classifier (LARS).
+  * New Gaussian process regression classifier (GPR).
+  * Initial documentation on extending PyMVPA.
+  * Switch to Sphinx for documentation handling.
+  * New example comparing the performance of all classifiers on some
+    artificial datasets.
+  * New data mapper performing singular value decomposition (SVDMapper) and an
+    example showing its usage.
+  * More sophisticated data preprocessing: removal of non-linear trends and
+    other arbitrary confounding regressors.
+  * New `Harvester` class to feed data from arbitrary generators into multiple
+    objects and store results of returned values and arbitrary properties.
+  * Added documentation about how to build patched libsvm version with sane
+    debug output.
+  * libsvm bindings are not build by default anymore. Instructions on how to
+    reenable them are available in the manual.
+  * New wrapper from SVM implementation of the Shogun toolbox.
+  * Important bugfix in RFE, which reported incorrect feature ids in some
+    cases.
+  * Added ability to compute stats/probabilities for all measures and transfer
+    errors.
+
+
+* 0.1.0 (Wed, 20 Feb 2008)
+
+  * First public release.
+
+.. _statsmodels: http://statsmodels.sourceforge.net

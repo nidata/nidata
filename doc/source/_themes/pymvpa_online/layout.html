@@ -1,0 +1,48 @@
+{% extends "basic/layout.html" %}
+
+{% block extrahead %}
+  <meta name="keywords" content="mvpa, pymvpa, python, classifier, machine learning, neuroscience">
+  <link REL="icon" HREF="/_images/favicon.png" TYPE="image/png">
+{% endblock %}
+
+{% block rootrellink %}
+  <li><a href="{{ pathto('index') }}">PyMVPA Home</a> |&nbsp;</li>
+  <li><a href="{{ pathto('sitemap') }}">Sitemap</a> &raquo;</li>
+{% endblock %}
+
+{%- block sidebarlogo %}
+{%- endblock sidebarlogo %}
+
+{% block relbar1 %}
+<div id="header">
+ <div class="logos">
+  <a href="http://www.dartmouth.edu" target="_blank"><img border="0" src="/_static/dartmouth-logo_h70.png" title="Dartmouth College, USA" height="70" /></a>
+  <img border="0" src="/_static/ccn-logo_h70.png" title="Center for Cognitive Neuroscience, Dartmouth College, USA" height="70" />
+  <a href="http://www.ipsy.ovgu.de/ipsy/en/psychoinformatics.html" target="_blank"><img border="0" src="/_static/uni-md-logo_h70.png" title="Psychoinformatics lab, University of Magdeburg, Germany" height="70" /></a>
+  <br>
+  <div id="hdrsubtitle">Multivariate Pattern Analysis in Python</div>
+ </div>
+</div>
+{{ super() }}
+{% endblock %}
+
+{% block sidebarsearch %}
+{{ super() }}
+<p><a href="http://neuro.debian.net"><img
+  src="_static/neurodebian.png" alt="NeuroDebian" /></a></p>
+<p><a href="http://www.nitrc.org/projects/pymvpa"><img
+  src="_static/nitrc.jpg" alt="NITRC-listed" /></a></p>
+{% endblock %}
+
+{% block footer %}
+{{ super() }}
+ <script type="text/javascript">
+ var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+ document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+ </script>
+ <script type="text/javascript">
+ var pageTracker = _gat._getTracker("UA-5958822-1");
+ pageTracker._trackPageview();
+ </script>
+{% endblock %}
+
