@@ -2604,3 +2604,94 @@ def fetch_haxby_etal_2011(n_subjects=10, data_dir=None, url=None, resume=True,
     # return the data
     files = sorted(files)  # order by subject
     return Bunch(func=files[1::3], mask=files[2::3], session=files[0::3])
+
+
+def fetch_kay_etal_2008(n_subjects=2, data_dir=None, resume=True,
+                        verbose=1, username=None, password=None,
+                        n_sessions=5, n_runs=7, preprocessed=True):
+    """Download and load an example haxby dataset
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+    n_sessions: int, optional
+        Number of sessions to download (each subject has 5)
+    n_runs: int, optional
+        Number of runs per session to download (each subject has 7).
+        In the paper, the first five sessions were used as "train" sessions,
+        the last two were used as "validation" sessions (for classification).
+    preprocessed: bool, optional
+        Minimally preprocessed versions of the data are available.
+        By default, the fully preprocessed versions are downloaded
+        and converted to nifti files.
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, interest attributes are:
+        'func': string.  Path to nifti file with bold data.
+        'mask': string. Path to nifti mask file.
+        'session': string. Path to text file containing blocks and stimulus labels
+        'license': string.
+    References
+    -----
+    Kay, K. N., Naselaris, T., Prenger, R. J., & Gallant, J. L. (2008). Identifying
+    natural images from human brain activity. Nature, 452(7185), 352-355.
+    Naselaris, T., Prenger, R. J., Kay, K. N., Oliver, M., & Gallant, J. L. (2009). Bayesian
+    reconstruction of natural images from human brain activity. Neuron, 63(6), 902-915.
+    Notes
+    -----
+    Please review the documentation before publication.
+    See https://portal.nersc.gov/project/crcns/download/vim-1/docs/crcns-vim-1-readme.pdf
+    Specifically note the license agreement:
+    "If you publish any work using the data, please cite the two papers listed below.
+    Additionally, please notify Kendrick Kay (kendrick@post.harvard.edu)."
+    """
+    url = "https://portal.nersc.gov/project/crcns/download/vim-1"
+    if username is None or password is None:
+        raise Exception("Username and password must be specified."
+                        "You may obtain a login at ")
+    if n_subjects > 2:
+        warnings.warn("Only 2 subjects are available (%d requested); "
+                      "returning 2 only." % n_subjects)
+
+    # Build the list of files to fetch
+    files = ['Stimuli.mat', 'Sub1_Anat_msk.nii.gz', 'Sub2_Anat_msk.nii.gz']
+
+    if preprocessed:
+        files += ['EstimatedResponses.mat']
+    else:
+        for runtype, nruns in (('Trn', min(n_runs, 5)),
+                               ('Val', min(n_runs - 5, 2))):
+            files += ['Sub%d_Ses%d_Run%d_%s.nii.gz' % (sid, sessid,
+                                                       runid, runtype)
+                      for sid in (np.arange(n_subjects) + 1)
+                      for sessid in (np.arange(n_sessions) + 1)
+                      for runid in (np.arange(nruns) + 1)]
+
+    # Fetch the files to the given data_dir
+    def url_fun(filename):
+        return "%s/%s?username=%s&password=%s&submit=Login" % \
+               (url, filename, username, password)
+    data_dir = _get_dataset_dir('kay_etal_2008', data_dir=data_dir,
+                                verbose=verbose)
+    files = [(f, url_fun(f), {'uncompress': f[-3:] == '.gz'})
+             for f in files]
+    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+
+    if preprocessed:
+        from scipy.io import loadmat
+        import h5py
+
+        mask_mat = loadmat(files[-1]); mask_mat['mask'].shape
+        stim_mat = loadmat(files[1]); stim_mat.keys()
+        # ['seqTrn', '__header__', '__globals__', 'stimVal', 'seqVal', 'stimTrn', '__version__']
+        resp_mat = h5py.File(files[0]); f.keys()
+        # [u'dataTrnS1', u'dataTrnS2', u'dataValS1', u'dataValS2', u'roiS1', u'roiS2', u'voxIdxS1', u'voxIdxS2']
+
+        import pdb; pdb.set_trace()
+        return Bunch()
+
+    else:
+        import pdb; pdb.set_trace()
+        return Bunch(func=files[1::3], mask=files[2::3], session=files[0::3])
