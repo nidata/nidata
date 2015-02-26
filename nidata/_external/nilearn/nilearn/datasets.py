@@ -2539,3 +2539,56 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         results[derivative] = files
 
     return Bunch(**results)
+
+
+def fetch_haxby_etal_2011(n_subjects=10, data_dir=None, url=None, resume=True,
+                          verbose=1):
+    """Download and load an example haxby dataset
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, interest attributes are:
+        'func': string.  Path to nifti file with bold data.
+        'mask': string. Path to nifti mask file.
+        'session': string. Path to text file containing blocks and stimulus labels
+
+    References
+
+    Notes
+    -----
+    """
+    if n_subjects > 10:
+        warnings.warn("Only 10 subjects are available (%d requested); "
+                      "returning 10 only." % n_subjects)
+    # URL of the dataset. It is optional because a test uses it to test dataset
+    # downloading
+    if url is None:
+        pass  # raise NotImplementedError('You must already have these files locally.')
+
+    # Build the list of files to fetch
+    func_files = []
+    mask_files = []
+    session_files = []
+    for si in range(n_subjects):
+        snum = si + 1
+        func_files.append('subj%02d_func.nii' % snum)
+        mask_files.append('subj%02d_mask.nii' % snum)
+        session_files.append('subj%02d_conditions.csv' % snum)
+
+    # Fetch the files to the given data_dir
+    data_dir = _get_dataset_dir('haxby_etal_2011', data_dir=data_dir,
+                                verbose=verbose)
+    files = func_files + mask_files + session_files
+    files = [(f, url, {}) for f in files]
+    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+
+    # return the data
+    files = sorted(files)  # order by subject
+    return Bunch(func=files[1::3], mask=files[2::3], session=files[0::3])
