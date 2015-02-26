@@ -617,9 +617,11 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
         target_file = os.path.join(data_dir, file_)
         # Target file in temp dir
         temp_target_file = os.path.join(temp_dir, file_)
-        if (abort is None and not os.path.exists(target_file) and not
-                os.path.exists(temp_target_file)):
 
+        # First pass: find the file locally or fetch remotely
+        download_needed = (opts.get('overwrite', False) or
+                           not os.path.exists(target_file))
+        if abort is None and download_needed:
             # We may be in a global read-only repository. If so, we cannot
             # download files.
             if not os.access(data_dir, os.W_OK):
@@ -630,9 +632,14 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
             md5sum = opts.get('md5sum', None)
-            dl_file = _fetch_file(url, temp_dir, resume=resume,
-                                  verbose=verbose, md5sum=md5sum)
-            if 'move' in opts:
+            try:
+                dl_file = _fetch_file(url, temp_dir, resume=resume,
+                                      verbose=verbose, md5sum=md5sum,
+                                      overwrite=opts.get('overwrite', False))
+            except urllib2.HTTPError as he:
+                abort = str(he)
+
+            if opts.get('move', False):
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_dir, opts['move'])
                 move_dir = os.path.dirname(os.path.join(temp_dir, move))
@@ -640,7 +647,8 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                     os.makedirs(move_dir)
                 shutil.move(os.path.join(temp_dir, dl_file), move)
                 dl_file = os.path.join(temp_dir, opts['move'])
-            if 'uncompress' in opts:
+
+            if opts.get('uncompress', False):
                 try:
                     if not mock or os.path.getsize(dl_file) != 0:
                         _uncompress_file(dl_file, verbose=verbose)
@@ -648,6 +656,8 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                         os.remove(dl_file)
                 except Exception as e:
                     abort = str(e)
+
+        # Second pass: check for errors.
         if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
             if not mock:
@@ -657,10 +667,12 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                 if not os.path.exists(os.path.dirname(temp_target_file)):
                     os.makedirs(os.path.dirname(temp_target_file))
                 open(temp_target_file, 'w').close()
+
+        # Third pass: cleanup / report errors.
         if abort is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
-            raise IOError('Fetching aborted: ' + abort)
+            raise IOError('Fetching of %s aborted: %s' % (target_file, abort))
         files_.append(target_file)
     # If needed, move files from temps directory to final directory.
     if os.path.exists(temp_dir):
@@ -2586,7 +2598,7 @@ def fetch_haxby_etal_2011(n_subjects=10, data_dir=None, url=None, resume=True,
     data_dir = _get_dataset_dir('haxby_etal_2011', data_dir=data_dir,
                                 verbose=verbose)
     files = func_files + mask_files + session_files
-    files = [(f, url, {}) for f in files]
+    files = [(f, os.path.join(url, f), {}) for f in files]
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     # return the data
