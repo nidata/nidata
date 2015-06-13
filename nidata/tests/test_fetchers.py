@@ -32,25 +32,25 @@ file_mock = None
 
 def get_datadir():
     global datadir
-    print "datadir", datadir
+    print("datadir, " + datadir)
     return datadir
 
 
 def get_tmpdir():
     global tmpdir
-    print "tmpdir", tmpdir
+    print ("tmpdir, " + tmpdir)
     return tmpdir
 
 
 def get_url_request():
     global url_request
-    print "url_request", url_request
+    print ("url_request, " + url_request)
     return url_request
 
 
 def get_file_mock():
     global file_mock
-    print "file_mock", file_mock
+    print ("file_mock, " + file_mock)
     return file_mock
 
 
