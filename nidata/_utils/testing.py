@@ -18,9 +18,7 @@ from sklearn.utils import check_random_state
 import scipy.linalg
 import nibabel
 
-from .. import datasets
-from .. import masking
-from . import logger
+from . import _fetch_files
 from .compat import _basestring, _urllib
 
 
@@ -176,7 +174,7 @@ def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
 
 
 class FetchFilesMock (object):
-    _mock_fetch_files = functools.partial(datasets._fetch_files, mock=True)
+    _mock_fetch_files = functools.partial(_fetch_files, mock=True)
 
     def __init__(self):
         """Create a mock that can fill a CSV file if needed
@@ -266,37 +264,6 @@ def generate_regions_ts(n_features, n_regions,
         regions[n, start:end] = win
 
     return regions
-
-
-def generate_maps(shape, n_regions, overlap=0, border=1,
-                  window="boxcar", rand_gen=None, affine=np.eye(4)):
-    """Generate a 4D volume containing several maps.
-    Parameters
-    ==========
-    n_regions: int
-        number of regions to generate
-
-    overlap: int
-        approximate number of voxels common to two neighboring regions
-
-    window: str
-        name of a window in scipy.signal. Used to get non-uniform regions.
-
-    border: int
-        number of background voxels on each side of the 3D volumes.
-
-    Returns
-    =======
-    maps: nibabel.Nifti1Image
-        4D array, containing maps.
-    """
-
-    mask = np.zeros(shape, dtype=np.int8)
-    mask[border:-border, border:-border, border:-border] = 1
-    ts = generate_regions_ts(mask.sum(), n_regions, overlap=overlap,
-                             rand_gen=rand_gen, window=window)
-    mask_img = nibabel.Nifti1Image(mask, affine)
-    return masking.unmask(ts, mask_img), mask_img
 
 
 def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
@@ -511,93 +478,6 @@ def generate_signals_from_precisions(precisions,
                                                     np.linalg.inv(prec),
                                                     (n,)))
     return signals
-
-
-def generate_group_sparse_gaussian_graphs(
-        n_subjects=5, n_features=30, min_n_samples=30, max_n_samples=50,
-        density=0.1, random_state=0, verbose=0):
-    """Generate signals drawn from a sparse Gaussian graphical model.
-
-    Parameters
-    ==========
-    n_subjects : int, optional
-        number of subjects
-
-    n_features : int, optional
-        number of signals per subject to generate
-
-    density : float, optional
-        density of edges in graph topology
-
-    min_n_samples, max_n_samples : int, optional
-        Each subject have a different number of samples, between these two
-        numbers. All signals for a given subject have the same number of
-        samples.
-
-    random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
-
-    verbose: int, optional
-        verbosity level (0 means no message).
-
-    Returns
-    =======
-    subjects : list of numpy.ndarray, shape for each (n_samples, n_features)
-        subjects[n] is the signals for subject n. They are provided as a numpy
-        len(subjects) = n_subjects. n_samples varies according to the subject.
-
-    precisions : list of numpy.ndarray
-        precision matrices.
-
-    topology : numpy.ndarray
-        binary array giving the graph topology used for generating covariances
-        and signals.
-    """
-
-    random_state = check_random_state(random_state)
-    # Generate topology (upper triangular binary matrix, with zeros on the
-    # diagonal)
-    topology = np.empty((n_features, n_features))
-    topology[:, :] = np.triu((
-        random_state.randint(0, high=int(1. / density),
-                             size=n_features * n_features)
-    ).reshape(n_features, n_features) == 0, k=1)
-
-    # Generate edges weights on topology
-    precisions = []
-    mask = topology > 0
-    for _ in range(n_subjects):
-
-        # See also sklearn.datasets.samples_generator.make_sparse_spd_matrix
-        prec = topology.copy()
-        prec[mask] = random_state.uniform(low=.1, high=.8, size=(mask.sum()))
-        prec += np.eye(prec.shape[0])
-        prec = np.dot(prec.T, prec)
-
-        # Assert precision matrix is spd
-        np.testing.assert_almost_equal(prec, prec.T)
-        eigenvalues = np.linalg.eigvalsh(prec)
-        if eigenvalues.min() < 0:
-            raise ValueError("Failed generating a positive definite precision "
-                             "matrix. Decreasing n_features can help solving "
-                             "this problem.")
-        precisions.append(prec)
-
-    # Returns the topology matrix of precision matrices.
-    topology += np.eye(*topology.shape)
-    topology = np.dot(topology.T, topology)
-    topology = topology > 0
-    assert(np.all(topology == topology.T))
-    logger.log("Sparsity: {0:f}".format(
-        1. * topology.sum() / (topology.shape[0] ** 2)),
-        verbose=verbose)
-
-    # Generate temporal signals
-    signals = generate_signals_from_precisions(precisions,
-                                               min_n_samples=min_n_samples,
-                                               max_n_samples=max_n_samples,
-                                               random_state=random_state)
-    return signals, precisions, topology
 
 
 def is_nose_running():

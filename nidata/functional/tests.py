@@ -19,11 +19,12 @@ from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
 
-from nilearn import datasets
-from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
+from nidata import fetchers
+from nidata.functional import datasets
+from nidata._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock, assert_raises_regex)
 
-from nilearn._utils.compat import _basestring
+from nidata._utils.compat import _basestring
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -42,11 +43,11 @@ def setup_tmpdata():
 def setup_mock():
     global url_request
     url_request = mock_request()
-    datasets._urllib.request = url_request
-    datasets._chunk_read_ = wrap_chunk_read_(datasets._chunk_read_)
+    fetchers._urllib.request = url_request
+    fetchers._chunk_read_ = wrap_chunk_read_(fetchers._chunk_read_)
     global file_mock
     file_mock = FetchFilesMock()
-    datasets._fetch_files = file_mock
+    fetchers._fetch_files = file_mock
 
 
 def teardown_tmpdata():
@@ -61,7 +62,7 @@ def test_md5_sum_file():
     out, f = mkstemp()
     os.write(out, b'abcfeg')
     os.close(out)
-    assert_equal(datasets._md5_sum_file(f), '18f32295c556b2a1a3a8e68fe1ad40f7')
+    assert_equal(fetchers._md5_sum_file(f), '18f32295c556b2a1a3a8e68fe1ad40f7')
     os.remove(f)
 
 
@@ -73,28 +74,28 @@ def test_get_dataset_dir():
     os.environ.pop('NILEARN_SHARED_DATA', None)
 
     expected_base_dir = os.path.expanduser('~/nilearn_data')
-    data_dir = datasets._get_dataset_dir('test', verbose=0)
+    data_dir = fetchers._get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'test_nilearn_data')
     os.environ['NILEARN_DATA'] = expected_base_dir
-    data_dir = datasets._get_dataset_dir('test', verbose=0)
+    data_dir = fetchers._get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
-    data_dir = datasets._get_dataset_dir('test', verbose=0)
+    data_dir = fetchers._get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'env_data')
     os.environ['MY_DATA'] = expected_base_dir
-    data_dir = datasets._get_dataset_dir('test', env_vars=['MY_DATA'],
+    data_dir = fetchers._get_dataset_dir('test', env_vars=['MY_DATA'],
                                          verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
@@ -108,7 +109,7 @@ def test_get_dataset_dir():
     os.environ['MY_DATA'] = no_write
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
-    data_dir = datasets._get_dataset_dir('test', env_vars=['MY_DATA'],
+    data_dir = fetchers._get_dataset_dir('test', env_vars=['MY_DATA'],
                                          verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
@@ -116,7 +117,7 @@ def test_get_dataset_dir():
 
     # Verify exception is raised on read-only directories
     assert_raises_regex(OSError, 'Permission denied',
-                        datasets._get_dataset_dir, 'test', no_write,
+                        fetchers._get_dataset_dir, 'test', no_write,
                         verbose=0)
 
     # Verify exception for a path which exists and is a file
@@ -124,7 +125,7 @@ def test_get_dataset_dir():
     with open(test_file, 'w') as out:
         out.write('abcfeg')
     assert_raises_regex(OSError, 'Not a directory',
-                        datasets._get_dataset_dir, 'test', test_file,
+                        fetchers._get_dataset_dir, 'test', test_file,
                         verbose=0)
 
 
@@ -134,7 +135,7 @@ def test_read_md5_sum_file():
     os.write(out, b'20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n'
              b'70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
     os.close(out)
-    h = datasets._read_md5_sum_file(f)
+    h = fetchers._read_md5_sum_file(f)
     assert_true('/tmp/test' in h)
     assert_false('/etc/test' in h)
     assert_equal(h['test/some_image.nii'], '70886dcabe7bf5c5a1c24ca24e4cbd94')
@@ -161,7 +162,7 @@ def test_tree():
     open(os.path.join(dir11, 'file111'), 'w').close()
     open(os.path.join(dir2, 'file21'), 'w').close()
 
-    tree_ = datasets._tree(parent)
+    tree_ = fetchers._tree(parent)
 
     # Check the tree
     #assert_equal(tree_[0]['dir1'][0]['dir11'][0], 'file111')
@@ -257,7 +258,7 @@ def test_fail_fetch_haxby_simple():
             (os.path.join(path, 'bald.nii.gz'), local_url, opts)
     ]
 
-    assert_raises(IOError, datasets._fetch_files,
+    assert_raises(IOError, fetchers._fetch_files,
             os.path.join(tmpdir, 'haxby2001_simple'), files,
             verbose=0)
     dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
@@ -676,10 +677,10 @@ def test_filter_columns():
     values = np.asarray(list(zip(value1, value2)),
                         dtype=[('INT', int), ('STR', 'S1')])
 
-    f = datasets._filter_columns(values, {'INT': (23, 46)})
+    f = fetchers._filter_columns(values, {'INT': (23, 46)})
     assert_equal(np.sum(f), 24)
 
-    f = datasets._filter_columns(values, {'INT': [0, 9, (12, 24)]})
+    f = fetchers._filter_columns(values, {'INT': [0, 9, (12, 24)]})
     assert_equal(np.sum(f), 15)
 
     value1 = value1 % 2
@@ -687,16 +688,16 @@ def test_filter_columns():
                         dtype=[('INT', int), ('STR', b'S1')])
 
     # No filter
-    f = datasets._filter_columns(values, [])
+    f = fetchers._filter_columns(values, [])
     assert_equal(np.sum(f), 500)
 
-    f = datasets._filter_columns(values, {'STR': b'b'})
+    f = fetchers._filter_columns(values, {'STR': b'b'})
     assert_equal(np.sum(f), 167)
 
-    f = datasets._filter_columns(values, {'INT': 1, 'STR': b'b'})
+    f = fetchers._filter_columns(values, {'INT': 1, 'STR': b'b'})
     assert_equal(np.sum(f), 84)
 
-    f = datasets._filter_columns(values, {'INT': 1, 'STR': b'b'},
+    f = fetchers._filter_columns(values, {'INT': 1, 'STR': b'b'},
             combination='or')
     assert_equal(np.sum(f), 333)
 
@@ -710,7 +711,7 @@ def test_uncompress():
     ztemp = os.path.join(dtemp, 'test.zip')
     with contextlib.closing(zipfile.ZipFile(ztemp, 'w')) as testzip:
         testzip.write(temp)
-    datasets._uncompress_file(ztemp, verbose=0)
+    fetchers._uncompress_file(ztemp, verbose=0)
     assert(os.path.exists(os.path.join(dtemp, temp)))
     shutil.rmtree(dtemp)
 
@@ -718,7 +719,7 @@ def test_uncompress():
     ztemp = os.path.join(dtemp, 'test.tar')
     with contextlib.closing(tarfile.open(ztemp, 'w')) as tar:
         tar.add(temp)
-    datasets._uncompress_file(ztemp, verbose=0)
+    fetchers._uncompress_file(ztemp, verbose=0)
     assert(os.path.exists(os.path.join(dtemp, temp)))
     shutil.rmtree(dtemp)
 
@@ -726,7 +727,7 @@ def test_uncompress():
     ztemp = os.path.join(dtemp, 'test.gz')
     f = gzip.open(ztemp, 'wb')
     f.close()
-    datasets._uncompress_file(ztemp, verbose=0)
+    fetchers._uncompress_file(ztemp, verbose=0)
     assert(os.path.exists(os.path.join(dtemp, temp)))
     shutil.rmtree(dtemp)
 

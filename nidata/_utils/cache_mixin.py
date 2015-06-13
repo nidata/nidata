@@ -21,8 +21,6 @@ try:
 except ImportError:
     pass
 
-import nilearn
-
 from .compat import _basestring
 
 __cache_checked = dict()
@@ -53,32 +51,28 @@ def _safe_cache(memory, func, **kwargs):
 
     # Flush cache if version collision
     if len(collisions) > 0:
-        if nilearn.check_cache_version:
-            warnings.warn("Incompatible cache in %s: "
-                          "different version of nibabel. Deleting "
-                          "the cache. Put nilearn.check_cache_version "
-                          "to false to avoid this behavior."
-                          % cachedir)
-            try:
-                tmp_dir = (os.path.split(cachedir)[:-1]
-                            + ('old_%i' % os.getpid(), ))
-                tmp_dir = os.path.join(*tmp_dir)
-                # We use rename + unlink to be more robust to race
-                # conditions
-                os.rename(cachedir, tmp_dir)
-                shutil.rmtree(tmp_dir)
-            except OSError:
-                # Another process could have removed this dir
-                pass
+        warnings.warn("Incompatible cache in %s: "
+                      "different version of nibabel. Deleting "
+                      "the cache. Put nilearn.check_cache_version "
+                      "to false to avoid this behavior."
+                      % cachedir)
+        try:
+            tmp_dir = (os.path.split(cachedir)[:-1]
+                        + ('old_%i' % os.getpid(), ))
+            tmp_dir = os.path.join(*tmp_dir)
+            # We use rename + unlink to be more robust to race
+            # conditions
+            os.rename(cachedir, tmp_dir)
+            shutil.rmtree(tmp_dir)
+        except OSError:
+            # Another process could have removed this dir
+            pass
 
-            try:
-                os.makedirs(cachedir)
-            except OSError:
-                # File exists?
-                pass
-        else:
-            warnings.warn("Incompatible cache in %s: "
-                          "old version of nibabel." % cachedir)
+        try:
+            os.makedirs(cachedir)
+        except OSError:
+            # File exists?
+            pass
 
     # Write json files if configuration is different
     if versions != my_versions:
