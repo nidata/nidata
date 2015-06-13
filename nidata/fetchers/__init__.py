@@ -23,7 +23,7 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
+from .._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
 
 
 def _format_time(t):
