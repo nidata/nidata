@@ -6,6 +6,7 @@ import time
 import warnings
 from functools import partial
 
+import boto
 import numpy as np
 
 from . import _chunk_report_
@@ -16,7 +17,6 @@ def test_cb(cur_bytes, total_bytes, t0=None, **kwargs):
 
 
 def aws_fetcher(data_dir, files, access_key=None, secret_access_key=None, profile_name=None, force=True):
-    import boto
     if profile_name is not None:
         s3 = boto.connect_s3(profile_name=profile_name)
     elif access_key is not None and secret_access_key is not None:
