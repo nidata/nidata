@@ -24,7 +24,7 @@ from nidata._utils.compat import _basestring
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
-datadir = os.environ.get('NIDATA_DIR', os.path.join(currdir, 'data'))
+datadir = os.environ.get('NIDATA_PATH', os.path.join(currdir, 'data'))
 tmpdir = None
 url_request = None
 file_mock = None
@@ -90,17 +90,17 @@ def test_md5_sum_file():
 def test_get_dataset_dir():
     # testing folder creation under different environments, enforcing
     # a custom clean install
-    os.environ.pop('NILEARN_DATA', None)
+    os.environ.pop('NIDATA_PATH', None)
     os.environ.pop('NILEARN_SHARED_DATA', None)
 
-    expected_base_dir = os.path.expanduser('~/nilearn_data')
+    expected_base_dir = os.path.expanduser('~/NIDATA_PATH')
     data_dir = fetchers._get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = os.path.join(tmpdir, 'test_nilearn_data')
-    os.environ['NILEARN_DATA'] = expected_base_dir
+    expected_base_dir = os.path.join(tmpdir, 'test_NIDATA_PATH')
+    os.environ['NIDATA_PATH'] = expected_base_dir
     data_dir = fetchers._get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
