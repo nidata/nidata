@@ -4,6 +4,7 @@ import os
 import sys
 import textwrap
 import contextlib
+import zipfile
 
 if sys.version_info[0] < 3:
     from urllib2 import urlopen
@@ -17,7 +18,6 @@ from shutil import copyfileobj
 import numpy as np
 import nibabel as nib
 
-import zipfile
 from dipy.core.gradients import gradient_table
 from dipy.io.gradients import read_bvals_bvecs
 
