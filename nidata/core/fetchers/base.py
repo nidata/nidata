@@ -23,17 +23,18 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
+from ..objdep import DependenciesMeta
 from .._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
 
 
-def _format_time(t):
+def format_time(t):
     if t > 60:
         return "%4.1fmin" % (t / 60.)
     else:
         return " %5.1fs" % (t)
 
 
-def _md5_sum_file(path):
+def md5_sum_file(path):
     """ Calculates the MD5 sum of a file.
     """
     with open(path, 'rb') as f:
@@ -46,7 +47,7 @@ def _md5_sum_file(path):
     return m.hexdigest()
 
 
-def _read_md5_sum_file(path):
+def _readmd5_sum_file(path):
     """ Reads a MD5 checksum file and returns hashes as a dictionary.
     """
     with open(path, "r") as f:
@@ -110,7 +111,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
         sys.stderr.write(
             "Downloaded %d of %d bytes (%0.2f%%, %s remaining)  \r"
             % (bytes_so_far, total_size, total_percent * 100,
-               _format_time(time_remaining)))
+               format_time(time_remaining)))
 
 
 def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
@@ -175,7 +176,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
-def _get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
+def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
                      verbose=1):
     """ Create if necessary and returns data directory of given dataset.
 
@@ -547,13 +548,13 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             if not local_file.closed:
                 local_file.close()
     if md5sum is not None:
-        if (_md5_sum_file(full_name) != md5sum):
+        if (md5_sum_file(full_name) != md5sum):
             raise ValueError("File %s checksum verification has failed."
                              " Dataset fetching aborted." % local_file)
     return full_name
 
 
-def _get_dataset_descr(ds_name):
+def get_dataset_descr(ds_name):
     module_path = os.path.dirname(os.path.abspath(__file__))
 
     fname = ds_name
@@ -600,7 +601,7 @@ def movetree(src, dst):
         raise Exception(errors)
 
 
-def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
+def fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from

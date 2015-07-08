@@ -18,7 +18,7 @@ from sklearn.utils import check_random_state
 import scipy.linalg
 import nibabel
 
-from . import _fetch_files
+from . import fetch_files
 from .compat import _basestring, _urllib
 
 
@@ -174,7 +174,7 @@ def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
 
 
 class FetchFilesMock (object):
-    _mock_fetch_files = functools.partial(_fetch_files, mock=True)
+    _mockfetch_files = functools.partial(fetch_files, mock=True)
 
     def __init__(self):
         """Create a mock that can fill a CSV file if needed
@@ -190,7 +190,7 @@ class FetchFilesMock (object):
         For test purpose, instead of actually fetching the dataset, this
         function creates empty files and return their paths.
         """
-        filenames = self._mock_fetch_files(*args, **kwargs)
+        filenames = self._mockfetch_files(*args, **kwargs)
         # Fill CSV files with given content if needed
         for fname in filenames:
             basename = os.path.basename(fname)

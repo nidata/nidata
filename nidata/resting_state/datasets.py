@@ -23,9 +23,9 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from .._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from .._utils.img import check_niimg, new_img_like
-from ..fetchers import _format_time, _md5_sum_file, _fetch_files, _get_dataset_dir, _get_dataset_descr
+from ..core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
+from ..core._utils.img import check_niimg, new_img_like
+from ..core.fetchers import format_time, md5_sum_file, fetch_files, get_dataset_dir, get_dataset_descr
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
@@ -201,16 +201,16 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
         session += [i] * n_subjects
 
     dataset_name = 'nyu_rest'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    anat_anon = _fetch_files(data_dir, anat_anon, resume=resume,
+    anat_anon = fetch_files(data_dir, anat_anon, resume=resume,
                              verbose=verbose)
-    anat_skull = _fetch_files(data_dir, anat_skull, resume=resume,
+    anat_skull = fetch_files(data_dir, anat_skull, resume=resume,
                               verbose=verbose)
-    func = _fetch_files(data_dir, func, resume=resume,
+    func = fetch_files(data_dir, func, resume=resume,
                         verbose=verbose)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
                  session=session, description=fdescr)
@@ -302,16 +302,16 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     subjects_confounds = subjects_confounds[:n_subjects]
 
     dataset_name = 'adhd'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    subjects_funcs = _fetch_files(data_dir, subjects_funcs, resume=resume,
+    subjects_funcs = fetch_files(data_dir, subjects_funcs, resume=resume,
                                   verbose=verbose)
-    subjects_confounds = _fetch_files(data_dir, subjects_confounds,
+    subjects_confounds = fetch_files(data_dir, subjects_confounds,
             resume=resume, verbose=verbose)
-    phenotypic = _fetch_files(data_dir, phenotypic, resume=resume,
+    phenotypic = fetch_files(data_dir, phenotypic, resume=resume,
                               verbose=verbose)[0]
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     # Load phenotypic data
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
@@ -430,7 +430,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     # General file: phenotypic information
     dataset_name = 'ABIDE_pcp'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     if url is None:
         url = ('https://s3.amazonaws.com/fcp-indi/data/Projects/'
@@ -445,7 +445,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     # Fetch the phenotypic file and load it
     csv = 'Phenotypic_V1_0b_preprocessed1.csv'
-    path_csv = _fetch_files(data_dir, [(csv, url + '/' + csv, {})],
+    path_csv = fetch_files(data_dir, [(csv, url + '/' + csv, {})],
                             verbose=verbose)[0]
 
     # Note: the phenotypic file contains string that contains comma which mess
@@ -482,7 +482,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
 
-    results['description'] = _get_dataset_descr(dataset_name)
+    results['description'] = get_dataset_descr(dataset_name)
     results['phenotypic'] = pheno
     for derivative in derivatives:
         ext = '.1D' if derivative.startswith('rois') else '.nii.gz'
@@ -490,7 +490,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                   '/'.join([url, derivative,
                             file_id + '_' + derivative + ext]),
                   {}) for file_id in file_ids]
-        files = _fetch_files(data_dir, files, verbose=verbose)
+        files = fetch_files(data_dir, files, verbose=verbose)
         # Load derivatives if needed
         if ext == '.1D':
             files = [np.loadtxt(f) for f in files]

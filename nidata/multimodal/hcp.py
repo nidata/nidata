@@ -1,5 +1,5 @@
-from ..fetchers import AmazonS3Fetcher
-from ..datasets import Dataset
+from ..core.fetchers import AmazonS3Fetcher
+from ..core.datasets import Dataset
 
 
 class HcpDataset(Dataset):

@@ -23,9 +23,9 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from .._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from .._utils.img import check_niimg, new_img_like
-from ..fetchers import _format_time, _md5_sum_file, _fetch_files, _get_dataset_dir, _get_dataset_descr
+from ..core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
+from ..core._utils.img import check_niimg, new_img_like
+from ..core.fetchers import format_time, md5_sum_file, fetch_files, get_dataset_dir, get_dataset_descr
 
 
 def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
@@ -86,12 +86,12 @@ def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
             ("random_all.nii.gz", url, opts)
     ]
 
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+    sub_files = fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
 
@@ -165,12 +165,12 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
     filenames = [(os.path.join("Yeo_JNeurophysiol11_MNI152", f), url, opts)
                  for f in basenames]
 
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
             verbose=verbose)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+    sub_files = fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
@@ -242,12 +242,12 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
                               "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
 
     dataset_name = 'icbm152_2009'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+    sub_files = fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
@@ -312,12 +312,12 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
              ]
 
     dataset_name = 'smith_2009'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    files_ = _fetch_files(data_dir, files, resume=resume,
+    files_ = fetch_files(data_dir, files, resume=resume,
                           verbose=verbose)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
     params = dict(zip(keys, files_))
@@ -371,10 +371,10 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
     files = [(os.path.join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
              (os.path.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
 
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    fdescr = _get_dataset_descr(dataset_name)
+    files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(labels=files[0], maps=files[1], description=fdescr)
 
@@ -430,7 +430,7 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     # grab data from internet first
     url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
     dataset_name = 'harvard_oxford'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 env_vars=['FSL_DIR', 'FSLDIR'],
                                 verbose=verbose)
     opts = {'uncompress': True}
@@ -441,7 +441,7 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     else:
         label_file = 'HarvardOxford-Subcortical.xml'
 
-    atlas_img, label_file = _fetch_files(
+    atlas_img, label_file = fetch_files(
         data_dir,
         [(atlas_file, url, opts), (label_file, url, opts)],
         resume=resume, verbose=verbose)

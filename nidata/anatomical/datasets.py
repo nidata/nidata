@@ -23,9 +23,10 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from .._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from .._utils.img import check_niimg, new_img_like
-from ..fetchers import _format_time, _md5_sum_file, _fetch_files, _get_dataset_dir, _get_dataset_descr
+from ..core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
+from ..core._utils.niimg import check_niimg, new_img_like
+from ..core.fetchers import (format_time, md5_sum_file, fetch_files,
+                             get_dataset_dir, get_dataset_descr)
 
 
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
@@ -209,9 +210,9 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
     file_names = (file_names_gm + file_names_wm
                   + file_names_extvars + file_names_dua)
     dataset_name = 'oasis1'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    files = _fetch_files(data_dir, file_names, resume=resume,
+    files = fetch_files(data_dir, file_names, resume=resume,
                          verbose=verbose)
 
     # Build Bunch
@@ -231,7 +232,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
                                for subject_id in csv_data['id']])
     csv_data = csv_data[subject_mask]
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(
         gray_matter_maps=gm_maps,
@@ -239,5 +240,3 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
         ext_vars=csv_data,
         data_usage_agreement=data_usage_agreement,
         description=fdescr)
-
-
