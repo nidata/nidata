@@ -59,4 +59,4 @@ Miscellaneous Helpers
    fileholders
    filename_parser
    onetime
-   tmpdirs
+   get_tmpdirs
