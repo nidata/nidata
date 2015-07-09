@@ -777,26 +777,11 @@ def install_dependency(module):
         sys.argv = old_arg
 
 class Fetcher(object):
+    __metaclass__ = DependenciesMeta
     dependencies = []
 
     def __init__(self, data_dir=None):
         self.data_dir = data_dir or os.environ.get('NIDATA_PATH') or 'nidata_data'
-        self.install_missing_dependencies()
-
-    def get_missing_dependencies(self):
-        missing_dependencies = []
-        for dep in self.dependencies:
-            try:
-                __import__(dep)
-            except ImportError as ie:
-                print('Import error: %s' % str(ie))
-                missing_dependencies.append(dep)
-        return missing_dependencies
-
-    def install_missing_dependencies(self):
-        for dep in self.get_missing_dependencies():
-            if not install_dependency(dep):
-                raise Exception("Failed to install dependency '%s'." % dep)
 
     @classmethod
     def reformat_files(cls, files):
@@ -806,7 +791,7 @@ class Fetcher(object):
         common_prefix = None  # src base
         out_files = []
         for fil in files:
-            if isinstance(fil, basestring):
+            if isinstance(fil, _basestring):
                 if common_prefix is None:
                     common_prefix = os.path.commonprefix(files)
                 out_files.append((fil, fil[len(common_prefix):], dict()))
