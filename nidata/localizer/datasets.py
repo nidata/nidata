@@ -23,9 +23,9 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from .._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from .._utils.img import check_niimg, new_img_like
-from ..fetchers import _format_time, _md5_sum_file, _fetch_files, _get_dataset_dir, _get_dataset_descr
+from ..core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
+from ..core._utils.niimg import check_niimg, new_img_like
+from ..core.fetchers import format_time, md5_sum_file, fetch_files, get_dataset_dir, get_dataset_descr
 
 
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
@@ -329,10 +329,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     # Actual data fetching
     dataset_name = 'brainomics_localizer'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    fdescr = _get_dataset_descr(dataset_name)
-    files = _fetch_files(data_dir, filenames, verbose=verbose)
+    fdescr = get_dataset_descr(dataset_name)
+    files = fetch_files(data_dir, filenames, verbose=verbose)
     anats = None
     masks = None
     tmaps = None

@@ -23,10 +23,10 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from .._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from .._utils.img import check_niimg, new_img_like
-from ..fetchers import (_format_time, _md5_sum_file, _fetch_files,
-                        _get_dataset_dir, _get_dataset_descr, _read_md5_sum_file)
+from ..core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
+from ..core._utils.niimg import check_niimg, new_img_like
+from ..core.fetchers import (format_time, md5_sum_file, fetch_files,
+                        get_dataset_dir, get_dataset_descr, readmd5_sum_file)
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
@@ -81,12 +81,12 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     ]
 
     dataset_name = 'haxby2001_simple'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     # There is a common file for the two versions of Haxby
-    fdescr = _get_dataset_descr('haxby2001')
+    fdescr = get_dataset_descr('haxby2001')
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
@@ -152,15 +152,15 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         n_subjects = 6
 
     dataset_name = 'haxby2001'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
 
     # Dataset files
     if url is None:
         url = 'http://data.pymvpa.org/datasets/haxby2001/'
-    md5sums = _fetch_files(data_dir, [('MD5SUMS', url + 'MD5SUMS', {})],
+    md5sums = fetch_files(data_dir, [('MD5SUMS', url + 'MD5SUMS', {})],
                            verbose=verbose)[0]
-    md5sums = _read_md5_sum_file(md5sums)
+    md5sums = readmd5_sum_file(md5sums)
 
     # definition of dataset files
     sub_files = ['bold.nii.gz', 'labels.txt',
@@ -179,7 +179,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
             if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
     ]
 
-    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     if n_subjects == 6:
         files.append(None)  # None value because subject 6 has no anat
@@ -189,12 +189,12 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         stimuli_files = [(os.path.join('stimuli', 'README'),
                           url + 'stimuli-2010.01.14.tar.gz',
                           {'uncompress': True})]
-        readme = _fetch_files(data_dir, stimuli_files, resume=resume,
+        readme = fetch_files(data_dir, stimuli_files, resume=resume,
                               verbose=verbose)[0]
         kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
                                   dictionary=True)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     # return the data
     return Bunch(
@@ -322,11 +322,11 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
                  file_mask
 
     dataset_name = 'miyawaki2008'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
+    files = fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = get_dataset_descr(dataset_name)
 
     # Return the data
     return Bunch(

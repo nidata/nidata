@@ -67,7 +67,7 @@ def setup_mock():
     fetchers._chunk_read_ = wrap_chunk_read_(fetchers._chunk_read_)
     global file_mock
     file_mock = FetchFilesMock()
-    fetchers._fetch_files = file_mock
+    fetchers.fetch_files = file_mock
 
 
 def teardown_tmpdata():
@@ -77,45 +77,45 @@ def teardown_tmpdata():
         shutil.rmtree(tmpdir)
 
 
-def test_md5_sum_file():
+def testmd5_sum_file():
     # Create dummy temporary file
     out, f = mkstemp()
     os.write(out, b'abcfeg')
     os.close(out)
-    assert_equal(fetchers._md5_sum_file(f), '18f32295c556b2a1a3a8e68fe1ad40f7')
+    assert_equal(fetchers.md5_sum_file(f), '18f32295c556b2a1a3a8e68fe1ad40f7')
     os.remove(f)
 
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
-def test_get_dataset_dir():
+def testget_dataset_dir():
     # testing folder creation under different environments, enforcing
     # a custom clean install
     os.environ.pop('NIDATA_PATH', None)
     os.environ.pop('NILEARN_SHARED_DATA', None)
 
     expected_base_dir = os.path.expanduser('~/NIDATA_PATH')
-    data_dir = fetchers._get_dataset_dir('test', verbose=0)
+    data_dir = fetchers.get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'test_NIDATA_PATH')
     os.environ['NIDATA_PATH'] = expected_base_dir
-    data_dir = fetchers._get_dataset_dir('test', verbose=0)
+    data_dir = fetchers.get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
-    data_dir = fetchers._get_dataset_dir('test', verbose=0)
+    data_dir = fetchers.get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
     expected_base_dir = os.path.join(tmpdir, 'env_data')
     os.environ['MY_DATA'] = expected_base_dir
-    data_dir = fetchers._get_dataset_dir('test', env_vars=['MY_DATA'],
+    data_dir = fetchers.get_dataset_dir('test', env_vars=['MY_DATA'],
                                          verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
@@ -129,7 +129,7 @@ def test_get_dataset_dir():
     os.environ['MY_DATA'] = no_write
     expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
     os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
-    data_dir = fetchers._get_dataset_dir('test', env_vars=['MY_DATA'],
+    data_dir = fetchers.get_dataset_dir('test', env_vars=['MY_DATA'],
                                          verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
@@ -137,7 +137,7 @@ def test_get_dataset_dir():
 
     # Verify exception is raised on read-only directories
     assert_raises_regex(OSError, 'Permission denied',
-                        fetchers._get_dataset_dir, 'test', no_write,
+                        fetchers.get_dataset_dir, 'test', no_write,
                         verbose=0)
 
     # Verify exception for a path which exists and is a file
@@ -145,17 +145,17 @@ def test_get_dataset_dir():
     with open(test_file, 'w') as out:
         out.write('abcfeg')
     assert_raises_regex(OSError, 'Not a directory',
-                        fetchers._get_dataset_dir, 'test', test_file,
+                        fetchers.get_dataset_dir, 'test', test_file,
                         verbose=0)
 
 
-def test_read_md5_sum_file():
+def test_readmd5_sum_file():
     # Create dummy temporary file
     out, f = mkstemp()
     os.write(out, b'20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n'
              b'70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
     os.close(out)
-    h = fetchers._read_md5_sum_file(f)
+    h = fetchers.readmd5_sum_file(f)
     assert_true('/tmp/test' in h)
     assert_false('/etc/test' in h)
     assert_equal(h['test/some_image.nii'], '70886dcabe7bf5c5a1c24ca24e4cbd94')
@@ -251,10 +251,10 @@ def test_filter_columns():
     values = np.asarray(list(zip(value1, value2)),
                         dtype=[('INT', int), ('STR', 'S1')])
 
-    f = fetchers._filter_columns(values, {'INT': (23, 46)})
+    f = fetchers.filter_columns(values, {'INT': (23, 46)})
     assert_equal(np.sum(f), 24)
 
-    f = fetchers._filter_columns(values, {'INT': [0, 9, (12, 24)]})
+    f = fetchers.filter_columns(values, {'INT': [0, 9, (12, 24)]})
     assert_equal(np.sum(f), 15)
 
     value1 = value1 % 2
@@ -262,16 +262,16 @@ def test_filter_columns():
                         dtype=[('INT', int), ('STR', b'S1')])
 
     # No filter
-    f = fetchers._filter_columns(values, [])
+    f = fetchers.filter_columns(values, [])
     assert_equal(np.sum(f), 500)
 
-    f = fetchers._filter_columns(values, {'STR': b'b'})
+    f = fetchers.filter_columns(values, {'STR': b'b'})
     assert_equal(np.sum(f), 167)
 
-    f = fetchers._filter_columns(values, {'INT': 1, 'STR': b'b'})
+    f = fetchers.filter_columns(values, {'INT': 1, 'STR': b'b'})
     assert_equal(np.sum(f), 84)
 
-    f = fetchers._filter_columns(values, {'INT': 1, 'STR': b'b'},
+    f = fetchers.filter_columns(values, {'INT': 1, 'STR': b'b'},
             combination='or')
     assert_equal(np.sum(f), 333)
 
