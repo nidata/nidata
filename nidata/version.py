@@ -60,14 +60,14 @@ MINOR = _version_minor
 MICRO = _version_micro
 VERSION = __version__
 PACKAGES = ['nidata',
-            'nidata._external',
-            'nidata._utils',
             'nidata.anatomical',
             'nidata.atlas',
+            'nidata.core',
             'nidata.diffusion',
             'nidata.fetchers',
             'nidata.functional',
             'nidata.localizer',
+            'nidata.multimodal',
             'nidata.resting_state',
             'nidata.template',
             'nidata.tests']
