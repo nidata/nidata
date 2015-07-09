@@ -24,9 +24,9 @@ from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
 from ..core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from ..core._utils.img import check_niimg, new_img_like
+from ..core._utils.niimg import check_niimg, new_img_like
 from ..core.fetchers import (format_time, md5_sum_file, fetch_files,
-                        get_dataset_dir, get_dataset_descr, _readmd5_sum_file)
+                        get_dataset_dir, get_dataset_descr, readmd5_sum_file)
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
@@ -160,7 +160,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         url = 'http://data.pymvpa.org/datasets/haxby2001/'
     md5sums = fetch_files(data_dir, [('MD5SUMS', url + 'MD5SUMS', {})],
                            verbose=verbose)[0]
-    md5sums = _readmd5_sum_file(md5sums)
+    md5sums = readmd5_sum_file(md5sums)
 
     # definition of dataset files
     sub_files = ['bold.nii.gz', 'labels.txt',

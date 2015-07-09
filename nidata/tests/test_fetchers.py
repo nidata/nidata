@@ -155,7 +155,7 @@ def test_readmd5_sum_file():
     os.write(out, b'20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n'
              b'70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
     os.close(out)
-    h = fetchers._readmd5_sum_file(f)
+    h = fetchers.readmd5_sum_file(f)
     assert_true('/tmp/test' in h)
     assert_false('/etc/test' in h)
     assert_equal(h['test/some_image.nii'], '70886dcabe7bf5c5a1c24ca24e4cbd94')
@@ -251,10 +251,10 @@ def test_filter_columns():
     values = np.asarray(list(zip(value1, value2)),
                         dtype=[('INT', int), ('STR', 'S1')])
 
-    f = fetchers._filter_columns(values, {'INT': (23, 46)})
+    f = fetchers.filter_columns(values, {'INT': (23, 46)})
     assert_equal(np.sum(f), 24)
 
-    f = fetchers._filter_columns(values, {'INT': [0, 9, (12, 24)]})
+    f = fetchers.filter_columns(values, {'INT': [0, 9, (12, 24)]})
     assert_equal(np.sum(f), 15)
 
     value1 = value1 % 2
@@ -262,16 +262,16 @@ def test_filter_columns():
                         dtype=[('INT', int), ('STR', b'S1')])
 
     # No filter
-    f = fetchers._filter_columns(values, [])
+    f = fetchers.filter_columns(values, [])
     assert_equal(np.sum(f), 500)
 
-    f = fetchers._filter_columns(values, {'STR': b'b'})
+    f = fetchers.filter_columns(values, {'STR': b'b'})
     assert_equal(np.sum(f), 167)
 
-    f = fetchers._filter_columns(values, {'INT': 1, 'STR': b'b'})
+    f = fetchers.filter_columns(values, {'INT': 1, 'STR': b'b'})
     assert_equal(np.sum(f), 84)
 
-    f = fetchers._filter_columns(values, {'INT': 1, 'STR': b'b'},
+    f = fetchers.filter_columns(values, {'INT': 1, 'STR': b'b'},
             combination='or')
     assert_equal(np.sum(f), 333)
 

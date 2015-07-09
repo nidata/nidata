@@ -47,7 +47,7 @@ def md5_sum_file(path):
     return m.hexdigest()
 
 
-def _readmd5_sum_file(path):
+def readmd5_sum_file(path):
     """ Reads a MD5 checksum file and returns hashes as a dictionary.
     """
     with open(path, "r") as f:
@@ -377,7 +377,7 @@ def _filter_column(array, col, criteria):
     return array[col] == criteria
 
 
-def _filter_columns(array, filters, combination='and'):
+def filter_columns(array, filters, combination='and'):
     """ Return indices of recarray entries that match criteria.
 
     Parameters
