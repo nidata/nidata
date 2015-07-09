@@ -1,4 +1,4 @@
-# *- encoding: utf-8 -*-
+  # *- encoding: utf-8 -*-
 """
 Utilities to download anatomical MRI datasets
 """
@@ -23,10 +23,11 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ..core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from ..core._utils.niimg import check_niimg, new_img_like
-from ..core.fetchers import (format_time, md5_sum_file, fetch_files,
-                             get_dataset_dir, get_dataset_descr)
+from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
+                                   md5_hash)
+from ...core._utils.niimg import check_niimg, new_img_like
+from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
+                              get_dataset_dir, get_dataset_descr)
 
 
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
@@ -209,7 +210,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
 
     file_names = (file_names_gm + file_names_wm
                   + file_names_extvars + file_names_dua)
-    dataset_name = 'oasis1'
+    dataset_name = 'oasis_vbm'
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = fetch_files(data_dir, file_names, resume=resume,
