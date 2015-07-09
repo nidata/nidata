@@ -16,7 +16,7 @@ def install_dependency(module):
 
 
 class DependenciesMeta(type):
-    def __init__(cls, name, parents, dict):
+    def __new__(cls, name, parents, props):
         def get_missing_dependencies(cls):
             missing_dependencies = []
             for dep in getattr(cls, 'dependencies', []):
@@ -33,5 +33,19 @@ class DependenciesMeta(type):
                 if not install_dependency(dep):
                     raise Exception("Failed to install dependency '%s'." % dep)
 
-        install_missing_dependencies(cls)
-        return super(DependenciesMeta, cls).__init__(name, parents, dict)
+        def __init__wrapper(init_fn):
+            def wrapper_fn(self, *args, **kwargs):
+                print self, args, kwargs
+                install_missing_dependencies(self.__class__)
+                return init_fn(self, *args, **kwargs)
+            return wrapper_fn
+
+        def super_init(cls):
+            def wrapper_fn(self, *args, **kwargs):
+                print "a"
+                return super(cls, self).__init__(*args, **kwargs)
+            return wrapper_fn
+
+        new_cls = super(DependenciesMeta, cls).__new__(cls, name, parents, props)
+        new_cls.__init__ = __init__wrapper(new_cls.__init__)
+        return new_cls
