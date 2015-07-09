@@ -1,4 +1,5 @@
 """
+Functions for dynamically managing dependencies
 """
 import sys
 
@@ -31,7 +32,7 @@ class DependenciesMeta(type):
             print("Installing missing dependencies for %s" % str(cls))
             for dep in get_missing_dependencies(cls):
                 if not install_dependency(dep):
-                    raise Exception("Failed to install dependency '%s'." % dep)
+                    raise Exception("Failed to install dependency '%s'; you will need to install it manually and re-run your code." % dep)
 
         def __init__wrapper(init_fn):
             def wrapper_fn(self, *args, **kwargs):

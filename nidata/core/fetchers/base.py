@@ -177,7 +177,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
 
 def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
-                     verbose=1):
+                    verbose=1):
     """ Create if necessary and returns data directory of given dataset.
 
     Parameters
@@ -221,7 +221,7 @@ def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
     if data_dir is not None:
         paths = data_dir.split(':')
     else:
-        global_data = os.getenv('NILEARN_SHARED_DATA')
+        global_data = os.getenv('NIDATA_SHARED_DATA')
         if global_data is not None:
             paths.extend(global_data.split(':'))
 
@@ -229,7 +229,7 @@ def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
         if local_data is not None:
             paths.extend(local_data.split(':'))
 
-        paths.append(os.path.expanduser('~/NIDATA_PATH'))
+        paths.append(os.path.expanduser('~/nidata_path'))
 
     if verbose > 2:
         print('Dataset search paths: %s' % paths)
