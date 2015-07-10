@@ -18,4 +18,4 @@ class HttpFetcher(Fetcher):
     def fetch(self, files, force=False, check=False, verbosity=1):
         files = Fetcher.reformat_files(files)  # allows flexibility
 
-        return fetch_files(data_dir, files, resume=not force, verbose=verbosity)
+        return fetch_files(self.data_dir, files, resume=not force, verbose=verbosity)
