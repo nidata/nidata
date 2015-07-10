@@ -7,11 +7,11 @@ from ...core.datasets import Dataset
 class HaxbyEtal2011(Dataset):
     dependencies = ['h5py']  # ['pymvpa2']
 
-    def __init__(self):
+    def __init__(self, data_dir=None):
         """
         """
-        super(HaxbyEtal2011, self).__init__()
-        self.fetcher = HttpFetcher()
+        super(HaxbyEtal2011, self).__init__(data_dir=data_dir)
+        self.fetcher = HttpFetcher(data_dir=data_dir)
 
     def fetch(self, n_subjects=1, force=False, check=True, verbosity=1):
         """data_types is a list, can contain: anat, diff, func, rest, psyc, bgnd

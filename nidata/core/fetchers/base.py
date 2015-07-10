@@ -25,6 +25,7 @@ from sklearn.datasets.base import Bunch
 
 from ..objdep import DependenciesMeta
 from .._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
+from ..datasets import get_dataset_dir
 
 
 def format_time(t):
@@ -174,94 +175,6 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
             _chunk_report_(bytes_so_far, total_size, initial_size, t0)
 
     return
-
-
-def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
-                    verbose=1):
-    """ Create if necessary and returns data directory of given dataset.
-
-    Parameters
-    ----------
-    dataset_name: string
-        The unique name of the dataset.
-
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    env_vars: list of string, optional
-        Add environment variables searched even if data_dir is not None.
-
-    verbose: int, optional
-        verbosity level (0 means no message).
-
-    Returns
-    -------
-    data_dir: string
-        Path of the given dataset directory.
-
-    Notes
-    -----
-    This function retrieves the datasets directory (or data directory) using
-    the following priority :
-    1. the keyword argument data_dir
-    2. the global environment variable NILEARN_SHARED_DATA
-    3. the user environment variable NIDATA_PATH
-    4. NIDATA_PATH in the user home folder
-    """
-    # We build an array of successive paths by priority
-    paths = []
-
-    # Search given environment variables
-    for env_var in env_vars:
-        env_data = os.getenv(env_var, '')
-        paths.extend(env_data.split(':'))
-
-    # Check data_dir which force storage in a specific location
-    if data_dir is not None:
-        paths = data_dir.split(':')
-    else:
-        global_data = os.getenv('NIDATA_SHARED_DATA')
-        if global_data is not None:
-            paths.extend(global_data.split(':'))
-
-        local_data = os.getenv('NIDATA_PATH')
-        if local_data is not None:
-            paths.extend(local_data.split(':'))
-
-        paths.append(os.path.expanduser('~/nidata_path'))
-
-    if verbose > 2:
-        print('Dataset search paths: %s' % paths)
-
-    # Check if the dataset exists somewhere
-    for path in paths:
-        path = os.path.join(path, dataset_name)
-        if os.path.islink(path):
-            # Resolve path
-            path = readlinkabs(path)
-        if os.path.exists(path) and os.path.isdir(path):
-            if verbose > 1:
-                print('\nDataset found in %s\n' % path)
-            return path
-
-    # If not, create a folder in the first writeable directory
-    errors = []
-    for path in paths:
-        path = os.path.join(path, dataset_name)
-        if not os.path.exists(path):
-            try:
-                os.makedirs(path)
-                if verbose > 0:
-                    print('\nDataset created in %s\n' % path)
-                return path
-            except Exception as exc:
-                short_error_message = getattr(exc, 'strerror', str(exc))
-                errors.append('\n -{0} ({1})'.format(
-                    path, short_error_message))
-
-    raise OSError('Nilearn tried to store the dataset in the following '
-            'directories, but:' + ''.join(errors))
 
 
 def _uncompress_file(file_, delete_archive=True, verbose=1):
