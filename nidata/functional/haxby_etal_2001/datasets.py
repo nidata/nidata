@@ -27,8 +27,7 @@ from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
 from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir, get_dataset_descr,
-                              readmd5_sum_file)
+                              get_dataset_dir, readmd5_sum_file)
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
@@ -86,9 +85,6 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-
-    # There is a common file for the two versions of Haxby
-    fdescr = get_dataset_descr('haxby2001')
 
     # return the data
     return Bunch(func=files[1], session_target=files[0], mask=files[2],
@@ -196,8 +192,6 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
         kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
                                   dictionary=True)
 
-    fdescr = get_dataset_descr(dataset_name)
-
     # return the data
     return Bunch(
             anat=files[7::n_files],
@@ -208,5 +202,4 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
             mask_house=files[4::n_files],
             mask_face_little=files[5::n_files],
             mask_house_little=files[6::n_files],
-            description=fdescr,
             **kwargs)

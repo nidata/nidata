@@ -27,8 +27,7 @@ from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
 from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir, get_dataset_descr,
-                              readmd5_sum_file)
+                              get_dataset_dir, readmd5_sum_file)
 
 
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
@@ -147,13 +146,10 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
                                 verbose=verbose)
     files = fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
-    fdescr = get_dataset_descr(dataset_name)
-
     # Return the data
     return Bunch(
         func=files[:32],
         label=files[32:64],
         mask=files[64],
-        mask_roi=files[65:],
-        description=fdescr)
+        mask_roi=files[65:])
 

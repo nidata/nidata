@@ -26,7 +26,7 @@ from sklearn.datasets.base import Bunch
 from ...core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
 from ...core._utils.niimg import check_niimg, new_img_like
 from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                             get_dataset_dir, get_dataset_descr, filter_columns)
+                              get_dataset_dir, filter_columns)
 
 
 def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
@@ -82,9 +82,6 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
 
     opts = dict(uncompress=True)
 
-    # Dataset description
-    fdescr = get_dataset_descr(dataset_name)
-
     # First, get the metadata
     phenotypic = ('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
         url + '7781/adhd40_metadata.tgz', opts)
@@ -118,4 +115,4 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
         resume=resume, verbose=verbose)
 
     return Bunch(func=functionals, confounds=confounds,
-                 phenotypic=phenotypic, description=fdescr)
+                 phenotypic=phenotypic)

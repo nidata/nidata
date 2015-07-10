@@ -27,7 +27,7 @@ from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
 from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir, get_dataset_descr)
+                              get_dataset_dir)
 
 
 def fetch_mni152_template():

@@ -554,24 +554,6 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     return full_name
 
 
-def get_dataset_descr(ds_name):
-    module_path = os.path.dirname(os.path.abspath(__file__))
-
-    fname = ds_name
-
-    try:
-        with open(os.path.join(module_path, 'description', fname + '.rst'))\
-                as rst_file:
-            descr = rst_file.read()
-    except IOError:
-        descr = ''
-
-    if descr == '':
-        print("Warning: Could not find dataset description.")
-
-    return descr
-
-
 def movetree(src, dst):
     """Move an entire tree to another directory. Any existing file is
     overwritten"""

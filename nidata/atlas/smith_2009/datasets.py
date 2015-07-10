@@ -26,7 +26,7 @@ from sklearn.datasets.base import Bunch
 from ..core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
 from ..core._utils.niimg import check_niimg, new_img_like
 from ..core.fetchers import (format_time, md5_sum_file, fetch_files,
-                             get_dataset_dir, get_dataset_descr, filter_columns)
+                             get_dataset_dir, filter_columns)
 
 
 def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
@@ -89,15 +89,11 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     dataset_name = 'smith_2009'
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
+                               verbose=verbose)
     files_ = fetch_files(data_dir, files, resume=resume,
-                          verbose=verbose)
-
-    fdescr = get_dataset_descr(dataset_name)
+                         verbose=verbose)
 
     keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
     params = dict(zip(keys, files_))
-    params['description'] = fdescr
 
     return Bunch(**params)
-

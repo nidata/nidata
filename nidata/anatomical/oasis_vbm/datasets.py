@@ -27,7 +27,7 @@ from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
 from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir, get_dataset_descr)
+                              get_dataset_dir)
 
 
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
@@ -233,11 +233,8 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
                                for subject_id in csv_data['id']])
     csv_data = csv_data[subject_mask]
 
-    fdescr = get_dataset_descr(dataset_name)
-
     return Bunch(
         gray_matter_maps=gm_maps,
         white_matter_maps=wm_maps,
         ext_vars=csv_data,
-        data_usage_agreement=data_usage_agreement,
-        description=fdescr)
+        data_usage_agreement=data_usage_agreement)

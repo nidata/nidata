@@ -27,7 +27,7 @@ from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
 from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir, get_dataset_descr)
+                              get_dataset_dir)
 
 
 def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
@@ -98,12 +98,9 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
                  for f in basenames]
 
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-            verbose=verbose)
+                               verbose=verbose)
     sub_files = fetch_files(data_dir, filenames, resume=resume,
-                             verbose=verbose)
+                            verbose=verbose)
 
-    fdescr = get_dataset_descr(dataset_name)
-
-    params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
+    params = dict(list(zip(keys, sub_files)))
     return Bunch(**params)
-

@@ -26,7 +26,7 @@ from sklearn.datasets.base import Bunch
 from ...core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
 from ...core._utils.niimg import check_niimg, new_img_like
 from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                             get_dataset_dir, get_dataset_descr, filter_columns)
+                              get_dataset_dir, filter_columns)
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
@@ -203,15 +203,13 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
 
     dataset_name = 'nyu_rest'
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
+                               verbose=verbose)
     anat_anon = fetch_files(data_dir, anat_anon, resume=resume,
-                             verbose=verbose)
+                            verbose=verbose)
     anat_skull = fetch_files(data_dir, anat_skull, resume=resume,
-                              verbose=verbose)
+                             verbose=verbose)
     func = fetch_files(data_dir, func, resume=resume,
-                        verbose=verbose)
-
-    fdescr = get_dataset_descr(dataset_name)
+                       verbose=verbose)
 
     return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
-                 session=session, description=fdescr)
+                 session=session)

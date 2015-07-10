@@ -7,6 +7,7 @@ from ...core.datasets import Dataset
 class HcpDataset(Dataset):
     def __init__(self, fetcher_type='aws', profile_name=None, access_key=None, secret_access_key=None):
         """fetcher_type: aws or XNAT"""
+        super(HcpDataset, self).__init__()
         if fetcher_type == 'aws':
             self.fetcher = AmazonS3Fetcher(profile_name=profile_name,
                                            access_key=access_key,

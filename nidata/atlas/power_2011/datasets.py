@@ -27,7 +27,7 @@ from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
 from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir, get_dataset_descr)
+                              get_dataset_dir)
 
 
 def fetch_power_2011():
@@ -44,9 +44,8 @@ def fetch_power_2011():
     """
     # https://raw.githubusercontent.com/nilearn/nilearn/master/nilearn/data/power_2011.csv
     dataset_name = 'power_2011'
-    fdescr = _get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = os.path.join(package_directory, "data", "power_2011.csv")
-    params = dict(rois=np.recfromcsv(csv), description=fdescr)
+    params = dict(rois=np.recfromcsv(csv))
 
     return Bunch(**params)

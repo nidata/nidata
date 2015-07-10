@@ -25,7 +25,7 @@ from sklearn.datasets.base import Bunch
 
 from ...core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
 from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.fetchers import format_time, md5_sum_file, fetch_files, get_dataset_dir, get_dataset_descr
+from ...core.fetchers import format_time, md5_sum_file, fetch_files, get_dataset_dir
 
 
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
@@ -331,7 +331,6 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     dataset_name = 'brainomics_localizer'
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    fdescr = get_dataset_descr(dataset_name)
     files = fetch_files(data_dir, filenames, verbose=verbose)
     anats = None
     masks = None
@@ -357,7 +356,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         tmaps = files[1::2]
         files = files[::2]
     return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats,
-                 ext_vars=csv_data, description=fdescr)
+                 ext_vars=csv_data)
 
 
 def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,

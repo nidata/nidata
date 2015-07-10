@@ -27,7 +27,7 @@ from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
 from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir, get_dataset_descr)
+                              get_dataset_dir)
 
 
 def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
@@ -76,8 +76,6 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
              (os.path.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
 
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    fdescr = get_dataset_descr(dataset_name)
+                               verbose=verbose)
 
-    return Bunch(labels=files[0], maps=files[1], description=fdescr)
+    return Bunch(labels=files[0], maps=files[1])
