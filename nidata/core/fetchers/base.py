@@ -747,23 +747,13 @@ def _tree(path, pattern=None, dictionary=False):
     return dirs
 
 
-def install_dependency(module):
-    import pip
-    old_arg, sys.argv = sys.argv, ['pip', 'install', module]
-    try:
-        return pip.main() == 0
-    except Exception as ex:
-        print(ex)
-        return False
-    finally:
-        sys.argv = old_arg
-
 class Fetcher(object):
     __metaclass__ = DependenciesMeta
     dependencies = []
 
     def __init__(self, data_dir=None):
         self.data_dir = data_dir or os.environ.get('NIDATA_PATH') or 'nidata_data'
+        print("Files will be downloaded to %s" % self.data_dir)
 
     @classmethod
     def reformat_files(cls, files):
