@@ -690,5 +690,5 @@ class Fetcher(object):
                 raise ValueError("Unexpected format: %s" % str(fil))
         return out_files
 
-    def fetch(self, files, force=False, check=False, verbosity=1):
+    def fetch(self, files, force=False, check=False, verbose=1):
         raise NotImplementedError()

@@ -27,7 +27,7 @@ class AmazonS3Fetcher(Fetcher):
         self.secret_access_key = secret_access_key
         self.profile_name = profile_name
 
-    def fetch(self, files, force=False, check=False, verbosity=1):
+    def fetch(self, files, force=False, check=False, verbose=1):
         assert self.profile_name or (self.access_key and self.secret_access_key)
 
         files = Fetcher.reformat_files(files)  # allows flexibility
@@ -58,7 +58,7 @@ class AmazonS3Fetcher(Fetcher):
                     try:
                         do_download = do_download or (check and nib.load(target_file).get_data() is not None)
                     except IOError as ioe:
-                        if verbosity > 0:
+                        if verbose > 0:
                             print("Warning: %s corrupted, re-downloading (Error=%s)" % (target_file, ioe))
                         do_download = True
 
@@ -66,11 +66,11 @@ class AmazonS3Fetcher(Fetcher):
                         # Ensure destination directory exists
                         destination_dir = os.path.dirname(target_file)
                         if not os.path.isdir(destination_dir):
-                            if verbosity > 0:
+                            if verbose > 0:
                                 print("Creating base directory %s" % destination_dir)
                             os.mkdir(destination_dir)
 
-                        if verbosity > 0:
+                        if verbose > 0:
                             print("Downloading [%s]/%s to %s." % (
                                 bucket_name or 'default bucket',
                                 remote_key,

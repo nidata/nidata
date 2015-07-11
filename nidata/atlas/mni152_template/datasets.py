@@ -35,7 +35,7 @@ class MNI152Dataset(HttpDataset):
         files = (('avg152T1_brain.nii.gz',
                   'https://raw.githubusercontent.com/nilearn/nilearn/master/nilearn/data/avg152T1_brain.nii.gz',
                   {}),)
-        return self.fetcher.fetch(files=files, force=not resume, verbosity=verbose)
+        return self.fetcher.fetch(files=files, force=not resume, verbose=verbose)
 
 
 def fetch_mni152_template(data_dir=None, url=None, resume=True, verbose=1):

@@ -123,7 +123,7 @@ class Dataset(object):
         print self.name, self.modality, self.description
         self.fetcher = getattr(self, 'fetcher', None)
 
-    def fetch(self, n_subjects=1, force=False, check=False, verbosity=1):
+    def fetch(self, n_subjects=1, force=False, check=False, verbose=1):
         raise NotImplementedError()
 
 

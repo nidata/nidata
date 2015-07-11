@@ -47,7 +47,7 @@ class Yeo2011Dataset(Dataset):
         whether to resumed download of a partly-downloaded file.
 
     verbose: int
-        verbosity level (0 means no message).
+        verbose level (0 means no message).
 
     Returns
     -------
