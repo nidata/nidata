@@ -1,25 +1,19 @@
 """
 """
 from ...core.fetchers import HttpFetcher
-from ...core.datasets import Dataset
+from ...core.datasets import HttpDataset
 
 
-class HaxbyEtal2011(Dataset):
+class HaxbyEtal2011(HttpDataset):
     dependencies = ['h5py']  # ['pymvpa2']
 
-    def __init__(self, data_dir=None):
-        """
-        """
-        super(HaxbyEtal2011, self).__init__(data_dir=data_dir)
-        self.fetcher = HttpFetcher(data_dir=data_dir)
-
-    def fetch(self, n_subjects=1, force=False, check=True, verbosity=1):
+    def fetch(self, n_subjects=1, resume=True, check=True, verbosity=1):
         """data_types is a list, can contain: anat, diff, func, rest, psyc, bgnd
         """
         files = (('hyperalignment_tutorial_data.hdf5.gz',
                   'http://data.pymvpa.org/datasets/hyperalignment_tutorial_data/hyperalignment_tutorial_data.hdf5.gz',
                   {}),)
-        out_files = self.fetcher.fetch(files, force=force, check=check, verbosity=verbosity)
+        out_files = self.fetcher.fetch(files, force=not resume, check=check, verbosity=verbosity)
 
         import os
         import sys

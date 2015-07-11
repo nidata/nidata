@@ -5,31 +5,13 @@ Utilities to download resting state MRI datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
-import collections
-import os
-import tarfile
-import zipfile
-import sys
-import shutil
-import time
-import hashlib
-import fnmatch
-import warnings
-import re
-import base64
-
-import numpy as np
-from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ..core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from ..core._utils.niimg import check_niimg, new_img_like
-from ..core.fetchers import (format_time, md5_sum_file, fetch_files,
-                             get_dataset_dir, filter_columns)
+from ...core.datasets import HttpDataset
 
 
-def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
+class Smith2009Dataset(HttpDataset):
+
     """Download and load the Smith ICA and BrainMap atlas (dated 2009)
 
     Parameters
@@ -74,26 +56,28 @@ def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
     For more information about this dataset's structure:
     http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/
     """
-    if url is None:
-        url = "http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/"
+    def fetch(self, url=None, resume=True, verbose=1):
+        if url is None:
+            url = "http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/"
 
-    files = [('rsn20.nii.gz', url + 'rsn20.nii.gz', {}),
-             ('PNAS_Smith09_rsn10.nii.gz',
-                 url + 'PNAS_Smith09_rsn10.nii.gz', {}),
-             ('rsn70.nii.gz', url + 'rsn70.nii.gz', {}),
-             ('bm20.nii.gz', url + 'bm20.nii.gz', {}),
-             ('PNAS_Smith09_bm10.nii.gz',
-                 url + 'PNAS_Smith09_bm10.nii.gz', {}),
-             ('bm70.nii.gz', url + 'bm70.nii.gz', {}),
-             ]
+        files = [('rsn20.nii.gz', url + 'rsn20.nii.gz', {}),
+                 ('PNAS_Smith09_rsn10.nii.gz',
+                     url + 'PNAS_Smith09_rsn10.nii.gz', {}),
+                 ('rsn70.nii.gz', url + 'rsn70.nii.gz', {}),
+                 ('bm20.nii.gz', url + 'bm20.nii.gz', {}),
+                 ('PNAS_Smith09_bm10.nii.gz',
+                     url + 'PNAS_Smith09_bm10.nii.gz', {}),
+                 ('bm70.nii.gz', url + 'bm70.nii.gz', {}),
+                 ]
 
-    dataset_name = 'smith_2009'
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-                               verbose=verbose)
-    files_ = fetch_files(data_dir, files, resume=resume,
-                         verbose=verbose)
+        files_ = self.fetcher.fetch(files, force=not resume,
+                                    verbosity=verbose)
 
-    keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
-    params = dict(zip(keys, files_))
+        keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
+        params = dict(zip(keys, files_))
 
-    return Bunch(**params)
+        return Bunch(**params)
+
+
+def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):
+    return Smith2009Dataset(data_dir=data_dir).fetch(url=url, resume=resume, verbose=verbose)

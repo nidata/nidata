@@ -26,12 +26,12 @@ from sklearn.datasets.base import Bunch
 from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
+from ...core.datasets import Dataset
 from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
                               get_dataset_dir)
 
 
-def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
-                        resume=True, verbose=1):
+class HarvardOxfordDataset(Dataset):
     """Load Harvard-Oxford parcellation from FSL if installed or download it.
 
     This function looks up for Harvard Oxford atlas in the system and load it
@@ -65,83 +65,94 @@ def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
     regions: nibabel.Nifti1Image
         regions definition, as a label image.
     """
-    atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
-                   "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
-                   "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
-                   "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
-                   "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
-                   "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
-                   "cort-prob-1mm", "cort-prob-2mm",
-                   "sub-prob-1mm", "sub-prob-2mm")
-    if atlas_name not in atlas_items:
-        raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
-                         "among:\n{1}".format(
-                             atlas_name, '\n'.join(atlas_items)))
+    def __init__(self, data_dir=None):
+        super(HarvardOxfordDataset, self).__init__(data_dir=data_dir)
+        self.data_dir = get_dataset_dir(self.name, data_dir=data_dir,
+                                        env_vars=['FSL_DIR', 'FSLDIR'])
 
-    # grab data from internet first
-    url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
-    dataset_name = 'harvard_oxford'
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-                                env_vars=['FSL_DIR', 'FSLDIR'],
-                                verbose=verbose)
-    opts = {'uncompress': True}
-    atlas_file = os.path.join('HarvardOxford',
-                              'HarvardOxford-' + atlas_name + '.nii.gz')
-    if atlas_name[0] == 'c':
-        label_file = 'HarvardOxford-Cortical.xml'
-    else:
-        label_file = 'HarvardOxford-Subcortical.xml'
+    def fetch(self, atlas_name, symmetric_split=False,
+              resume=True, verbose=1):
+        atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
+                       "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
+                       "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
+                       "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
+                       "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
+                       "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
+                       "cort-prob-1mm", "cort-prob-2mm",
+                       "sub-prob-1mm", "sub-prob-2mm")
+        if atlas_name not in atlas_items:
+            raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
+                             "among:\n{1}".format(
+                                 atlas_name, '\n'.join(atlas_items)))
 
-    atlas_img, label_file = fetch_files(
-        data_dir,
-        [(atlas_file, url, opts), (label_file, url, opts)],
-        resume=resume, verbose=verbose)
+        # grab data from internet first
+        url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
+        opts = {'uncompress': True}
+        atlas_file = os.path.join('HarvardOxford',
+                                  'HarvardOxford-' + atlas_name + '.nii.gz')
+        if atlas_name[0] == 'c':
+            label_file = 'HarvardOxford-Cortical.xml'
+        else:
+            label_file = 'HarvardOxford-Subcortical.xml'
 
-    names = {}
-    from xml.etree import ElementTree
-    names[0] = 'Background'
-    for label in ElementTree.parse(label_file).findall('.//label'):
-        names[int(label.get('index')) + 1] = label.text
-    names = np.asarray(list(names.values()))
+        atlas_img, label_file = fetch_files(
+            self.data_dir,
+            [(atlas_file, url, opts), (label_file, url, opts)],
+            resume=resume, verbose=verbose)
 
-    if not symmetric_split:
-        return atlas_img, names
+        names = {}
+        from xml.etree import ElementTree
+        names[0] = 'Background'
+        for label in ElementTree.parse(label_file).findall('.//label'):
+            names[int(label.get('index')) + 1] = label.text
+        names = np.asarray(list(names.values()))
 
-    if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
-                      "sub-prob-1mm", "sub-prob-2mm"):
-        raise ValueError("Region splitting not supported for probabilistic "
-                         "atlases")
+        if not symmetric_split:
+            return atlas_img, names
 
-    atlas_img = check_niimg(atlas_img)
-    atlas = atlas_img.get_data()
+        if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
+                          "sub-prob-1mm", "sub-prob-2mm"):
+            raise ValueError("Region splitting not supported for probabilistic "
+                             "atlases")
 
-    labels = np.unique(atlas)
-    # ndimage.find_objects output contains None elements for labels
-    # that do not exist
-    found_slices = (s for s in ndimage.find_objects(atlas)
-                    if s is not None)
-    middle_ind = (atlas.shape[0] - 1) // 2
-    crosses_middle = [s.start < middle_ind and s.stop > middle_ind
-                      for s, _, _ in found_slices]
+        atlas_img = check_niimg(atlas_img)
+        atlas = atlas_img.get_data()
 
-    # Split every zone crossing the median plane into two parts.
-    # Assumes that the background label is zero.
-    half = np.zeros(atlas.shape, dtype=np.bool)
-    half[:middle_ind, ...] = True
-    new_label = max(labels) + 1
-    # Put zeros on the median plane
-    atlas[middle_ind, ...] = 0
-    for label, crosses in zip(labels[1:], crosses_middle):
-        if not crosses:
-            continue
-        atlas[np.logical_and(atlas == label, half)] = new_label
-        new_label += 1
+        labels = np.unique(atlas)
+        # ndimage.find_objects output contains None elements for labels
+        # that do not exist
+        found_slices = (s for s in ndimage.find_objects(atlas)
+                        if s is not None)
+        middle_ind = (atlas.shape[0] - 1) // 2
+        crosses_middle = [s.start < middle_ind and s.stop > middle_ind
+                          for s, _, _ in found_slices]
 
-    # Duplicate labels for right and left
-    new_names = [names[0]]
-    for n in names[1:]:
-        new_names.append(n + ', right part')
-    for n in names[1:]:
-        new_names.append(n + ', left part')
+        # Split every zone crossing the median plane into two parts.
+        # Assumes that the background label is zero.
+        half = np.zeros(atlas.shape, dtype=np.bool)
+        half[:middle_ind, ...] = True
+        new_label = max(labels) + 1
+        # Put zeros on the median plane
+        atlas[middle_ind, ...] = 0
+        for label, crosses in zip(labels[1:], crosses_middle):
+            if not crosses:
+                continue
+            atlas[np.logical_and(atlas == label, half)] = new_label
+            new_label += 1
 
-    return new_img_like(atlas_img, atlas, atlas_img.get_affine()), new_names
+        # Duplicate labels for right and left
+        new_names = [names[0]]
+        for n in names[1:]:
+            new_names.append(n + ', right part')
+        for n in names[1:]:
+            new_names.append(n + ', left part')
+
+        return new_img_like(atlas_img, atlas, atlas_img.get_affine()), new_names
+
+
+def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
+                        resume=True, verbose=1):
+    return HarvardOxfordDataset(data_dir=data_dir).fetch(atlas_name=atlas_name,
+                                                         symmetric_split=symmetric_split,
+                                                         resume=resume, verbose=verbose)
+
