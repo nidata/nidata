@@ -75,7 +75,7 @@ class MSDLDataset(HttpDataset):
         dataset_name = "msdl_atlas"
         files = [(os.path.join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
                  (os.path.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
-        files = self.fetcher.fetch(files, force=not resume, verbosity=verbose)
+        files = self.fetcher.fetch(files, force=not resume, verbose=verbose)
         return Bunch(labels=files[0], maps=files[1])
 
 

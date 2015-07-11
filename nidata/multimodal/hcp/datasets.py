@@ -22,7 +22,7 @@ class HcpDataset(Dataset):
         type of data available, etc)"""
         return ['992774']
 
-    def fetch(self, n_subjects=1, data_types=None, force=False, check=True, verbosity=1):
+    def fetch(self, n_subjects=1, data_types=None, force=False, check=True, verbose=1):
         """data_types is a list, can contain: anat, diff, func, rest, psyc, bgnd
         """
         subj_ids = self.get_subject_list(n_subjects=n_subjects)
@@ -40,4 +40,4 @@ class HcpDataset(Dataset):
                 else:
                     raise NotImplementedError()
 
-        return self.fetcher.fetch(files, force=force, check=check, verbosity=verbosity)
+        return self.fetcher.fetch(files, force=force, check=check, verbose=verbose)

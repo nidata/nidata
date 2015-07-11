@@ -71,7 +71,7 @@ class Smith2009Dataset(HttpDataset):
                  ]
 
         files_ = self.fetcher.fetch(files, force=not resume,
-                                    verbosity=verbose)
+                                    verbose=verbose)
 
         keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
         params = dict(zip(keys, files_))
