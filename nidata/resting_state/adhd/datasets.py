@@ -5,32 +5,13 @@ Utilities to download resting state MRI datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
-import collections
-import os
-import tarfile
-import zipfile
-import sys
-import shutil
-import time
-import hashlib
-import fnmatch
-import warnings
-import re
-import base64
-
 import numpy as np
-from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ...core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.datasets import Dataset
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir, filter_columns)
+from ...core.datasets import HttpDataset
 
 
-class AdhdRestDataset(Dataset):
+class AdhdRestDataset(HttpDataset):
     """Download and load the ADHD resting-state dataset.
     Parameters
     ----------
@@ -84,7 +65,7 @@ class AdhdRestDataset(Dataset):
         phenotypic = ('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
                       url + '7781/adhd40_metadata.tgz', opts)
 
-        phenotypic = fetch_files(self.data_dir, [phenotypic], resume=resume,
+        phenotypic = self.fetcher.fetch([phenotypic], resume=resume,
                                  verbose=verbose)[0]
 
         # Load the csv file
