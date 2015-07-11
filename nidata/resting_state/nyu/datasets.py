@@ -25,12 +25,12 @@ from sklearn.datasets.base import Bunch
 
 from ...core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
 from ...core._utils.niimg import check_niimg, new_img_like
+from ...core.datasets import Dataset
 from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
                               get_dataset_dir, filter_columns)
 
 
-def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
-                   verbose=1):
+class NyuRestDataset(Dataset):
     """Download and loads the NYU resting-state test-retest dataset.
 
     Parameters
@@ -108,108 +108,118 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
           F.X. Castellanos, M.P. Milham
 
     """
-    fa1 = 'http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz'
-    fb1 = 'http://www.nitrc.org/frs/download.php/1072/NYU_TRT_session1b.tar.gz'
-    fa2 = 'http://www.nitrc.org/frs/download.php/1073/NYU_TRT_session2a.tar.gz'
-    fb2 = 'http://www.nitrc.org/frs/download.php/1074/NYU_TRT_session2b.tar.gz'
-    fa3 = 'http://www.nitrc.org/frs/download.php/1075/NYU_TRT_session3a.tar.gz'
-    fb3 = 'http://www.nitrc.org/frs/download.php/1076/NYU_TRT_session3b.tar.gz'
-    fa1_opts = {'uncompress': True,
-                'move': os.path.join('session1', 'NYU_TRT_session1a.tar.gz')}
-    fb1_opts = {'uncompress': True,
-                'move': os.path.join('session1', 'NYU_TRT_session1b.tar.gz')}
-    fa2_opts = {'uncompress': True,
-                'move': os.path.join('session2', 'NYU_TRT_session2a.tar.gz')}
-    fb2_opts = {'uncompress': True,
-                'move': os.path.join('session2', 'NYU_TRT_session2b.tar.gz')}
-    fa3_opts = {'uncompress': True,
-                'move': os.path.join('session3', 'NYU_TRT_session3a.tar.gz')}
-    fb3_opts = {'uncompress': True,
-                'move': os.path.join('session3', 'NYU_TRT_session3b.tar.gz')}
 
-    p_anon = os.path.join('anat', 'mprage_anonymized.nii.gz')
-    p_skull = os.path.join('anat', 'mprage_skullstripped.nii.gz')
-    p_func = os.path.join('func', 'lfo.nii.gz')
+    def fetch(self, n_subjects=None, sessions=[1], resume=True,
+              verbose=1):
 
-    subs_a = ['sub05676', 'sub08224', 'sub08889', 'sub09607', 'sub14864',
-              'sub18604', 'sub22894', 'sub27641', 'sub33259', 'sub34482',
-              'sub36678', 'sub38579', 'sub39529']
-    subs_b = ['sub45463', 'sub47000', 'sub49401', 'sub52738', 'sub55441',
-              'sub58949', 'sub60624', 'sub76987', 'sub84403', 'sub86146',
-              'sub90179', 'sub94293']
+        fa1 = 'http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz'
+        fb1 = 'http://www.nitrc.org/frs/download.php/1072/NYU_TRT_session1b.tar.gz'
+        fa2 = 'http://www.nitrc.org/frs/download.php/1073/NYU_TRT_session2a.tar.gz'
+        fb2 = 'http://www.nitrc.org/frs/download.php/1074/NYU_TRT_session2b.tar.gz'
+        fa3 = 'http://www.nitrc.org/frs/download.php/1075/NYU_TRT_session3a.tar.gz'
+        fb3 = 'http://www.nitrc.org/frs/download.php/1076/NYU_TRT_session3b.tar.gz'
+        fa1_opts = {'uncompress': True,
+                    'move': os.path.join('session1', 'NYU_TRT_session1a.tar.gz')}
+        fb1_opts = {'uncompress': True,
+                    'move': os.path.join('session1', 'NYU_TRT_session1b.tar.gz')}
+        fa2_opts = {'uncompress': True,
+                    'move': os.path.join('session2', 'NYU_TRT_session2a.tar.gz')}
+        fb2_opts = {'uncompress': True,
+                    'move': os.path.join('session2', 'NYU_TRT_session2b.tar.gz')}
+        fa3_opts = {'uncompress': True,
+                    'move': os.path.join('session3', 'NYU_TRT_session3a.tar.gz')}
+        fb3_opts = {'uncompress': True,
+                    'move': os.path.join('session3', 'NYU_TRT_session3b.tar.gz')}
 
-    # Generate the list of files by session
-    anat_anon_files = [
-        [(os.path.join('session1', sub, p_anon), fa1, fa1_opts)
-            for sub in subs_a]
-        + [(os.path.join('session1', sub, p_anon), fb1, fb1_opts)
-            for sub in subs_b],
-        [(os.path.join('session2', sub, p_anon), fa2, fa2_opts)
-            for sub in subs_a]
-        + [(os.path.join('session2', sub, p_anon), fb2, fb2_opts)
-            for sub in subs_b],
-        [(os.path.join('session3', sub, p_anon), fa3, fa3_opts)
-            for sub in subs_a]
-        + [(os.path.join('session3', sub, p_anon), fb3, fb3_opts)
-            for sub in subs_b]]
+        p_anon = os.path.join('anat', 'mprage_anonymized.nii.gz')
+        p_skull = os.path.join('anat', 'mprage_skullstripped.nii.gz')
+        p_func = os.path.join('func', 'lfo.nii.gz')
 
-    anat_skull_files = [
-        [(os.path.join('session1', sub, p_skull), fa1, fa1_opts)
-            for sub in subs_a]
-        + [(os.path.join('session1', sub, p_skull), fb1, fb1_opts)
-            for sub in subs_b],
-        [(os.path.join('session2', sub, p_skull), fa2, fa2_opts)
-            for sub in subs_a]
-        + [(os.path.join('session2', sub, p_skull), fb2, fb2_opts)
-            for sub in subs_b],
-        [(os.path.join('session3', sub, p_skull), fa3, fa3_opts)
-            for sub in subs_a]
-        + [(os.path.join('session3', sub, p_skull), fb3, fb3_opts)
-            for sub in subs_b]]
+        subs_a = ['sub05676', 'sub08224', 'sub08889', 'sub09607', 'sub14864',
+                  'sub18604', 'sub22894', 'sub27641', 'sub33259', 'sub34482',
+                  'sub36678', 'sub38579', 'sub39529']
+        subs_b = ['sub45463', 'sub47000', 'sub49401', 'sub52738', 'sub55441',
+                  'sub58949', 'sub60624', 'sub76987', 'sub84403', 'sub86146',
+                  'sub90179', 'sub94293']
 
-    func_files = [
-        [(os.path.join('session1', sub, p_func), fa1, fa1_opts)
-            for sub in subs_a]
-        + [(os.path.join('session1', sub, p_func), fb1, fb1_opts)
-            for sub in subs_b],
-        [(os.path.join('session2', sub, p_func), fa2, fa2_opts)
-            for sub in subs_a]
-        + [(os.path.join('session2', sub, p_func), fb2, fb2_opts)
-            for sub in subs_b],
-        [(os.path.join('session3', sub, p_func), fa3, fa3_opts)
-            for sub in subs_a]
-        + [(os.path.join('session3', sub, p_func), fb3, fb3_opts)
-            for sub in subs_b]]
+        # Generate the list of files by session
+        anat_anon_files = [
+            [(os.path.join('session1', sub, p_anon), fa1, fa1_opts)
+                for sub in subs_a]
+            + [(os.path.join('session1', sub, p_anon), fb1, fb1_opts)
+                for sub in subs_b],
+            [(os.path.join('session2', sub, p_anon), fa2, fa2_opts)
+                for sub in subs_a]
+            + [(os.path.join('session2', sub, p_anon), fb2, fb2_opts)
+                for sub in subs_b],
+            [(os.path.join('session3', sub, p_anon), fa3, fa3_opts)
+                for sub in subs_a]
+            + [(os.path.join('session3', sub, p_anon), fb3, fb3_opts)
+                for sub in subs_b]]
 
-    max_subjects = len(subs_a) + len(subs_b)
-    # Check arguments
-    if n_subjects is None:
-        n_subjects = len(subs_a) + len(subs_b)
-    if n_subjects > max_subjects:
-        warnings.warn('Warning: there are only %d subjects' % max_subjects)
-        n_subjects = 25
+        anat_skull_files = [
+            [(os.path.join('session1', sub, p_skull), fa1, fa1_opts)
+                for sub in subs_a]
+            + [(os.path.join('session1', sub, p_skull), fb1, fb1_opts)
+                for sub in subs_b],
+            [(os.path.join('session2', sub, p_skull), fa2, fa2_opts)
+                for sub in subs_a]
+            + [(os.path.join('session2', sub, p_skull), fb2, fb2_opts)
+                for sub in subs_b],
+            [(os.path.join('session3', sub, p_skull), fa3, fa3_opts)
+                for sub in subs_a]
+            + [(os.path.join('session3', sub, p_skull), fb3, fb3_opts)
+                for sub in subs_b]]
 
-    anat_anon = []
-    anat_skull = []
-    func = []
-    session = []
-    for i in sessions:
-        if not (i in [1, 2, 3]):
-            raise ValueError('NYU dataset session id must be in [1, 2, 3]')
-        anat_anon += anat_anon_files[i - 1][:n_subjects]
-        anat_skull += anat_skull_files[i - 1][:n_subjects]
-        func += func_files[i - 1][:n_subjects]
-        session += [i] * n_subjects
+        func_files = [
+            [(os.path.join('session1', sub, p_func), fa1, fa1_opts)
+                for sub in subs_a]
+            + [(os.path.join('session1', sub, p_func), fb1, fb1_opts)
+                for sub in subs_b],
+            [(os.path.join('session2', sub, p_func), fa2, fa2_opts)
+                for sub in subs_a]
+            + [(os.path.join('session2', sub, p_func), fb2, fb2_opts)
+                for sub in subs_b],
+            [(os.path.join('session3', sub, p_func), fa3, fa3_opts)
+                for sub in subs_a]
+            + [(os.path.join('session3', sub, p_func), fb3, fb3_opts)
+                for sub in subs_b]]
 
-    dataset_name = 'nyu_rest'
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-                               verbose=verbose)
-    anat_anon = fetch_files(data_dir, anat_anon, resume=resume,
-                            verbose=verbose)
-    anat_skull = fetch_files(data_dir, anat_skull, resume=resume,
-                             verbose=verbose)
-    func = fetch_files(data_dir, func, resume=resume,
-                       verbose=verbose)
+        max_subjects = len(subs_a) + len(subs_b)
 
-    return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
-                 session=session)
+        # Check arguments
+        if n_subjects is None:
+            n_subjects = len(subs_a) + len(subs_b)
+        if n_subjects > max_subjects:
+            warnings.warn('Warning: there are only %d subjects' % max_subjects)
+            n_subjects = 25
+
+        anat_anon = []
+        anat_skull = []
+        func = []
+        session = []
+        for i in sessions:
+            if not (i in [1, 2, 3]):
+                raise ValueError('NYU dataset session id must be in [1, 2, 3]')
+            anat_anon += anat_anon_files[i - 1][:n_subjects]
+            anat_skull += anat_skull_files[i - 1][:n_subjects]
+            func += func_files[i - 1][:n_subjects]
+            session += [i] * n_subjects
+
+        anat_anon = fetch_files(self.data_dir, anat_anon, resume=resume,
+                                verbose=verbose)
+        anat_skull = fetch_files(self.data_dir, anat_skull, resume=resume,
+                                 verbose=verbose)
+        func = fetch_files(self.data_dir, func, resume=resume,
+                           verbose=verbose)
+
+        return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
+                     session=session)
+
+
+def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
+                   verbose=1):
+    return NyuRestDataset(data_dir=data_dir).fetch(n_subjects=n_subjects,
+                                                   sessions=sessions,
+                                                   resume=resume,
+                                                   verbose=verbose)

@@ -26,12 +26,11 @@ from sklearn.datasets.base import Bunch
 from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir)
+from ...core.datasets import Dataset
+from ...core.fetchers import (format_time, md5_sum_file, fetch_files)
 
 
-def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
-                    data_dir=None, url=None, resume=True, verbose=1):
+class OasisVbmDataset(Dataset):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
     Parameters
@@ -116,125 +115,134 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
     http://www.oasis-brains.org/app/template/UsageAgreement.vm
 
     """
-    # check number of subjects
-    if n_subjects is None:
-        n_subjects = 403 if dartel_version else 415
-    if dartel_version:  # DARTEL version has 13 identified outliers
-        if n_subjects > 403:
-            warnings.warn('Only 403 subjects are available in the '
-                          'DARTEL-normalized version of the dataset. '
-                          'All of them will be used instead of the wanted %d'
-                          % n_subjects)
-            n_subjects = 403
-    else:  # all subjects except one are available with non-DARTEL version
-        if n_subjects > 415:
-            warnings.warn('Only 415 subjects are available in the '
-                          'non-DARTEL-normalized version of the dataset. '
-                          'All of them will be used instead of the wanted %d'
-                          % n_subjects)
-            n_subjects = 415
-    if n_subjects < 1:
-        raise ValueError("Incorrect number of subjects (%d)" % n_subjects)
 
-    # pick the archive corresponding to preprocessings type
-    if url is None:
+    def fetch(self, n_subjects=None, dartel_version=True,
+              url=None, resume=True, verbose=1):
+        # check number of subjects
+        if n_subjects is None:
+            n_subjects = 403 if dartel_version else 415
+        if dartel_version:  # DARTEL version has 13 identified outliers
+            if n_subjects > 403:
+                warnings.warn('Only 403 subjects are available in the '
+                              'DARTEL-normalized version of the dataset. '
+                              'All of them will be used instead of the wanted %d'
+                              % n_subjects)
+                n_subjects = 403
+        else:  # all subjects except one are available with non-DARTEL version
+            if n_subjects > 415:
+                warnings.warn('Only 415 subjects are available in the '
+                              'non-DARTEL-normalized version of the dataset. '
+                              'All of them will be used instead of the wanted %d'
+                              % n_subjects)
+                n_subjects = 415
+        if n_subjects < 1:
+            raise ValueError("Incorrect number of subjects (%d)" % n_subjects)
+
+        # pick the archive corresponding to preprocessings type
+        if url is None:
+            if dartel_version:
+                url_images = ('https://www.nitrc.org/frs/download.php/'
+                              '6364/archive_dartel.tgz?i_agree=1&download_now=1')
+            else:
+                url_images = ('https://www.nitrc.org/frs/download.php/'
+                              '6359/archive.tgz?i_agree=1&download_now=1')
+            # covariates and license are in separate files on NITRC
+            url_csv = ('https://www.nitrc.org/frs/download.php/'
+                       '6348/oasis_cross-sectional.csv?i_agree=1&download_now=1')
+            url_dua = ('https://www.nitrc.org/frs/download.php/'
+                       '6349/data_usage_agreement.txt?i_agree=1&download_now=1')
+        else:  # local URL used in tests
+            url_csv = url + "/oasis_cross-sectional.csv"
+            url_dua = url + "/data_usage_agreement.txt"
+            if dartel_version:
+                url_images = url + "/archive_dartel.tgz"
+            else:
+                url_images = url + "/archive.tgz"
+
+        opts = {'uncompress': True}
+
+        # missing subjects create shifts in subjects ids
+        missing_subjects = [8, 24, 36, 48, 89, 93, 100, 118, 128, 149, 154,
+                            171, 172, 175, 187, 194, 196, 215, 219, 225, 242,
+                            245, 248, 251, 252, 257, 276, 297, 306, 320, 324,
+                            334, 347, 360, 364, 391, 393, 412, 414, 427, 436]
+
         if dartel_version:
-            url_images = ('https://www.nitrc.org/frs/download.php/'
-                          '6364/archive_dartel.tgz?i_agree=1&download_now=1')
+            # DARTEL produces outliers that are hidden by nilearn API
+            removed_outliers = [27, 57, 66, 83, 122, 157, 222, 269, 282, 287,
+                                309, 428]
+            missing_subjects = sorted(missing_subjects + removed_outliers)
+            file_names_gm = [
+                (os.path.join(
+                        "OAS1_%04d_MR1",
+                        "mwrc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
+                 % (s, s),
+                 url_images, opts)
+                for s in range(1, 457) if s not in missing_subjects][:n_subjects]
+            file_names_wm = [
+                (os.path.join(
+                        "OAS1_%04d_MR1",
+                        "mwrc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
+                 % (s, s),
+                 url_images, opts)
+                for s in range(1, 457) if s not in missing_subjects]
         else:
-            url_images = ('https://www.nitrc.org/frs/download.php/'
-                          '6359/archive.tgz?i_agree=1&download_now=1')
-        # covariates and license are in separate files on NITRC
-        url_csv = ('https://www.nitrc.org/frs/download.php/'
-                   '6348/oasis_cross-sectional.csv?i_agree=1&download_now=1')
-        url_dua = ('https://www.nitrc.org/frs/download.php/'
-                   '6349/data_usage_agreement.txt?i_agree=1&download_now=1')
-    else:  # local URL used in tests
-        url_csv = url + "/oasis_cross-sectional.csv"
-        url_dua = url + "/data_usage_agreement.txt"
-        if dartel_version:
-            url_images = url + "/archive_dartel.tgz"
-        else:
-            url_images = url + "/archive.tgz"
+            # only one gross outlier produced, hidden by nilearn API
+            removed_outliers = [390]
+            missing_subjects = sorted(missing_subjects + removed_outliers)
+            file_names_gm = [
+                (os.path.join(
+                        "OAS1_%04d_MR1",
+                        "mwc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
+                 % (s, s),
+                 url_images, opts)
+                for s in range(1, 457) if s not in missing_subjects][:n_subjects]
+            file_names_wm = [
+                (os.path.join(
+                        "OAS1_%04d_MR1",
+                        "mwc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
+                 % (s, s),
+                 url_images, opts)
+                for s in range(1, 457) if s not in missing_subjects]
+        file_names_extvars = [("oasis_cross-sectional.csv", url_csv, {})]
+        file_names_dua = [("data_usage_agreement.txt", url_dua, {})]
+        # restrict to user-specified number of subjects
+        file_names_gm = file_names_gm[:n_subjects]
+        file_names_wm = file_names_wm[:n_subjects]
 
-    opts = {'uncompress': True}
+        file_names = (file_names_gm + file_names_wm
+                      + file_names_extvars + file_names_dua)
+        files = fetch_files(self.data_dir, file_names, resume=resume,
+                            verbose=verbose)
 
-    # missing subjects create shifts in subjects ids
-    missing_subjects = [8, 24, 36, 48, 89, 93, 100, 118, 128, 149, 154,
-                        171, 172, 175, 187, 194, 196, 215, 219, 225, 242,
-                        245, 248, 251, 252, 257, 276, 297, 306, 320, 324,
-                        334, 347, 360, 364, 391, 393, 412, 414, 427, 436]
+        # Build Bunch
+        gm_maps = files[:n_subjects]
+        wm_maps = files[n_subjects:(2 * n_subjects)]
+        ext_vars_file = files[-2]
+        data_usage_agreement = files[-1]
 
-    if dartel_version:
-        # DARTEL produces outliers that are hidden by nilearn API
-        removed_outliers = [27, 57, 66, 83, 122, 157, 222, 269, 282, 287,
-                            309, 428]
-        missing_subjects = sorted(missing_subjects + removed_outliers)
-        file_names_gm = [
-            (os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwrc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
-             % (s, s),
-             url_images, opts)
-            for s in range(1, 457) if s not in missing_subjects][:n_subjects]
-        file_names_wm = [
-            (os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwrc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
-             % (s, s),
-             url_images, opts)
-            for s in range(1, 457) if s not in missing_subjects]
-    else:
-        # only one gross outlier produced, hidden by nilearn API
-        removed_outliers = [390]
-        missing_subjects = sorted(missing_subjects + removed_outliers)
-        file_names_gm = [
-            (os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
-             % (s, s),
-             url_images, opts)
-            for s in range(1, 457) if s not in missing_subjects][:n_subjects]
-        file_names_wm = [
-            (os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz")
-             % (s, s),
-             url_images, opts)
-            for s in range(1, 457) if s not in missing_subjects]
-    file_names_extvars = [("oasis_cross-sectional.csv", url_csv, {})]
-    file_names_dua = [("data_usage_agreement.txt", url_dua, {})]
-    # restrict to user-specified number of subjects
-    file_names_gm = file_names_gm[:n_subjects]
-    file_names_wm = file_names_wm[:n_subjects]
+        # Keep CSV information only for selected subjects
+        csv_data = np.recfromcsv(ext_vars_file)
+        # Comparisons to recfromcsv data must be bytes.
+        actual_subjects_ids = [("OAS1" +
+                                str.split(os.path.basename(x),
+                                          "OAS1")[1][:9]).encode()
+                               for x in gm_maps]
+        subject_mask = np.asarray([subject_id in actual_subjects_ids
+                                   for subject_id in csv_data['id']])
+        csv_data = csv_data[subject_mask]
 
-    file_names = (file_names_gm + file_names_wm
-                  + file_names_extvars + file_names_dua)
-    dataset_name = 'oasis_vbm'
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    files = fetch_files(data_dir, file_names, resume=resume,
-                         verbose=verbose)
+        return Bunch(
+            gray_matter_maps=gm_maps,
+            white_matter_maps=wm_maps,
+            ext_vars=csv_data,
+            data_usage_agreement=data_usage_agreement)
 
-    # Build Bunch
-    gm_maps = files[:n_subjects]
-    wm_maps = files[n_subjects:(2 * n_subjects)]
-    ext_vars_file = files[-2]
-    data_usage_agreement = files[-1]
 
-    # Keep CSV information only for selected subjects
-    csv_data = np.recfromcsv(ext_vars_file)
-    # Comparisons to recfromcsv data must be bytes.
-    actual_subjects_ids = [("OAS1" +
-                            str.split(os.path.basename(x),
-                                      "OAS1")[1][:9]).encode()
-                           for x in gm_maps]
-    subject_mask = np.asarray([subject_id in actual_subjects_ids
-                               for subject_id in csv_data['id']])
-    csv_data = csv_data[subject_mask]
-
-    return Bunch(
-        gray_matter_maps=gm_maps,
-        white_matter_maps=wm_maps,
-        ext_vars=csv_data,
-        data_usage_agreement=data_usage_agreement)
+def fetch_oasis_vbm(n_subjects=None, dartel_version=True,
+                    data_dir=None, url=None, resume=True, verbose=1):
+    return OasisVbmDataset(data_dir=data_dir).fetch(n_subjects=n_subjects,
+                                                    dartel_version=dartel_version,
+                                                    url=url,
+                                                    resume=resume,
+                                                    verbose=verbose)

@@ -121,6 +121,16 @@ class Dataset(object):
         self.data_dir = get_dataset_dir(self.name, data_dir=data_dir)
 
         print self.name, self.modality, self.description
+        self.fetcher = getattr(self, 'fetcher', None)
 
     def fetch(self, n_subjects=1, force=False, check=False, verbosity=1):
         raise NotImplementedError()
+
+
+class HttpDataset(Dataset):
+    def __init__(self, data_dir=None):
+        """
+        """
+        from ..fetchers import HttpFetcher  # avoid circular import
+        super(HttpDataset, self).__init__(data_dir=data_dir)
+        self.fetcher = HttpFetcher(data_dir=self.data_dir)

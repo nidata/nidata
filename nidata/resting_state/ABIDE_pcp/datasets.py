@@ -25,14 +25,12 @@ from sklearn.datasets.base import Bunch
 
 from ...core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
 from ...core._utils.niimg import check_niimg, new_img_like
+from ...core.datasets import Dataset
 from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
                               get_dataset_dir, filter_columns)
 
 
-def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
-                    band_pass_filtering=False, global_signal_regression=False,
-                    derivatives=['func_preproc'],
-                    quality_checked=True, url=None, verbose=1, **kwargs):
+class AbidePcpDataset(Dataset):
     """ Fetch ABIDE dataset
 
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
@@ -112,89 +110,105 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     7 (2013).
     """
 
-    # Parameter check
-    for derivative in derivatives:
-        if derivative not in [
-                'alff', 'degree_binarize', 'degree_weighted',
-                'dual_regression', 'eigenvector_binarize',
-                'eigenvector_weighted', 'falff', 'func_mask', 'func_mean',
-                'func_preproc', 'lfcd', 'reho', 'rois_aal', 'rois_cc200',
-                'rois_cc400', 'rois_dosenbach160', 'rois_ez', 'rois_ho',
-                'rois_tt', 'vmhc']:
-            raise KeyError('%s is not a valid derivative' % derivative)
+    
+    def fetch(self, n_subjects=None, pipeline='cpac',
+              band_pass_filtering=False, global_signal_regression=False,
+              derivatives=['func_preproc'],
+              quality_checked=True, url=None, verbose=1, **kwargs):
+        # Parameter check
+        for derivative in derivatives:
+            if derivative not in [
+                    'alff', 'degree_binarize', 'degree_weighted',
+                    'dual_regression', 'eigenvector_binarize',
+                    'eigenvector_weighted', 'falff', 'func_mask', 'func_mean',
+                    'func_preproc', 'lfcd', 'reho', 'rois_aal', 'rois_cc200',
+                    'rois_cc400', 'rois_dosenbach160', 'rois_ez', 'rois_ho',
+                    'rois_tt', 'vmhc']:
+                raise KeyError('%s is not a valid derivative' % derivative)
 
-    strategy = ''
-    if not band_pass_filtering:
-        strategy += 'no'
-    strategy += 'filt_'
-    if not global_signal_regression:
-        strategy += 'no'
-    strategy += 'global'
+        strategy = ''
+        if not band_pass_filtering:
+            strategy += 'no'
+        strategy += 'filt_'
+        if not global_signal_regression:
+            strategy += 'no'
+        strategy += 'global'
 
-    # General file: phenotypic information
-    dataset_name = 'ABIDE_pcp'
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    if url is None:
-        url = ('https://s3.amazonaws.com/fcp-indi/data/Projects/'
-               'ABIDE_Initiative')
+        if url is None:
+            url = ('https://s3.amazonaws.com/fcp-indi/data/Projects/'
+                   'ABIDE_Initiative')
 
-    if quality_checked:
-        kwargs['qc_rater_1'] = 'OK'
-        kwargs['qc_anat_rater_2'] = ['OK', 'maybe']
-        kwargs['qc_func_rater_2'] = ['OK', 'maybe']
-        kwargs['qc_anat_rater_3'] = 'OK'
-        kwargs['qc_func_rater_3'] = 'OK'
+        if quality_checked:
+            kwargs['qc_rater_1'] = 'OK'
+            kwargs['qc_anat_rater_2'] = ['OK', 'maybe']
+            kwargs['qc_func_rater_2'] = ['OK', 'maybe']
+            kwargs['qc_anat_rater_3'] = 'OK'
+            kwargs['qc_func_rater_3'] = 'OK'
 
-    # Fetch the phenotypic file and load it
-    csv = 'Phenotypic_V1_0b_preprocessed1.csv'
-    path_csv = fetch_files(data_dir, [(csv, url + '/' + csv, {})],
-                            verbose=verbose)[0]
+        # Fetch the phenotypic file and load it
+        csv = 'Phenotypic_V1_0b_preprocessed1.csv'
+        path_csv = fetch_files(self.data_dir, [(csv, url + '/' + csv, {})],
+                               verbose=verbose)[0]
 
-    # Note: the phenotypic file contains string that contains comma which mess
-    # up numpy array csv loading. This is why I do a pass to remove the last
-    # field. This can be
-    # done simply with pandas but we don't want such dependency ATM
-    # pheno = pandas.read_csv(path_csv).to_records()
-    with open(path_csv, 'r') as pheno_f:
-        pheno = ['i' + pheno_f.readline()]
+        # Note: the phenotypic file contains string that contains comma which mess
+        # up numpy array csv loading. This is why I do a pass to remove the last
+        # field. This can be
+        # done simply with pandas but we don't want such dependency ATM
+        # pheno = pandas.read_csv(path_csv).to_records()
+        with open(path_csv, 'r') as pheno_f:
+            pheno = ['i' + pheno_f.readline()]
 
-        # This regexp replaces commas between double quotes
-        for line in pheno_f:
-            pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line))
+            # This regexp replaces commas between double quotes
+            for line in pheno_f:
+                pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line))
 
-    # bytes (encode()) needed for python 2/3 compat with numpy
-    pheno = '\n'.join(pheno).encode()
-    pheno = BytesIO(pheno)
-    pheno = np.recfromcsv(pheno, comments='$', case_sensitive=True)
+        # bytes (encode()) needed for python 2/3 compat with numpy
+        pheno = '\n'.join(pheno).encode()
+        pheno = BytesIO(pheno)
+        pheno = np.recfromcsv(pheno, comments='$', case_sensitive=True)
 
-    # First, filter subjects with no filename
-    pheno = pheno[pheno['FILE_ID'] != b'no_filename']
-    # Apply user defined filters
-    user_filter = filter_columns(pheno, kwargs)
-    pheno = pheno[user_filter]
+        # First, filter subjects with no filename
+        pheno = pheno[pheno['FILE_ID'] != b'no_filename']
+        # Apply user defined filters
+        user_filter = filter_columns(pheno, kwargs)
+        pheno = pheno[user_filter]
 
-    # Go into specific data folder and url
-    data_dir = os.path.join(data_dir, pipeline, strategy)
-    url = '/'.join([url, 'Outputs', pipeline, strategy])
+        # Go into specific data folder and url
+        data_dir = os.path.join(self.data_dir, pipeline, strategy)
+        url = '/'.join([url, 'Outputs', pipeline, strategy])
 
-    # Get the files
-    results = {}
-    file_ids = [file_id.decode() for file_id in pheno['FILE_ID']]
-    if n_subjects is not None:
-        file_ids = file_ids[:n_subjects]
-        pheno = pheno[:n_subjects]
+        # Get the files
+        results = {}
+        file_ids = [file_id.decode() for file_id in pheno['FILE_ID']]
+        if n_subjects is not None:
+            file_ids = file_ids[:n_subjects]
+            pheno = pheno[:n_subjects]
 
-    results['phenotypic'] = pheno
-    for derivative in derivatives:
-        ext = '.1D' if derivative.startswith('rois') else '.nii.gz'
-        files = [(file_id + '_' + derivative + ext,
-                  '/'.join([url, derivative,
-                            file_id + '_' + derivative + ext]),
-                  {}) for file_id in file_ids]
-        files = fetch_files(data_dir, files, verbose=verbose)
-        # Load derivatives if needed
-        if ext == '.1D':
-            files = [np.loadtxt(f) for f in files]
-        results[derivative] = files
-    return Bunch(**results)
+        results['phenotypic'] = pheno
+        for derivative in derivatives:
+            ext = '.1D' if derivative.startswith('rois') else '.nii.gz'
+            files = [(file_id + '_' + derivative + ext,
+                      '/'.join([url, derivative,
+                                file_id + '_' + derivative + ext]),
+                      {}) for file_id in file_ids]
+            files = fetch_files(data_dir, files, verbose=verbose)
+            # Load derivatives if needed
+            if ext == '.1D':
+                files = [np.loadtxt(f) for f in files]
+            results[derivative] = files
+        return Bunch(**results)
+
+
+def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
+                    band_pass_filtering=False, global_signal_regression=False,
+                    derivatives=['func_preproc'],
+                    quality_checked=True, url=None, verbose=1, **kwargs):
+    return AbidePcpDataset(data_dir=data_dir).fetch(n_subjects=n_subjects,
+                                                    pipeline=pipeline,
+                                                    band_pass_filtering=band_pass_filtering,
+                                                    global_signal_regression=global_signal_regression,
+                                                    derivatives=derivatives,
+                                                    quality_checked=quality_checked,
+                                                    url=url,
+                                                    verbose=verbose,
+                                                    **kwargs)

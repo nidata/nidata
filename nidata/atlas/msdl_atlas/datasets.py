@@ -26,11 +26,11 @@ from sklearn.datasets.base import Bunch
 from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir)
+from ...core.datasets import HttpDataset
+from ...core.fetchers import (format_time, md5_sum_file, fetch_files)
 
 
-def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
+class MSDLDataset(HttpDataset):
     """Download and load the MSDL brain atlas.
 
     Parameters
@@ -68,14 +68,16 @@ def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
         Gaël Varoquaux, R.C. Craddock NeuroImage, 2013.
 
     """
-    url = 'https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip'
-    opts = {'uncompress': True}
+    def fetch(self, url=None, resume=True, verbose=1):
+        url = 'https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip'
+        opts = {'uncompress': True}
 
-    dataset_name = "msdl_atlas"
-    files = [(os.path.join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
-             (os.path.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
+        dataset_name = "msdl_atlas"
+        files = [(os.path.join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
+                 (os.path.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
+        files = self.fetcher.fetch(files, force=not resume, verbosity=verbose)
+        return Bunch(labels=files[0], maps=files[1])
 
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-                               verbose=verbose)
 
-    return Bunch(labels=files[0], maps=files[1])
+def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
+    return MSDLDataset(data_dir=data_dir).fetch(url=url, resume=resume, verbose=verbose)

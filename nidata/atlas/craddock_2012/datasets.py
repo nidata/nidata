@@ -26,11 +26,11 @@ from sklearn.datasets.base import Bunch
 from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir)
+from ...core.datasets import Dataset
+from ...core.fetchers import (format_time, md5_sum_file, fetch_files)
 
 
-def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
+class Craddock2012Dataset(Dataset):
     """Download and return file names for the Craddock 2012 parcellation
 
     The provided images are in MNI152 space.
@@ -71,28 +71,33 @@ def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
     on this parcellation.
     """
 
-    if url is None:
-        url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
-              "/Parcellations/craddock_2011_parcellations.tar.gz"
-    opts = {'uncompress': True}
+    def fetch(self, url=None, resume=True, verbose=1):
 
-    dataset_name = "craddock_2012"
-    keys = ("scorr_mean", "tcorr_mean",
-            "scorr_2level", "tcorr_2level",
-            "random")
-    filenames = [
-            ("scorr05_mean_all.nii.gz", url, opts),
-            ("tcorr05_mean_all.nii.gz", url, opts),
-            ("scorr05_2level_all.nii.gz", url, opts),
-            ("tcorr05_2level_all.nii.gz", url, opts),
-            ("random_all.nii.gz", url, opts)
-    ]
+        if url is None:
+            url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
+                  "/Parcellations/craddock_2011_parcellations.tar.gz"
+        opts = {'uncompress': True}
 
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-                               verbose=verbose)
-    sub_files = fetch_files(data_dir, filenames, resume=resume,
-                            verbose=verbose)
+        dataset_name = "craddock_2012"
+        keys = ("scorr_mean", "tcorr_mean",
+                "scorr_2level", "tcorr_2level",
+                "random")
+        filenames = [
+                ("scorr05_mean_all.nii.gz", url, opts),
+                ("tcorr05_mean_all.nii.gz", url, opts),
+                ("scorr05_2level_all.nii.gz", url, opts),
+                ("tcorr05_2level_all.nii.gz", url, opts),
+                ("random_all.nii.gz", url, opts)
+        ]
 
-    params = dict(list(zip(keys, sub_files)))
+        sub_files = fetch_files(self.data_dir, filenames, resume=resume,
+                                verbose=verbose)
 
-    return Bunch(**params)
+        params = dict(list(zip(keys, sub_files)))
+
+        return Bunch(**params)
+
+
+def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
+    return Craddock2012Dataset(data_dir=data_dir).fetch(url=url, resume=resume, verbose=verbose)
+

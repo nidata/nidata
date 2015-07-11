@@ -26,11 +26,11 @@ from sklearn.datasets.base import Bunch
 from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir)
+from ...core.datasets import Dataset
+from ...core.fetchers import (format_time, md5_sum_file, fetch_files)
 
 
-def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
+class ICBM152Dataset(Dataset):
     """Download and load the ICBM152 template (dated 2009)
 
     Parameters
@@ -73,33 +73,36 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     For more information about this dataset's structure:
     http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
     """
-    if url is None:
-        url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/" \
-              "mni_icbm152_nlin_sym_09a_nifti.zip"
-    opts = {'uncompress': True}
 
-    keys = ("csf", "gm", "wm",
-            "pd", "t1", "t2", "t2_relax",
-            "eye_mask", "face_mask", "mask")
-    filenames = [(os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
-                 for name in ("mni_icbm152_csf_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_gm_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_wm_tal_nlin_sym_09a.nii",
+    def fetch(self, url=None, resume=True, verbose=1):
+        if url is None:
+            url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/" \
+                  "mni_icbm152_nlin_sym_09a_nifti.zip"
+        opts = {'uncompress': True}
 
-                              "mni_icbm152_pd_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_t1_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_t2_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii",
+        keys = ("csf", "gm", "wm",
+                "pd", "t1", "t2", "t2_relax",
+                "eye_mask", "face_mask", "mask")
+        filenames = [(os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
+                     for name in ("mni_icbm152_csf_tal_nlin_sym_09a.nii",
+                                  "mni_icbm152_gm_tal_nlin_sym_09a.nii",
+                                  "mni_icbm152_wm_tal_nlin_sym_09a.nii",
 
-                              "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii",
-                              "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii",
-                              "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
+                                  "mni_icbm152_pd_tal_nlin_sym_09a.nii",
+                                  "mni_icbm152_t1_tal_nlin_sym_09a.nii",
+                                  "mni_icbm152_t2_tal_nlin_sym_09a.nii",
+                                  "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii",
 
-    dataset_name = 'icbm152_2009'
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-                               verbose=verbose)
-    sub_files = fetch_files(data_dir, filenames, resume=resume,
-                            verbose=verbose)
+                                  "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii",
+                                  "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii",
+                                  "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
 
-    params = dict(list(zip(keys, sub_files)))
-    return Bunch(**params)
+        sub_files = fetch_files(self.data_dir, filenames, resume=resume,
+                                verbose=verbose)
+
+        params = dict(list(zip(keys, sub_files)))
+        return Bunch(**params)
+
+
+def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
+    return ICBM152Dataset(data_dir=data_dir).fetch(url=url, resume=resume, verbose=verbose)

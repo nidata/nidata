@@ -5,32 +5,10 @@ Utilities to download NeuroImaging-based atlases
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
-import collections
-import os
-import tarfile
-import zipfile
-import sys
-import shutil
-import time
-import hashlib
-import fnmatch
-import warnings
-import re
-import base64
-
-import numpy as np
-from scipy import ndimage
-from sklearn.datasets.base import Bunch
-
-from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
-                                   md5_hash)
-from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir)
+from ...core.datasets import HttpDataset
 
 
-def fetch_mni152_template():
+class MNI152Dataset(HttpDataset):
     """Load skullstripped 2mm version of the MNI152 originally distributed
     with FSL
 
@@ -53,9 +31,12 @@ def fetch_mni152_template():
     Human Brain Mapping 2009 Annual Meeting, DOI: 10.1016/S1053-8119(09)70884-5
 
     """
-    # https://raw.githubusercontent.com/nilearn/nilearn/master/nilearn/data/avg152T1_brain.nii.gz
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(package_directory, "data", "avg152T1_brain.nii.gz")
+    def fetch(self, url=None, resume=True, verbose=1):
+        files = (('avg152T1_brain.nii.gz',
+                  'https://raw.githubusercontent.com/nilearn/nilearn/master/nilearn/data/avg152T1_brain.nii.gz',
+                  {}),)
+        return self.fetcher.fetch(files=files, force=not resume, verbosity=verbose)
 
-    # XXX Should we load the image here?
-    return check_niimg(path)
+
+def fetch_mni152_template(data_dir=None, url=None, resume=True, verbose=1):
+    return MNI152Dataset(data_dir=data_dir).fetch(url=url, resume=resume, verbose=verbose)

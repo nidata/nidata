@@ -26,11 +26,11 @@ from sklearn.datasets.base import Bunch
 from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir)
+from ...core.datasets import Dataset
+from ...core.fetchers import (format_time, md5_sum_file, fetch_files)
 
 
-def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
+class Yeo2011Dataset(Dataset):
     """Download and return file names for the Yeo 2011 parcellation.
 
     The provided images are in MNI152 space.
@@ -76,31 +76,35 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
 
     Licence: unknown.
     """
-    if url is None:
-        url = "ftp://surfer.nmr.mgh.harvard.edu/" \
-              "pub/data/Yeo_JNeurophysiol11_MNI152.zip"
-    opts = {'uncompress': True}
 
-    dataset_name = "yeo_2011"
-    keys = ("thin_7", "thick_7",
-            "thin_17", "thick_17",
-            "colors_7", "colors_17", "anat")
-    basenames = (
-        "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm.nii.gz",
-        "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
-        "Yeo2011_17Networks_MNI152_FreeSurferConformed1mm.nii.gz",
-        "Yeo2011_17Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
-        "Yeo2011_7Networks_ColorLUT.txt",
-        "Yeo2011_17Networks_ColorLUT.txt",
-        "FSL_MNI152_FreeSurferConformed_1mm.nii.gz")
 
-    filenames = [(os.path.join("Yeo_JNeurophysiol11_MNI152", f), url, opts)
-                 for f in basenames]
+    def fetch(self, url=None, resume=True, verbose=1):
+        if url is None:
+            url = "ftp://surfer.nmr.mgh.harvard.edu/" \
+                  "pub/data/Yeo_JNeurophysiol11_MNI152.zip"
+        opts = {'uncompress': True}
 
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir,
-                               verbose=verbose)
-    sub_files = fetch_files(data_dir, filenames, resume=resume,
-                            verbose=verbose)
+        keys = ("thin_7", "thick_7",
+                "thin_17", "thick_17",
+                "colors_7", "colors_17", "anat")
+        basenames = (
+            "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm.nii.gz",
+            "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
+            "Yeo2011_17Networks_MNI152_FreeSurferConformed1mm.nii.gz",
+            "Yeo2011_17Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
+            "Yeo2011_7Networks_ColorLUT.txt",
+            "Yeo2011_17Networks_ColorLUT.txt",
+            "FSL_MNI152_FreeSurferConformed_1mm.nii.gz")
 
-    params = dict(list(zip(keys, sub_files)))
-    return Bunch(**params)
+        filenames = [(os.path.join("Yeo_JNeurophysiol11_MNI152", f), url, opts)
+                     for f in basenames]
+
+        sub_files = fetch_files(self.data_dir, filenames, resume=resume,
+                                verbose=verbose)
+
+        params = dict(list(zip(keys, sub_files)))
+        return Bunch(**params)
+
+
+def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
+    return Yeo2011Dataset(data_dir=data_dir).fetch(url=url, resume=resume, verbose=verbose)
