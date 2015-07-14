@@ -9,9 +9,7 @@ def import_all_submodules(dir_path, locals, globals, recursive=True):
                      os.listdir(dir_path))
 
     for subdir in subdirs:
-        print subdir
         if recursive:
             exec('from .%s import *' % subdir) in locals, globals
         else:
             exec('from . import %s' % subdir) in locals, globals
-    

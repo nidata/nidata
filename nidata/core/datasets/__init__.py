@@ -120,7 +120,6 @@ class Dataset(object):
 
         self.data_dir = get_dataset_dir(self.name, data_dir=data_dir)
 
-        print self.name, self.modality, self.description
         self.fetcher = getattr(self, 'fetcher', None)
 
     def fetch(self, n_subjects=1, force=False, check=False, verbose=1):
