@@ -29,21 +29,19 @@ class DependenciesMeta(type):
             return missing_dependencies
 
         def install_missing_dependencies(cls):
-            print("Installing missing dependencies for %s" % str(cls))
             for dep in get_missing_dependencies(cls):
+                print("Installing missing dependencies '%s', for %s" % (dep, str(cls)))
                 if not install_dependency(dep):
                     raise Exception("Failed to install dependency '%s'; you will need to install it manually and re-run your code." % dep)
 
         def __init__wrapper(init_fn):
             def wrapper_fn(self, *args, **kwargs):
-                print self, args, kwargs
                 install_missing_dependencies(self.__class__)
                 return init_fn(self, *args, **kwargs)
             return wrapper_fn
 
         def super_init(cls):
             def wrapper_fn(self, *args, **kwargs):
-                print "a"
                 return super(cls, self).__init__(*args, **kwargs)
             return wrapper_fn
 
