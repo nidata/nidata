@@ -24,13 +24,10 @@ from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
 from ...core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.datasets import Dataset
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir, filter_columns)
+from ...core.datasets import HttpDataset
 
 
-class NyuRestDataset(Dataset):
+class NyuRestDataset(HttpDataset):
     """Download and loads the NYU resting-state test-retest dataset.
 
     Parameters
@@ -110,7 +107,7 @@ class NyuRestDataset(Dataset):
     """
 
     def fetch(self, n_subjects=None, sessions=[1], resume=True,
-              verbose=1):
+              force=False, verbose=1):
 
         fa1 = 'http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz'
         fb1 = 'http://www.nitrc.org/frs/download.php/1072/NYU_TRT_session1b.tar.gz'
@@ -206,12 +203,12 @@ class NyuRestDataset(Dataset):
             func += func_files[i - 1][:n_subjects]
             session += [i] * n_subjects
 
-        anat_anon = fetch_files(self.data_dir, anat_anon, resume=resume,
-                                verbose=verbose)
-        anat_skull = fetch_files(self.data_dir, anat_skull, resume=resume,
-                                 verbose=verbose)
-        func = fetch_files(self.data_dir, func, resume=resume,
-                           verbose=verbose)
+        anat_anon = self.fetcher.fetch(anat_anon, resume=resume,
+                                       force=force, verbose=verbose)
+        anat_skull = self.fetcher.fetch(anat_skull, resume=resume,
+                                        force=force, verbose=verbose)
+        func = self.fetcher.fetch(func, resume=resume,
+                                  force=force, verbose=verbose)
 
         return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
                      session=session)

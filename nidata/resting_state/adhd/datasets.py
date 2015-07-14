@@ -85,11 +85,11 @@ class AdhdRestDataset(HttpDataset):
                        for i in ids]
         confounds = ['data/%s/%s_regressors.csv' % (i, i) for i in ids]
 
-        functionals = fetch_files(self.data_dir,
+        functionals = self.fetcher.fetch(
             zip(functionals, archives, (opts,) * n_subjects),
             resume=resume, verbose=verbose)
 
-        confounds = fetch_files(self.data_dir,
+        confounds = self.fetcher.fetch(
             zip(confounds, archives, (opts,) * n_subjects),
             resume=resume, verbose=verbose)
 

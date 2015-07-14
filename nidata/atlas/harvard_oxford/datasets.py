@@ -26,12 +26,11 @@ from sklearn.datasets.base import Bunch
 from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
                                    md5_hash)
 from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.datasets import Dataset
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir)
+from ...core.datasets import HttpDataset
+from ...core.fetchers import (format_time, md5_sum_file, get_dataset_dir)
 
 
-class HarvardOxfordDataset(Dataset):
+class HarvardOxfordDataset(HttpDataset):
     """Load Harvard-Oxford parcellation from FSL if installed or download it.
 
     This function looks up for Harvard Oxford atlas in the system and load it
@@ -71,7 +70,7 @@ class HarvardOxfordDataset(Dataset):
                                         env_vars=['FSL_DIR', 'FSLDIR'])
 
     def fetch(self, atlas_name, symmetric_split=False,
-              resume=True, verbose=1):
+              resume=True, force=False, verbose=1):
         atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
                        "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
                        "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
@@ -95,10 +94,9 @@ class HarvardOxfordDataset(Dataset):
         else:
             label_file = 'HarvardOxford-Subcortical.xml'
 
-        atlas_img, label_file = fetch_files(
-            self.data_dir,
+        atlas_img, label_file = self.fetcher.fetch(
             [(atlas_file, url, opts), (label_file, url, opts)],
-            resume=resume, verbose=verbose)
+            resume=resume, force=force, verbose=verbose)
 
         names = {}
         from xml.etree import ElementTree
