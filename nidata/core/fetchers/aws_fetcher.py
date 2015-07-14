@@ -9,7 +9,7 @@ from functools import partial
 import nibabel as nib
 import numpy as np
 
-from .base import _chunk_report_, Fetcher
+from .base import chunk_report, Fetcher
 
 
 def test_cb(cur_bytes, total_bytes, t0=None, **kwargs):
