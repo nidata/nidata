@@ -23,13 +23,10 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ...core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.datasets import Dataset
-from ...core.fetchers import format_time, md5_sum_file, fetch_files
+from ...core.datasets import HttpDataset
 
 
-class BrainomicsDataset(Dataset):
+class BrainomicsDataset(HttpDataset):
     """Download and load Brainomics Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
@@ -168,7 +165,7 @@ class BrainomicsDataset(Dataset):
     """
     def fetch(self, contrasts, n_subjects=None, get_tmaps=False,
               get_masks=False, get_anats=False, url=None,
-              resume=True, verbose=1):
+              resume=True, force=False, verbose=1):
         if isinstance(contrasts, _basestring):
             raise ValueError('Contrasts should be a list of strings, but '
                              'a single string was given: "%s"' % contrasts)
@@ -330,7 +327,7 @@ class BrainomicsDataset(Dataset):
                       ("cubicwebexport2.csv", url_csv2, {})]
 
         # Actual data fetching
-        files = fetch_files(self.data_dir, filenames, verbose=verbose)
+        files = self.fetcher.fetch(filenames, resume=resume, force=force, verbose=verbose)
         anats = None
         masks = None
         tmaps = None

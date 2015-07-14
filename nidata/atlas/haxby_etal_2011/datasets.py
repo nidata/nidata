@@ -11,7 +11,7 @@ class HaxbyEtal2011(HttpDataset):
         """data_types is a list, can contain: anat, diff, func, rest, psyc, bgnd
         """
         files = (('hyperalignment_tutorial_data.hdf5.gz',
-                  'http://data.pymvpa.org/datasets/hyperalignment_tutorial_data/hyperalignment_tutorial_data.hdf5.gz',
+                  'http://data.pymvpa.org/datasets/hyperalignment_tutorial_data/hyperalignment_tutorial_data_2.4.hdf5.gz',
                   {}),)
         out_files = self.fetcher.fetch(files, force=not resume, check=check, verbosity=verbosity)
 
