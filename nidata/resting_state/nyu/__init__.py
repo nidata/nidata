@@ -1,1 +1,1 @@
-from .datasets import fetch_nyu_rest
+from .datasets import *

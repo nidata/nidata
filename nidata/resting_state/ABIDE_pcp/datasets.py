@@ -5,25 +5,13 @@ Utilities to download resting state MRI datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
-import collections
 import os
-import tarfile
-import zipfile
-import sys
-import shutil
-import time
-import hashlib
-import fnmatch
-import warnings
 import re
-import base64
 
 import numpy as np
-from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ...core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
+from ...core._utils.compat import BytesIO
 from ...core.datasets import HttpDataset
 from ...core.fetchers import filter_columns
 

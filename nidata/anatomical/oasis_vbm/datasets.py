@@ -5,27 +5,11 @@ Utilities to download anatomical MRI datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
-import collections
 import os
-import tarfile
-import zipfile
-import sys
-import shutil
-import time
-import hashlib
-import fnmatch
-import warnings
-import re
-import base64
 
 import numpy as np
-from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
-                                   md5_hash)
-from ...core._utils.niimg import check_niimg, new_img_like
 from ...core.datasets import HttpDataset
 from ...core.fetchers import (format_time, md5_sum_file)
 
@@ -55,7 +39,7 @@ class OasisVbmDataset(HttpDataset):
         If true, try resuming download if possible
 
     verbose: int, optional
-        verbosity level (0 means no message).
+        verbose level (0 means no message).
 
     Returns
     -------
