@@ -196,9 +196,10 @@ class Fetcher(object):
     __metaclass__ = DependenciesMeta
     dependencies = []
 
-    def __init__(self, data_dir=None):
+    def __init__(self, data_dir=None, verbose=1):
         self.data_dir = data_dir or os.environ.get('NIDATA_PATH') or 'nidata_data'
-        print("Files will be downloaded to %s" % self.data_dir)
+        if verbose > 0 and not os.path.exists(self.data_dir):
+            print("Files will be downloaded to %s" % self.data_dir)
 
     @classmethod
     def reformat_files(cls, files):
@@ -210,13 +211,13 @@ class Fetcher(object):
         for fil in files:
             if isinstance(fil, _basestring):
                 if len(files) == 1:
-                    common_path = ''
+                    common_prefix = os.path.dirname(fil) + '/'
                 elif common_path is None:
                     common_prefix = os.path.commonprefix(files)
-                    if fil[len(common_prefix):][0] != '/':
-                        common_path = os.path.dirname(common_prefix) + '/'
-                    else:
-                        common_path = common_prefix
+                if fil[len(common_prefix):][0] != '/':
+                    common_path = os.path.dirname(common_prefix) + '/'
+                else:
+                    common_path = common_prefix
                 out_files.append((fil[len(common_path):], fil, dict()))
             elif not isinstance(fil, collections.Iterable):
                 raise ValueError("Unexpected format: %s" % str(fil))
