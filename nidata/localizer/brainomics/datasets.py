@@ -5,25 +5,14 @@ Utilities to download localizer fMRI datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
-import collections
 import os
-import tarfile
-import zipfile
-import sys
-import shutil
-import time
-import hashlib
-import fnmatch
 import warnings
-import re
-import base64
 
 import numpy as np
-from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
+from ...core._utils.compat import _basestring, _urllib
 
 
 class BrainomicsDataset(HttpDataset):
@@ -140,7 +129,7 @@ class BrainomicsDataset(HttpDataset):
         Whether to resume download of a partly-downloaded file.
 
     verbose: int
-        Verbosity level (0 means no message).
+        verbose level (0 means no message).
 
     Returns
     -------
@@ -163,12 +152,67 @@ class BrainomicsDataset(HttpDataset):
         BMC neuroscience 8.1 (2007): 91.
 
     """
-    def fetch(self, contrasts, n_subjects=None, get_tmaps=False,
+
+    # we allow the user to use alternatives to Brainomics contrast names
+    contrast_name_wrapper = {
+        # Checkerboard
+        "checkerboard": "checkerboard",
+        "horizontal checkerboard": "horizontal checkerboard",
+        "vertical checkerboard": "vertical checkerboard",
+        "horizontal vs vertical checkerboard":
+            "horizontal vs vertical checkerboard",
+        "vertical vs horizontal checkerboard":
+            "vertical vs horizontal checkerboard",
+        # Sentences
+        "sentence listening": "auditory sentences",
+        "sentence reading": "visual sentences",
+        "sentence listening and reading": "auditory&visual sentences",
+        "sentence reading vs checkerboard": "visual sentences vs checkerboard",
+        # Calculation
+        "calculation (auditory cue)": "auditory calculation",
+        "calculation (visual cue)": "visual calculation",
+        "calculation (auditory and visual cue)": "auditory&visual calculation",
+        "calculation (auditory cue) vs sentence listening":
+            "auditory calculation vs auditory sentences",
+        "calculation (visual cue) vs sentence reading":
+            "visual calculation vs sentences",
+        "calculation vs sentences": "auditory&visual calculation vs sentences",
+        # Calculation + Sentences
+        "calculation (auditory cue) and sentence listening":
+            "auditory processing",
+        "calculation (visual cue) and sentence reading":
+            "visual processing",
+        "calculation (visual cue) and sentence reading vs "
+        "calculation (auditory cue) and sentence listening":
+            "visual processing vs auditory processing",
+        "calculation (auditory cue) and sentence listening vs "
+        "calculation (visual cue) and sentence reading":
+            "auditory processing vs visual processing",
+        "calculation (visual cue) and sentence reading vs checkerboard":
+            "visual processing vs checkerboard",
+        "calculation and sentence listening/reading vs button press":
+            "cognitive processing vs motor",
+        # Button press
+        "left button press (auditory cue)": "left auditory click",
+        "left button press (visual cue)": "left visual click",
+        "left button press": "left auditory&visual click",
+        "left vs right button press": "left auditory & visual click vs "
+            "right auditory&visual click",
+        "right button press (auditory cue)": "right auditory click",
+        "right button press (visual cue)": "right visual click",
+        "right button press": "right auditory & visual click",
+        "right vs left button press": "right auditory & visual click "
+           "vs left auditory&visual click",
+        "button press (auditory cue) vs sentence listening":
+            "auditory click vs auditory sentences",
+        "button press (visual cue) vs sentence reading":
+            "visual click vs visual sentences",
+        "button press vs calculation and sentence listening/reading":
+            "auditory&visual motor vs cognitive processing"}
+
+    def fetch(self, contrasts=None, n_subjects=None, get_tmaps=False,
               get_masks=False, get_anats=False, url=None,
               resume=True, force=False, verbose=1):
-        if isinstance(contrasts, _basestring):
-            raise ValueError('Contrasts should be a list of strings, but '
-                             'a single string was given: "%s"' % contrasts)
         if n_subjects is None:
             n_subjects = 94  # 94 subjects available
         if (n_subjects > 94) or (n_subjects < 1):
@@ -176,63 +220,12 @@ class BrainomicsDataset(HttpDataset):
                           "value will be used instead (\'n_subjects=94\')")
             n_subjects = 94  # 94 subjects available
 
-        # we allow the user to use alternatives to Brainomics contrast names
-        contrast_name_wrapper = {
-            # Checkerboard
-            "checkerboard": "checkerboard",
-            "horizontal checkerboard": "horizontal checkerboard",
-            "vertical checkerboard": "vertical checkerboard",
-            "horizontal vs vertical checkerboard":
-                "horizontal vs vertical checkerboard",
-            "vertical vs horizontal checkerboard":
-                "vertical vs horizontal checkerboard",
-            # Sentences
-            "sentence listening": "auditory sentences",
-            "sentence reading": "visual sentences",
-            "sentence listening and reading": "auditory&visual sentences",
-            "sentence reading vs checkerboard": "visual sentences vs checkerboard",
-            # Calculation
-            "calculation (auditory cue)": "auditory calculation",
-            "calculation (visual cue)": "visual calculation",
-            "calculation (auditory and visual cue)": "auditory&visual calculation",
-            "calculation (auditory cue) vs sentence listening":
-                "auditory calculation vs auditory sentences",
-            "calculation (visual cue) vs sentence reading":
-                "visual calculation vs sentences",
-            "calculation vs sentences": "auditory&visual calculation vs sentences",
-            # Calculation + Sentences
-            "calculation (auditory cue) and sentence listening":
-                "auditory processing",
-            "calculation (visual cue) and sentence reading":
-                "visual processing",
-            "calculation (visual cue) and sentence reading vs "
-            "calculation (auditory cue) and sentence listening":
-                "visual processing vs auditory processing",
-            "calculation (auditory cue) and sentence listening vs "
-            "calculation (visual cue) and sentence reading":
-                "auditory processing vs visual processing",
-            "calculation (visual cue) and sentence reading vs checkerboard":
-                "visual processing vs checkerboard",
-            "calculation and sentence listening/reading vs button press":
-                "cognitive processing vs motor",
-            # Button press
-            "left button press (auditory cue)": "left auditory click",
-            "left button press (visual cue)": "left visual click",
-            "left button press": "left auditory&visual click",
-            "left vs right button press": "left auditory & visual click vs "
-                + "right auditory&visual click",
-            "right button press (auditory cue)": "right auditory click",
-            "right button press (visual cue)": "right visual click",
-            "right button press": "right auditory & visual click",
-            "right vs left button press": "right auditory & visual click "
-               + "vs left auditory&visual click",
-            "button press (auditory cue) vs sentence listening":
-                "auditory click vs auditory sentences",
-            "button press (visual cue) vs sentence reading":
-                "visual click vs visual sentences",
-            "button press vs calculation and sentence listening/reading":
-                "auditory&visual motor vs cognitive processing"}
-        allowed_contrasts = list(contrast_name_wrapper.values())
+        if contrasts is None:
+            contrasts = self.contrast_name_wrapper.values()
+        elif isinstance(contrasts, _basestring):
+            contrasts = [contrasts]
+
+        allowed_contrasts = list(self.contrast_name_wrapper.values())
         # convert contrast names
         contrasts_wrapped = []
         # get a unique ID for each contrast. It is used to give a unique name to
@@ -242,8 +235,8 @@ class BrainomicsDataset(HttpDataset):
             if contrast in allowed_contrasts:
                 contrasts_wrapped.append(contrast)
                 contrasts_indices.append(allowed_contrasts.index(contrast))
-            elif contrast in contrast_name_wrapper:
-                name = contrast_name_wrapper[contrast]
+            elif contrast in self.contrast_name_wrapper:
+                name = self.contrast_name_wrapper[contrast]
                 contrasts_wrapped.append(name)
                 contrasts_indices.append(allowed_contrasts.index(name))
             else:
@@ -378,7 +371,7 @@ class BrainomicsDataset(HttpDataset):
             the data).
 
         verbose: int, optional
-            verbosity level (0 means no message).
+            verbose level (0 means no message).
 
         Returns
         -------

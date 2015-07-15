@@ -5,29 +5,13 @@ Utilities to download NeuroImaging-based atlases
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
-import collections
 import os
-import tarfile
-import zipfile
-import sys
-import shutil
-import time
-import hashlib
-import fnmatch
-import warnings
-import re
-import base64
 
 import numpy as np
-from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
-                                   md5_hash)
-from ...core._utils.niimg import check_niimg, new_img_like
 from ...core.datasets import HttpDataset
-from ...core.fetchers import (format_time, md5_sum_file, get_dataset_dir)
+from ...core.fetchers import get_dataset_dir
 
 
 class HarvardOxfordDataset(HttpDataset):
@@ -64,25 +48,35 @@ class HarvardOxfordDataset(HttpDataset):
     regions: nibabel.Nifti1Image
         regions definition, as a label image.
     """
+    atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
+                   "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
+                   "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
+                   "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
+                   "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
+                   "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
+                   "cort-prob-1mm", "cort-prob-2mm",
+                   "sub-prob-1mm", "sub-prob-2mm")
+
     def __init__(self, data_dir=None):
         super(HarvardOxfordDataset, self).__init__(data_dir=data_dir)
         self.data_dir = get_dataset_dir(self.name, data_dir=data_dir,
                                         env_vars=['FSL_DIR', 'FSLDIR'])
 
-    def fetch(self, atlas_name, symmetric_split=False,
+    def fetch(self, atlas_name=None, symmetric_split=False,
               resume=True, force=False, verbose=1):
-        atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
-                       "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
-                       "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
-                       "sub-maxprob-thr0-1mm", "sub-maxprob-thr0-2mm",
-                       "sub-maxprob-thr25-1mm", "sub-maxprob-thr25-2mm",
-                       "sub-maxprob-thr50-1mm", "sub-maxprob-thr50-2mm",
-                       "cort-prob-1mm", "cort-prob-2mm",
-                       "sub-prob-1mm", "sub-prob-2mm")
-        if atlas_name not in atlas_items:
+
+        if atlas_name is None:
+            # Recursive call
+            rv = []
+            for atlas_name in self.atlas_items:
+                rv.append(self.fetch(atlas_name=atlas_name, symmetric_split=symmetric_split,
+                                     resume=resume, force=force, verbose=verbose))
+                return rv
+
+        if atlas_name not in self.atlas_items:
             raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
                              "among:\n{1}".format(
-                                 atlas_name, '\n'.join(atlas_items)))
+                                 atlas_name, '\n'.join(self.atlas_items)))
 
         # grab data from internet first
         url = 'https://www.nitrc.org/frs/download.php/7363/HarvardOxford.tgz'
