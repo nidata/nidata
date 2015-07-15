@@ -442,7 +442,7 @@ def fetch_files(data_dir, files, resume=True, force=False, mock=False, verbose=1
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
 
-    # Create destination dir
+    # Create destination dirs
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
@@ -461,9 +461,9 @@ def fetch_files(data_dir, files, resume=True, force=False, mock=False, verbose=1
         target_file = os.path.join(data_dir, file_)
         # Target file in temp dir
         temp_target_file = os.path.join(temp_dir, file_)
+        temp_target_dir = os.path.dirname(temp_target_file)
         if force or (abort is None and not os.path.exists(target_file) and not
                      os.path.exists(temp_target_file)):
-
             # We may be in a global read-only repository. If so, we cannot
             # download files.
             if not os.access(data_dir, os.W_OK):
@@ -471,36 +471,38 @@ def fetch_files(data_dir, files, resume=True, force=False, mock=False, verbose=1
                                  ' repository is read-only. Contact your data'
                                  ' administrator to solve the problem')
 
-            if not os.path.exists(temp_dir):
-                os.mkdir(temp_dir)
+            if not os.path.exists(temp_target_dir):
+                os.makedirs(temp_target_dir)
             md5sum = opts.get('md5sum', None)
 
-            dl_file = _fetch_file(url, temp_dir, resume=resume,
-                                  overwrite=force,
-                                  verbose=verbose, md5sum=md5sum,
-                                  username=opts.get('username', None),
-                                  passwd=opts.get('passwd', None),
-                                  handlers=opts.get('handlers', []),
-                                  headers=opts.get('headers', dict()),
-                                  cookies=opts.get('cookies', dict()))
+            temp_target_file = _fetch_file(url, temp_target_dir, resume=resume,
+                                           overwrite=force,
+                                           verbose=verbose, md5sum=md5sum,
+                                           username=opts.get('username', None),
+                                           passwd=opts.get('passwd', None),
+                                           handlers=opts.get('handlers', []),
+                                           headers=opts.get('headers', dict()),
+                                           cookies=opts.get('cookies', dict()))
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
-                move = os.path.join(temp_dir, opts['move'])
+                move = os.path.join(temp_target_dir, opts['move'])
                 move_dir = os.path.dirname(move)
                 if not os.path.exists(move_dir):
                     os.makedirs(move_dir)
-                shutil.move(dl_file, move)
-                dl_file = move
+                shutil.move(temp_target_file, move)
+                temp_target_file = move
+
             if 'uncompress' in opts:
                 try:
-                    if not mock or os.path.getsize(dl_file) != 0:
-                        _uncompress_file(dl_file, verbose=verbose)
+                    if not mock or os.path.getsize(temp_target_file) != 0:
+                        _uncompress_file(temp_target_file, verbose=verbose)
                     else:
-                        os.remove(dl_file)
+                        os.remove(temp_target_file)
                 except Exception as e:
                     abort = str(e)
-        if (abort is None and not os.path.exists(target_file) and not
-                os.path.exists(temp_target_file)):
+
+        if (abort is None and not os.path.exists(target_file) and
+                not os.path.exists(temp_target_file)):
             if not mock:
                 warnings.warn('An error occured while fetching %s' % file_)
                 abort = "Target file cannot be found. (%s)" % temp_target_file
@@ -508,11 +510,14 @@ def fetch_files(data_dir, files, resume=True, force=False, mock=False, verbose=1
                 if not os.path.exists(os.path.dirname(temp_target_file)):
                     os.makedirs(os.path.dirname(temp_target_file))
                 open(temp_target_file, 'w').close()
+
         if abort is not None:
-            if os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
+            if os.path.exists(temp_target_dir):
+                shutil.rmtree(temp_target_dir)
             raise IOError('Fetching aborted: ' + abort)
+
         files_.append(target_file)
+
     # If needed, move files from temps directory to final directory.
     if os.path.exists(temp_dir):
         #XXX We could only moved the files requested
