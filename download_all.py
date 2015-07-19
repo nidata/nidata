@@ -16,9 +16,14 @@ for cat in data_categories:
 
         mod_path = klass.__module__.rsplit('.', 1)[0]
         exec('import %s as mod' % mod_path)
-        try:
-            exec('import %s.example1' % mod_path)
-        except ImportError:
-            pass
-        else:
-            print("cool!")
+
+        if obj not in ["OasisVbmDataset", "HaxbyEtal2011Dataset"]:
+            try:
+                exec('import %s.example1' % mod_path)
+            except ImportError as ie:
+                if 'example1' in ie.message:
+                    pass
+                else:
+                    raise ie
+            else:
+                print("cool!")

@@ -42,8 +42,9 @@ ____
 import numpy as np
 from scipy import linalg
 import matplotlib.pyplot as plt
-from nilearn import datasets
 from nilearn.input_data import NiftiMasker
+
+import nidata.anatomical as datasets
 
 n_subjects = 100  # more subjects requires more memory
 
