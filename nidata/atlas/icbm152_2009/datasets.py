@@ -5,32 +5,14 @@ Utilities to download NeuroImaging-based atlases
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
-import collections
 import os
-import tarfile
-import zipfile
-import sys
-import shutil
-import time
-import hashlib
-import fnmatch
-import warnings
-import re
-import base64
 
-import numpy as np
-from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
-                                   md5_hash)
-from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.datasets import Dataset
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files)
+from ...core.datasets import HttpDataset
 
 
-class ICBM152Dataset(Dataset):
+class ICBM152Dataset(HttpDataset):
     """Download and load the ICBM152 template (dated 2009)
 
     Parameters
@@ -74,7 +56,7 @@ class ICBM152Dataset(Dataset):
     http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
     """
 
-    def fetch(self, url=None, resume=True, verbose=1):
+    def fetch(self, url=None, resume=True, force=False, verbose=1):
         if url is None:
             url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/" \
                   "mni_icbm152_nlin_sym_09a_nifti.zip"
@@ -97,8 +79,8 @@ class ICBM152Dataset(Dataset):
                                   "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii",
                                   "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
 
-        sub_files = fetch_files(self.data_dir, filenames, resume=resume,
-                                verbose=verbose)
+        sub_files = self.fetcher.fetch(filenames, resume=resume,
+                                       force=force, verbose=verbose)
 
         params = dict(list(zip(keys, sub_files)))
         return Bunch(**params)

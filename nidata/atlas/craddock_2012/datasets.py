@@ -5,32 +5,12 @@ Utilities to download NeuroImaging-based atlases
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
-import collections
-import os
-import tarfile
-import zipfile
-import sys
-import shutil
-import time
-import hashlib
-import fnmatch
-import warnings
-import re
-import base64
-
-import numpy as np
-from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
-                                   md5_hash)
-from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.datasets import Dataset
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files)
+from ...core.datasets import HttpDataset
 
 
-class Craddock2012Dataset(Dataset):
+class Craddock2012Dataset(HttpDataset):
     """Download and return file names for the Craddock 2012 parcellation
 
     The provided images are in MNI152 space.
@@ -47,7 +27,7 @@ class Craddock2012Dataset(Dataset):
         whether to resumed download of a partly-downloaded file.
 
     verbose: int
-        verbosity level (0 means no message).
+        verbose level (0 means no message).
 
     Returns
     -------
@@ -71,7 +51,7 @@ class Craddock2012Dataset(Dataset):
     on this parcellation.
     """
 
-    def fetch(self, url=None, resume=True, verbose=1):
+    def fetch(self, url=None, resume=True, force=False, verbose=1):
 
         if url is None:
             url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
@@ -90,8 +70,8 @@ class Craddock2012Dataset(Dataset):
                 ("random_all.nii.gz", url, opts)
         ]
 
-        sub_files = fetch_files(self.data_dir, filenames, resume=resume,
-                                verbose=verbose)
+        sub_files = self.fetcher.fetch(filenames, resume=resume,
+                                       force=force, verbose=verbose)
 
         params = dict(list(zip(keys, sub_files)))
 

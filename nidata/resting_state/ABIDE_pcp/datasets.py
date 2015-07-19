@@ -5,32 +5,18 @@ Utilities to download resting state MRI datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
-import collections
 import os
-import tarfile
-import zipfile
-import sys
-import shutil
-import time
-import hashlib
-import fnmatch
-import warnings
 import re
-import base64
 
 import numpy as np
-from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ...core._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.datasets import Dataset
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir, filter_columns)
+from ...core._utils.compat import BytesIO
+from ...core.datasets import HttpDataset
+from ...core.fetchers import filter_columns
 
 
-class AbidePcpDataset(Dataset):
+class AbidePcpDataset(HttpDataset):
     """ Fetch ABIDE dataset
 
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
@@ -110,11 +96,11 @@ class AbidePcpDataset(Dataset):
     7 (2013).
     """
 
-    
     def fetch(self, n_subjects=None, pipeline='cpac',
               band_pass_filtering=False, global_signal_regression=False,
               derivatives=['func_preproc'],
-              quality_checked=True, url=None, verbose=1, **kwargs):
+              quality_checked=True, url=None, resume=True, force=False,
+              verbose=1, **kwargs):
         # Parameter check
         for derivative in derivatives:
             if derivative not in [
@@ -147,8 +133,8 @@ class AbidePcpDataset(Dataset):
 
         # Fetch the phenotypic file and load it
         csv = 'Phenotypic_V1_0b_preprocessed1.csv'
-        path_csv = fetch_files(self.data_dir, [(csv, url + '/' + csv, {})],
-                               verbose=verbose)[0]
+        path_csv = self.fetcher.fetch([(csv, url + '/' + csv, {})],
+                                      resume=resume, force=force, verbose=verbose)[0]
 
         # Note: the phenotypic file contains string that contains comma which mess
         # up numpy array csv loading. This is why I do a pass to remove the last
@@ -191,7 +177,7 @@ class AbidePcpDataset(Dataset):
                       '/'.join([url, derivative,
                                 file_id + '_' + derivative + ext]),
                       {}) for file_id in file_ids]
-            files = fetch_files(data_dir, files, verbose=verbose)
+            files = self.fetcher.fetch(files, resume=resume, force=force, verbose=verbose)
             # Load derivatives if needed
             if ext == '.1D':
                 files = [np.loadtxt(f) for f in files]

@@ -5,33 +5,15 @@ Utilities to download functional MRI datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
-import collections
 import os
-import tarfile
-import zipfile
-import sys
-import shutil
-import time
-import hashlib
-import fnmatch
-import warnings
-import re
-import base64
 
-import numpy as np
-from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
-                                   md5_hash)
-from ...core.datasets import Dataset
-from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              readmd5_sum_file)
+from ...core.datasets import HttpDataset
+from ...core.fetchers import readmd5_sum_file
 
 
-class Haxby2001Dataset(Dataset):
+class Haxby2001Dataset(HttpDataset):
     """Download and load an example haxby dataset
 
     Parameters
@@ -111,7 +93,7 @@ class Haxby2001Dataset(Dataset):
         self.simple = simple
 
     def fetch(self, n_subjects=1, fetch_stimuli=False,
-              url=None, resume=True, verbose=1):
+              url=None, resume=True, force=False, verbose=1):
 
         if self.simple:
             # URL of the dataset. It is optional because a test uses it to test dataset
@@ -128,7 +110,7 @@ class Haxby2001Dataset(Dataset):
                      url, opts),
             ]
 
-            files = fetch_files(self.data_dir, files, resume=resume, verbose=verbose)
+            files = self.fetcher.fetch(files, resume=resume, force=force, verbose=verbose)
 
             # return the data
             return Bunch(func=files[1], session_target=files[0], mask=files[2],
@@ -142,8 +124,8 @@ class Haxby2001Dataset(Dataset):
             # Dataset files
             if url is None:
                 url = 'http://data.pymvpa.org/datasets/haxby2001/'
-            md5sums = fetch_files(self.data_dir, [('MD5SUMS', url + 'MD5SUMS', {})],
-                                   verbose=verbose)[0]
+            md5sums = self.fetcher.fetch([('MD5SUMS', url + 'MD5SUMS', {})],
+                                   resume=resume, force=force, verbose=verbose)[0]
             md5sums = readmd5_sum_file(md5sums)
 
             # definition of dataset files
@@ -163,7 +145,7 @@ class Haxby2001Dataset(Dataset):
                     if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
             ]
 
-            files = fetch_files(self.data_dir, files, resume=resume, verbose=verbose)
+            files = self.fetcher.fetch(files, resume=resume, force=force, verbose=verbose)
 
             if n_subjects == 6:
                 files.append(None)  # None value because subject 6 has no anat
@@ -173,8 +155,8 @@ class Haxby2001Dataset(Dataset):
                 stimuli_files = [(os.path.join('stimuli', 'README'),
                                   url + 'stimuli-2010.01.14.tar.gz',
                                   {'uncompress': True})]
-                readme = fetch_files(self.data_dir, stimuli_files, resume=resume,
-                                      verbose=verbose)[0]
+                readme = self.fetcher.fetch(stimuli_files, resume=resume,
+                                            force=force, verbose=verbose)[0]
                 kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
                                           dictionary=True)
 

@@ -5,33 +5,14 @@ Utilities to download functional MRI datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
-import collections
 import os
-import tarfile
-import zipfile
-import sys
-import shutil
-import time
-import hashlib
-import fnmatch
-import warnings
-import re
-import base64
 
-import numpy as np
-from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from ...core._utils.compat import (_basestring, BytesIO, cPickle, _urllib,
-                                   md5_hash)
-from ...core._utils.niimg import check_niimg, new_img_like
-from ...core.datasets import Dataset
-from ...core.fetchers import (format_time, md5_sum_file, fetch_files,
-                              get_dataset_dir, readmd5_sum_file)
+from ...core.datasets import HttpDataset
 
 
-class Miyawaki2008Dataset(Dataset):
+class Miyawaki2008Dataset(HttpDataset):
     """Download and loads Miyawaki et al. 2008 dataset (153MB)
 
     Returns
@@ -64,7 +45,7 @@ class Miyawaki2008Dataset(Dataset):
     <http://www.cns.atr.jp/dni/en/downloads/
     fmri-data-set-for-visual-image-reconstruction/>`_
     """
-    def fetch(self, url=None, resume=True, verbose=1):
+    def fetch(self, url=None, resume=True, force=False, verbose=1):
 
         url = 'https://www.nitrc.org/frs/download.php' \
               '/5899/miyawaki2008.tgz?i_agree=1&download_now=1'
@@ -142,7 +123,7 @@ class Miyawaki2008Dataset(Dataset):
         file_names = func_figure + func_random + label_figure + label_random
         file_names += file_mask
 
-        files = fetch_files(self.data_dir, file_names, resume=resume, verbose=verbose)
+        files = self.fetcher.fetch(file_names, resume=resume, force=force, verbose=verbose)
 
         # Return the data
         return Bunch(

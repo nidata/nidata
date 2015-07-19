@@ -27,7 +27,7 @@ class Power2011Dataset(HttpDataset):
         files = (('power_2011.csv',
                   'https://raw.githubusercontent.com/nilearn/nilearn/master/nilearn/data/power_2011.csv',
                   {}),)
-        files = self.fetcher.fetch(files=files, force=not resume, verbosity=verbose)
+        files = self.fetcher.fetch(files=files, force=not resume, verbose=verbose)
         return Bunch(rois=np.recfromcsv(files[0]))
 
 
