@@ -391,7 +391,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     return full_name
 
 
-def fetch_files(data_dir, files, resume=True, force=False, mock=False, verbose=1):
+def fetch_files(data_dir, files, resume=True, force=False, mock=False, verbose=1, delete_archive=True):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
@@ -475,29 +475,29 @@ def fetch_files(data_dir, files, resume=True, force=False, mock=False, verbose=1
                 os.makedirs(temp_target_dir)
             md5sum = opts.get('md5sum', None)
 
-            temp_target_file = _fetch_file(url, temp_target_dir, resume=resume,
-                                           overwrite=force,
-                                           verbose=verbose, md5sum=md5sum,
-                                           username=opts.get('username', None),
-                                           passwd=opts.get('passwd', None),
-                                           handlers=opts.get('handlers', []),
-                                           headers=opts.get('headers', dict()),
-                                           cookies=opts.get('cookies', dict()))
+            fetched_file = _fetch_file(url, temp_target_dir, resume=resume,
+                                       overwrite=force,
+                                       verbose=verbose, md5sum=md5sum,
+                                       username=opts.get('username', None),
+                                       passwd=opts.get('passwd', None),
+                                       handlers=opts.get('handlers', []),
+                                       headers=opts.get('headers', dict()),
+                                       cookies=opts.get('cookies', dict()))
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_target_dir, opts['move'])
                 move_dir = os.path.dirname(move)
                 if not os.path.exists(move_dir):
                     os.makedirs(move_dir)
-                shutil.move(temp_target_file, move)
+                shutil.move(fetched_file, move)
                 temp_target_file = move
 
             if 'uncompress' in opts:
                 try:
-                    if not mock or os.path.getsize(temp_target_file) != 0:
-                        _uncompress_file(temp_target_file, verbose=verbose)
+                    if not mock or os.path.getsize(fetched_file) != 0:
+                        _uncompress_file(fetched_file, verbose=verbose, delete_archive=delete_archive)
                     else:
-                        os.remove(temp_target_file)
+                        os.remove(fetched_file)
                 except Exception as e:
                     abort = str(e)
 
