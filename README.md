@@ -18,21 +18,38 @@ The types of data we wish to expose include:
 * EEG / ERP / MEG / ECoG
 
 
+### Known data sources
+
+Not all data sources have been implemented. Our list of known data sources can be found here:
+https://github.com/nidata/nidata/wiki/Data-sources
+
+Current data sources will be available via the website, when implemented:
+http://nidata.github.io/
+
 ### Dependencies
 
-Because of the breadth of this package, dependencies could be far-ranging, increasing installation difficulty.  In order to ease installation, this repository includes many minimal installs of other code-bases.  Licenses for these codes are respective of each included package.  
+`nidata` is tested in Python 2.6, 2.7, and 3.4. The only package-level dependency is pip.
 
-These packages include:
+Individual datasets may have package dependencies for downloads or examples. If so, `nidata` attempts to install them via pip. These packages include:
 * [nilearn](https://github.com/nilearn/nilearn/) - Machine learning for neuroimaging, contains generic download tools and logic for accessing fMRI datasets
-* [pymvpa](https://github.com/PyMVPA/PyMVPA) - 
 * [nibabel](https://github.com/nibabel/nibabel/) - Tools for accessing many formats of MRI data
 
 
 ### Installation
 
-Clone this repository--no extra dependencies!
+`sudo pip install git+https://github.com/nidata/nidata`
 
 
 ### Usage
 
-[NYI]
+To run an example,
+`python nidata/multimodal/hcp/example1.py`
+
+To download data,
+```python
+from nidata.multimodal import HcpDataset
+HcpDataset().fetch(n_subjects=1)
+
+```
+
+
