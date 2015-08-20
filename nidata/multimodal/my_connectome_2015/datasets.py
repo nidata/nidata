@@ -3,15 +3,9 @@ A data loader utility for downloading fMRI data from OpenfMRI.org
 
 Adapted by: Alison Campbell
 """
-
-# *- encoding: utf-8 -*-
-"""
-Utilities to download functional MRI datasets
-"""
-# Author: Alexandre Abraham, Philippe Gervais
-# License: simplified BSD
-
+import glob
 import os
+from collections import defaultdict
 
 from sklearn.datasets.base import Bunch
 
@@ -22,48 +16,76 @@ from ...core.fetchers import readmd5_sum_file
 class MyConnectome2015Dataset(HttpDataset):
 # class [A CLASS]([A SUPER CLASS]) 
 
-    def fetch(self, n_sessions=None, get_retinotopy=True, get_pilot=True,
-              get_diffusion=True, get_resting_state=True,
+    def fetch(self, data_types=None, session_ids=None,
               resume=True, force=False, verbose=1):
     		# before the fetcher, construct URLS to download
 			# Openfmri dataset ID ds000031
-    		
+
+        if data_types is None:
+            data_types = ['functional', 'retinotopy', 'diffusion', 'resting_state', 'pilot']
+        elif isinstance(data_types, dict):
+            session_ids = data_types.get('functional', session_ids)
+            data_types = data_types.keys()
+
+        all_session_ids = dict(
+            pilot=range(2, 13),
+            functional=range(14, 104),
+            resting_state=[105],
+            diffusion=[106],
+            retinotopy=['retinotopy'])
+
+        if session_ids is None:
+            session_ids = []
+            for data_type in data_types:
+                session_ids += all_session_ids[data_type]
+
+
         # First, construct the relevant urls
         files = []
         opts = {'uncompress': True}
         base_url = 'https://s3.amazonaws.com/openfmri/tarballs/'
 
-        if n_sessions >= 0 or n_sessions is None:  # this file: 13-24
-            files += [('ds031_set01', base_url + 'ds031_set01.tgz', opts)]
-        if n_sessions >= 13 or n_sessions is None:  # this file: 25-36
-            files += [('ds031_set01', base_url + 'ds031_set01.tgz', opts)]
-        if n_sessions >= 25 or n_sessions is None:  # this file: 37-48
-            files += [('ds031_set01', base_url + 'ds031_set01.tgz', opts)]
-        if n_sessions >= 37 or n_sessions is None:  # this file: 49-60
-            files += [('ds031_set01', base_url + 'ds031_set01.tgz', opts)]
-        if n_sessions >= 49 or n_sessions is None:  # this file: 61-72
-            files += [('ds031_set01', base_url + 'ds031_set01.tgz', opts)]
-        if n_sessions >= 61 or n_sessions is None:  # this file: 73-84
-            files += [('ds031_set01', base_url + 'ds031_set01.tgz', opts)]
-        if n_sessions >= 73 or n_sessions is None:  # this file: 85-97
-            files += [('ds031_set01', base_url + 'ds031_set01.tgz', opts)]
-        if n_sessions >= 86 or n_sessions is None:  # this file: 98-104
-            files += [('ds031_set01', base_url + 'ds031_set01.tgz', opts)]
-        if get_pilot:
-            files += [('ds031_pilot_set', base_url + 'ds031_pilot_set.tgz', opts)]
-        if get_resting_state:
-            files += [('ds031_ses105', base_url + 'ds031_ses105.tgz', opts)]
-        if get_diffusion:
-            files += [('ds031_ses106', base_url + 'ds031_ses106.tgz', opts)]
-        if get_retinotopy:
-            files += [('ds031_retinotopy', base_url + 'ds031_retinotopy.tgz', opts)]
+        if 'resting_state' in data_types:
+            files += [('ds031/sub00001/ses105', base_url + 'ds031_ses105.tgz', opts)]
+        if 'diffusion' in data_types:
+            files += [('ds031/sub00001/ses106', base_url + 'ds031_ses106.tgz', opts)]
+        if 'retinotopy' in data_types:
+            files += [('ds031/sub00001/retinotopy', base_url + 'ds031_retinotopy.tgz', opts)]
+        if 'functional' in data_types:
+            sess_to_file_map = {
+                'ds031_pilot_set.tgz': range(2, 12),
+                'ds031_set01.tgz': range(13, 25),
+                'ds031_set02.tgz': range(25, 37),
+                'ds031_set03.tgz': range(37, 49),
+                'ds031_set04.tgz': range(49, 61),
+                'ds031_set05.tgz': range(61, 73),
+                'ds031_set06.tgz': range(73, 85),
+                'ds031_set07.tgz': range(85, 98),
+                'ds031_set08.tgz': range(98, 105),}
+            for zip_file, sess_range in sess_to_file_map.items():
+                if set(session_ids).intersection(set(sess_range)):
+                    uncompressed_dir = 'ds031/sub00001/ses%03d' % sess_range[0]
+                    remote_url = base_url + zip_file
+                    files += [(uncompressed_dir, remote_url, opts)]
 
         # Now, fetch the files.
-        files = self.fetcher.fetch(files, resume=resume, force=force, verbose=verbose)
-
+        self.fetcher.fetch(files, resume=resume, force=force, verbose=verbose, delete_archive=False)
+        
         # Group the data according to modality.
+        out_dict = defaultdict(lambda: [])
+        for session_path in glob.glob(os.path.join(self.data_dir, 'ds031', 'sub00001', 'ses*')):
+            session_dirname = os.path.basename(session_path)
+            if (session_dirname not in session_ids and
+                int(session_dirname[3:]) not in session_ids):
+                continue
+
+            for data_type in data_types:
+                data_type_path = os.path.join(session_path, data_type)
+                if not os.path.exists(data_type_path):
+                    continue
+
+                for img_path in glob.glob(os.path.join(data_type_path, '*.nii.gz')):
+                    out_dict[data_type].append(img_path)
 
         # return the data
-        return Bunch(func=files[1], session_target=files[0], mask=files[2],
-                         conditions_target=files[3])
-
+        return Bunch(**dict(out_dict))

@@ -194,12 +194,14 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             shutil.copyfileobj(gz, out, 8192)
             gz.close()
             out.close()
+
             # If file is .tar.gz, this will be handle in the next case
             if delete_archive:
                 os.remove(file_)
             file_ = filename
             filename, ext = os.path.splitext(file_)
             processed = True
+
         if tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
                 tar.extractall(path=data_dir)
@@ -391,7 +393,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     return full_name
 
 
-def fetch_files(data_dir, files, resume=True, force=False, mock=False, verbose=1, delete_archive=True):
+def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_archive=True):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
@@ -432,25 +434,29 @@ def fetch_files(data_dir, files, resume=True, force=False, mock=False, verbose=1
     files: list of string
         Absolute paths of downloaded files on disk
     """
-    # There are two working directories here:
-    # - data_dir is the destination directory of the dataset
-    # - temp_dir is a temporary directory dedicated to this fetching call. All
-    #   files that must be downloaded will be in this directory. If a corrupted
-    #   file is found, or a file is missing, this working directory will be
-    #   deleted.
-    files_pickle = cPickle.dumps([(file_, url) for file_, url, _ in files])
-    files_md5 = hashlib.md5(files_pickle).hexdigest()
-    temp_dir = os.path.join(data_dir, files_md5)
+    # We may be in a global read-only repository. If so, we cannot
+    # download files.
+    if not os.access(data_dir, os.W_OK):
+        raise ValueError('Dataset files are missing but dataset'
+                         ' repository is read-only. Contact your data'
+                         ' administrator to solve the problem')
 
     # Create destination dirs
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-    # Abortion flag, in case of error
-    abort = None
-
     files_ = []
     for file_, url, opts in files:
+        # There are two working directories here:
+        # - data_dir is the destination directory of the dataset
+        # - temp_dir is a temporary directory dedicated to this fetching call. All
+        #   files that must be downloaded will be in this directory. If a corrupted
+        #   file is found, or a file is missing, this working directory will be
+        #   deleted.
+        files_pickle = cPickle.dumps(url)
+        files_md5 = hashlib.md5(files_pickle).hexdigest()
+        temp_dir = os.path.join(data_dir, files_md5)
+
         # 3 possibilities:
         # - the file exists in data_dir, nothing to do.
         # - the file does not exists: we download it in temp_dir
@@ -459,72 +465,96 @@ def fetch_files(data_dir, files, resume=True, force=False, mock=False, verbose=1
 
         # Target file in the data_dir
         target_file = os.path.join(data_dir, file_)
-        # Target file in temp dir
-        temp_target_file = os.path.join(temp_dir, file_)
-        temp_target_dir = os.path.dirname(temp_target_file)
-        if force or (abort is None and not os.path.exists(target_file) and not
-                     os.path.exists(temp_target_file)):
-            # We may be in a global read-only repository. If so, we cannot
-            # download files.
-            if not os.access(data_dir, os.W_OK):
-                raise ValueError('Dataset files are missing but dataset'
-                                 ' repository is read-only. Contact your data'
-                                 ' administrator to solve the problem')
-
-            if not os.path.exists(temp_target_dir):
-                os.makedirs(temp_target_dir)
-            md5sum = opts.get('md5sum', None)
-
-            fetched_file = _fetch_file(url, temp_target_dir, resume=resume,
+    
+        if force or not os.path.exists(target_file):
+            # if not os.path.exists(temp_target_dir):
+            #     os.makedirs(temp_target_dir)
+            # Fetch the file, if it doesn't already exist.
+            fetched_file = _fetch_file(url, temp_dir,
+                                       resume=resume,
                                        overwrite=force,
-                                       verbose=verbose, md5sum=md5sum,
-                                       username=opts.get('username', None),
-                                       passwd=opts.get('passwd', None),
+                                       verbose=verbose,
+                                       md5sum=opts.get('md5sum'),
+                                       username=opts.get('username'),
+                                       passwd=opts.get('passwd'),
                                        handlers=opts.get('handlers', []),
                                        headers=opts.get('headers', dict()),
                                        cookies=opts.get('cookies', dict()))
-            if 'move' in opts:
+
+            # First, uncompress.
+            if opts.get('uncompress'):
+                target_files = _uncompress_file(fetched_file, verbose=verbose, delete_archive=False)
+            else:
+                target_files = [fetched_file]
+
+            if opts.get('move'):
+                raise NotImplementedError()
+
                 # XXX: here, move is supposed to be a dir, it can be a name
-                move = os.path.join(temp_target_dir, opts['move'])
-                move_dir = os.path.dirname(move)
-                if not os.path.exists(move_dir):
-                    os.makedirs(move_dir)
-                shutil.move(fetched_file, move)
+                move = os.path.join(temp_dir, opts['move'])
+
+                if len(target_files) > 1:
+                    target_files = [os.path.join(os.path.dirname(move),
+                                         os.path.basename(f))
+                                    for f in target_files]
+                    # Do the move
+                else:
+                    if not os.path.exists(move_dir):
+                        os.makedirs(move_dir)
+                    shutil.move(fetched_file, move)
+                    target_files = [move]
                 temp_target_file = move
 
-            if 'uncompress' in opts:
-                try:
-                    if not mock or os.path.getsize(fetched_file) != 0:
-                        _uncompress_file(fetched_file, verbose=verbose, delete_archive=delete_archive)
-                    else:
-                        os.remove(fetched_file)
-                except Exception as e:
-                    abort = str(e)
+            # Let's examine our work
+            if not os.path.exists(target_file):
+                raise Exception("An error occured while fetching %s; the expected target file cannot be found. (%s)\nDebug info: %s" % (
+                    file_, target_file,
+                    {'fetched_file': fetched_file, 'target_files': target_files}))
 
-        if (abort is None and not os.path.exists(target_file) and
-                not os.path.exists(temp_target_file)):
-            if not mock:
-                warnings.warn('An error occured while fetching %s' % file_)
-                abort = "Target file cannot be found. (%s)" % temp_target_file
-            else:
-                if not os.path.exists(os.path.dirname(temp_target_file)):
-                    os.makedirs(os.path.dirname(temp_target_file))
-                open(temp_target_file, 'w').close()
+            if opts.get('uncompress') and delete_archive:
+                os.remove(fetched_file)
 
-        if abort is not None:
-            if os.path.exists(temp_target_dir):
-                shutil.rmtree(temp_target_dir)
-            raise IOError('Fetching aborted: ' + abort)
+            # If needed, move files from temps directory to final directory.
+            if os.path.exists(temp_dir):
+                #XXX We could only moved the files requested
+                #XXX Movetree can go wrong
+                movetree(temp_dir, data_dir)
+                shutil.rmtree(temp_dir)
 
         files_.append(target_file)
 
-    # If needed, move files from temps directory to final directory.
-    if os.path.exists(temp_dir):
-        #XXX We could only moved the files requested
-        #XXX Movetree can go wrong
-        movetree(temp_dir, data_dir)
-        shutil.rmtree(temp_dir)
     return files_
+
+
+def copytree(src, dst, symlinks=False, ignore=None):
+    import os
+    import shutil
+    import stat
+
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+        shutil.copystat(src, dst)
+    lst = os.listdir(src)
+    if ignore:
+        excl = ignore(src, lst)
+        lst = [x for x in lst if x not in excl]
+    for item in lst:
+        s = os.path.join(src, item)
+        d = os.path.join(dst, item)
+        if symlinks and os.path.islink(s):
+            if os.path.lexists(d):
+                os.remove(d)
+            os.symlink(os.readlink(s), d)
+            try:
+                st = os.lstat(s)
+                mode = stat.S_IMODE(st.st_mode)
+                os.lchmod(d, mode)
+            except:
+              pass # lchmod not available
+        elif os.path.isdir(s):
+            copytree(s, d, symlinks, ignore)
+        else:
+            shutil.copy2(s, d)
 
 
 class HttpFetcher(Fetcher):
@@ -534,11 +564,11 @@ class HttpFetcher(Fetcher):
         self.username = username
         self.passwd = passwd
 
-    def fetch(self, files, force=False, resume=True, check=False, verbose=1):
+    def fetch(self, files, force=False, resume=True, check=False, verbose=1, delete_archive=True):
         files = self.reformat_files(files)  # allows flexibility
         if self.username is not None:
             for tgt, src, opts in files:
                 opts['username'] = opts.get('username', self.username)
                 opts['passwd'] = opts.get('passwd', self.username)
 
-        return fetch_files(self.data_dir, files, resume=resume, force=force, verbose=verbose)
+        return fetch_files(self.data_dir, files, resume=resume, force=force, verbose=verbose, delete_archive=delete_archive)
