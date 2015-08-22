@@ -21,12 +21,14 @@ from nipy.modalities.fmri.glm import FMRILinearModel
 from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
 sys.path.append('E:/gitclone/nidata/')
 np.set_printoptions(formatter={'float': lambda x: "{0:0.2f}".format(x)})
-from nidata.functional.my_dataset.datasets import MyDatasets
+from nidata.functional.poldrack_etal_2001.datasets import PoldrackEtal2001Dataset
 
 # fetch fmri data
-data_dict = MyDatasets().fetch()
+data_dict = PoldrackEtal2001Dataset().fetch()
 #### BUILD MODEL MATRIX
-pc_dir = 'C:\Users\oferg_000/nidata_path\my_dataset'
+pc_dir = 'C:/Users/oferg_000/nidata_path/my_dataset'
+pc_dir = '/Users/bcipolli/datasets/poldrack_etal_2001'
+
 func_dirs = ['task001_run001','task001_run002','task002_run001','task002_run002']
 n_subjects = 14
 func_file_dict = dict()
@@ -37,7 +39,7 @@ for func_dir in func_dirs:
 	func_file_dict[func_dir] = func_file
 	for j in range(1,3):
 		model_files = [
-				os.path.join(pc_dir,'ds052','sub%03d' % i, 'model\model001\onsets', func_dir, 'cond%03d.txt' % j)
+				os.path.join(pc_dir,'ds052','sub%03d' % i, 'model/model001/onsets', func_dir, 'cond%03d.txt' % j)
 				for i in range(1, n_subjects+1)			
 				if not i==11
 		]

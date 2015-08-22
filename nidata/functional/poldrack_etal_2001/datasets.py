@@ -13,7 +13,7 @@ from ...core.datasets import HttpDataset
 from ...core.fetchers import readmd5_sum_file
 
 
-class MyDatasets(HttpDataset):
+class PoldrackEtal2001Dataset(HttpDataset):
   
 
     def fetch(self, n_subjects=1, url=None, resume=True, force=False, verbose=1):
