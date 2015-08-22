@@ -1,27 +1,45 @@
 from __future__ import print_function
+
+import errno
 import os
 import shutil
 import json
 import re
-import pandas as pd
-import numpy as np
 from os import path
 from glob import glob
-import errno
 
+import pandas as pd
+import numpy as np
 
+NII_HANDLING_OPTS = ['empty', 'move', 'copy', 'link']  # first entry is default
 
 
 def sanitize_label(label):
     return re.sub("[^a-zA-Z0-9]*", "", label)
 
-def convert(source_dir, dest_dir, empty_nii = False, warning=print, ses=""):
+def handle_nii(opt, src=None, dest=None):
+    """Moves / copies / links / creates a .nii.gz.
+    Note: many options will raise an error if the dest exists.
+    """
+    if opt == 'empty':
+        open(dest, "w").close()
+    elif opt == 'copy':
+        shutil.copy(src, dest)
+    elif opt == 'move':
+        shutil.move(src, dest)
+    elif opt == 'link':
+        os.symlink(src, dest)
+    else:
+        raise NotImplementedError('Unrecognized nii_handling value: %s' % opt)
+
+def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=print, ses=""):
     if ses:
         folder_ses = "ses-%s"%ses
         filename_ses = "%s_"%folder_ses
     else:
         folder_ses = ""
         filename_ses = ""
+
     def mkdir(path):
         try:
             os.makedirs(path)
@@ -85,10 +103,8 @@ def convert(source_dir, dest_dir, empty_nii = False, warning=print, ses=""):
                 if not os.path.exists(src):
                     warning("%s does not exist"%src)
                     continue
-                if empty_nii:
-                    open(dst, "w").close()
-                else:
-                    shutil.copy(src, dst)
+
+                handle_nii(nii_handling, src=src, dest=dst)
     
     anatomy_mapping = {"highres": "T1w",
                        "inplane": "inplaneT2"}
@@ -120,14 +136,13 @@ def convert(source_dir, dest_dir, empty_nii = False, warning=print, ses=""):
                                 BIDS_s,
                                 folder_ses,
                                 "anatomy",
-                                "%s_%s%s%s.nii.gz"%(BIDS_s, filename_ses, anatomy_bids,trg_run))
-                if empty_nii:
-                    open(dst, "w").close()
-                else:
-                    shutil.copy(path.join(source_dir, 
-                                          openfmri_s, 
-                                          "anatomy", 
-                                          "%s%s.nii.gz"%(anatomy_openfmri, src_run)), dst)
+                                "%s_%s%s%s.nii.gz"%(BIDS_s, filename_ses, anatomy_bids, trg_run))
+                src = path.join(source_dir, 
+                                openfmri_s, 
+                                "anatomy", 
+                                "%s%s.nii.gz"%(anatomy_openfmri, src_run))
+
+                handle_nii(nii_handling, src=src, dest=dst)
     
     scan_parameters_dict = {}
     with open(os.path.join(source_dir, "scan_key.txt")) as f:
