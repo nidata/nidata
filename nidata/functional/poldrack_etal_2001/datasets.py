@@ -18,8 +18,6 @@ import nibabel
 import nipy.modalities.fmri.design_matrix as dm
 from nilearn.image import index_img
 from nilearn.masking import compute_epi_mask
-from nilearn.plotting import plot_stat_map
-from nipy.labs.viz import cm
 from nipy.modalities.fmri.glm import FMRILinearModel
 from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
 
@@ -52,22 +50,33 @@ class OpenFMriDataset(HttpDataset):
         else:
             return match.groups()[0]
 
-    def preprocess_files(self, func_files, anat_files=None):
+    def preprocess_files(self, func_files, anat_files=None, verbose=1):
+        def get_beta_filepath(func_file, cond):
+            return func_file.replace('_bold.nii.gz', '_beta-%s.nii.gz' % cond)
 
         beta_files = []
         for fi, func_file in enumerate(func_files):
             # Don't re-do preprocessing.
             beta_mask = func_file.replace('_bold.nii.gz', '_beta*.nii.gz')
-            if np.any([os.path.exists(f) for f in glob.glob(beta_mask)]):
-                continue
-
-            print('Preprocessing file %d of %d' % (fi + 1, len(func_files)))
 
             cond_file = func_file.replace('_bold.nii.gz', '_events.tsv')
             cond_data = pd.read_csv(cond_file, sep='\t')
 
-            tr = cond_data['duration'].as_matrix().mean()
+            # Get condition info, to search if betas have been done.
             conditions = cond_data['trial_type'].tolist()
+            all_conds = np.unique(conditions)
+            all_beta_files = [get_beta_filepath(func_file, cond)
+                              for cond in all_conds]
+            # All betas are done.
+            if np.all([os.path.exists(f) for f in all_beta_files]):
+                beta_files += all_beta_files
+                continue
+
+            if verbose >= 0:
+                print('Preprocessing file %d of %d' % (fi + 1, len(func_files)))
+
+            # Need to do regression.
+            tr = cond_data['duration'].as_matrix().mean()
             onsets = cond_data['onset'].tolist()
 
             img = nibabel.load(func_file)
@@ -87,6 +96,7 @@ class OpenFMriDataset(HttpDataset):
             # Pull out the betas
             beta_hat = fmri_glm.glms[0].get_beta()  # Least-squares estimates of the beta
             mask = fmri_glm.mask.get_data() > 0
+
             # output beta images
             dim = design_mat.matrix.shape[1]
             beta_map = np.tile(mask.astype(np.float)[..., np.newaxis], dim)
@@ -97,30 +107,11 @@ class OpenFMriDataset(HttpDataset):
             # Save beta images
             for ci, cond in enumerate(np.unique(conditions)):
                 beta_cond_img = index_img(beta_image, ci)
-                beta_filepath = func_file.replace('_bold.nii.gz', '_beta-%s.nii.gz' % cond)
-
+                beta_filepath = get_beta_filepath(func_file, cond)
                 nibabel.save(beta_cond_img, beta_filepath)
                 beta_files.append(beta_filepath)
 
-                if anat_files:
-                    # Find the anatomical file for the given subject
-                    subj_id = self.get_subj_from_path(beta_filepath)
-                    subj_anat_files = filter(lambda p: subj_id in p, anat_files)
-                    if len(subj_anat_files) == 0:
-                        subj_anat_file = None
-                    elif len(subj_anat_files) == 1:
-                        subj_anat_file = subj_anat_files[0]
-                    else:
-                        run_id = self.get_run_from_path(beta_filepath)
-                        run_anat_files = filter(lambda p: run_id in p, subj_anat_files)
-                        subj_anat_file = run_anat_files[0] if len(run_anat_files) > 0 else subj_anat_file[0]
-
-                    plot_stat_map(beta_cond_img,
-                                  cmap=cm.hot_black_bone,
-                                  black_bg=True,
-                                  vmax=100., alpha=0.9,
-                                  title='Beta %s map' % cond,
-                                  bg_img=subj_anat_file)
+        return beta_files
 
 class PoldrackEtal2001Dataset(OpenFMriDataset):
     def fetch(self, n_subjects=1, preprocess_data=True,
