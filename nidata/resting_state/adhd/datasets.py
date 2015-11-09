@@ -85,6 +85,7 @@ class AdhdRestDataset(HttpDataset):
                        for i in ids]
         confounds = ['data/%s/%s_regressors.csv' % (i, i) for i in ids]
 
+        raise NotImplementedError('When tar file is extracted, data live in a subdirectory and must be moved.')
         functionals = self.fetcher.fetch(
             zip(functionals, archives, (opts,) * n_subjects),
             resume=resume, verbose=verbose)

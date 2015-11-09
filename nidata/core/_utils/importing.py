@@ -10,7 +10,6 @@ def import_all_submodules(dir_path, locals, globals, recursive=True):
                      os.listdir(dir_path))
 
     for subdir in subdirs:
-        print(os.getcwd(), subdir)
         if recursive:
             exec('from .%s import *' % subdir, locals, globals)
         else:

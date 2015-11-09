@@ -465,7 +465,7 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
 
         # Target file in the data_dir
         target_file = os.path.join(data_dir, file_)
-    
+
         if force or not os.path.exists(target_file):
             # if not os.path.exists(temp_target_dir):
             #     os.makedirs(temp_target_dir)
@@ -488,7 +488,7 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
                 target_files = [fetched_file]
 
             if opts.get('move'):
-                raise NotImplementedError()
+                raise NotImplementedError('Move options has been removed. Sorry!')
 
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_dir, opts['move'])
