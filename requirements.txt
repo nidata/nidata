@@ -1,3 +1,5 @@
+nibabel
 scipy
 numpy
 sklearn
+pandas
