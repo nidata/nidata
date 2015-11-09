@@ -7,12 +7,11 @@ Test the datasets module
 import os
 from nose import with_setup
 
-from nidata import fetchers
-from nidata._utils.compat import _basestring
-from nidata._utils.testing import (mock_request, wrap_chunk_read_,
-                                   assert_raises_regex)
+from nidata.core import fetchers
+from nidata.core._utils.compat import _basestring
+from nidata.core._utils.testing import (assert_raises_regex)
 from nidata.functional import datasets
-from nidata.tests.test_fetchers import (get_file_mock, setup_tmpdata, setup_mock,
+from nidata.core.fetchers.tests.test_fetchers import (get_file_mock, setup_tmpdata, setup_mock,
                                         teardown_tmpdata, get_url_request,
                                         get_datadir, get_tmpdir)
 

@@ -14,7 +14,7 @@ from sklearn.utils import check_random_state
 import scipy.linalg
 import nibabel
 
-from .. import fetch_files
+from ..http_fetcher import fetch_files
 from ..._utils.compat import _basestring, _urllib
 
 

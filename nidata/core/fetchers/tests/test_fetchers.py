@@ -17,12 +17,12 @@ import nibabel
 from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
-from nidata import fetchers
-from nidata._utils import compat
-from nidata._utils.testing import assert_raises_regex
-from nidata._utils.compat import _basestring
-from nidata.fetchers.tests import (mock_request, wrap_chunk_read_,
-                                   FetchFilesMock)
+from nidata.core import fetchers
+from nidata.core._utils import compat
+from nidata.core._utils.testing import assert_raises_regex
+from nidata.core._utils.compat import _basestring
+from nidata.core.fetchers.tests import (mock_request, wrap_chunk_read_,
+                                        FetchFilesMock)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.environ.get('NIDATA_PATH', os.path.join(currdir, 'data'))
@@ -65,7 +65,7 @@ def setup_mock():
     global url_request
     url_request = mock_request()
     # compat._urllib.request = url_request
-    fetchers._chunk_read_ = wrap_chunk_read_(fetchers._chunk_read_)
+    fetchers.http_fetcher._chunk_read_ = wrap_chunk_read_(fetchers.http_fetcher._chunk_read_)
     global file_mock
     file_mock = FetchFilesMock()
     fetchers.fetch_files = file_mock
@@ -92,32 +92,16 @@ def testget_dataset_dir():
     # testing folder creation under different environments, enforcing
     # a custom clean install
     os.environ.pop('NIDATA_PATH', None)
-    os.environ.pop('NILEARN_SHARED_DATA', None)
 
-    expected_base_dir = os.path.expanduser('~/NIDATA_PATH')
+    expected_base_dir = os.path.expanduser('~/nidata_path')
     data_dir = fetchers.get_dataset_dir('test', verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = os.path.join(tmpdir, 'test_NIDATA_PATH')
+    expected_base_dir = os.path.join(tmpdir, 'test_nidata_path')
     os.environ['NIDATA_PATH'] = expected_base_dir
     data_dir = fetchers.get_dataset_dir('test', verbose=0)
-    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
-    assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
-
-    expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
-    os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
-    data_dir = fetchers.get_dataset_dir('test', verbose=0)
-    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
-    assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
-
-    expected_base_dir = os.path.join(tmpdir, 'env_data')
-    os.environ['MY_DATA'] = expected_base_dir
-    data_dir = fetchers.get_dataset_dir('test', env_vars=['MY_DATA'],
-                                         verbose=0)
     assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
@@ -125,16 +109,6 @@ def testget_dataset_dir():
     no_write = os.path.join(tmpdir, 'no_write')
     os.makedirs(no_write)
     os.chmod(no_write, 0o400)
-
-    # Verify that default is used if non writeable dir
-    os.environ['MY_DATA'] = no_write
-    expected_base_dir = os.path.join(tmpdir, 'nilearn_shared_data')
-    os.environ['NILEARN_SHARED_DATA'] = expected_base_dir
-    data_dir = fetchers.get_dataset_dir('test', env_vars=['MY_DATA'],
-                                         verbose=0)
-    assert_equal(data_dir, os.path.join(expected_base_dir, 'test'))
-    assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
 
     # Verify exception is raised on read-only directories
     assert_raises_regex(OSError, 'Permission denied',

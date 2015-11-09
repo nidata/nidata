@@ -10,10 +10,10 @@ import numpy as np
 import nibabel
 from nose import with_setup
 
-from nidata._utils.compat import _basestring
-from nidata._utils.testing import assert_raises_regex
+from nidata.core._utils.compat import _basestring
+from nidata.core._utils.testing import assert_raises_regex
 from nidata.atlas import datasets
-from nidata.tests.test_fetchers import (get_file_mock, setup_tmpdata, setup_mock,
+from nidata.core.fetchers.tests.test_fetchers import (get_file_mock, setup_tmpdata, setup_mock,
                                         teardown_tmpdata, get_url_request,
                                         get_tmpdir)
 
