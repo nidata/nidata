@@ -507,9 +507,15 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
 
             # Let's examine our work
             if not os.path.exists(target_file):
-                raise Exception("An error occured while fetching %s; the expected target file cannot be found. (%s)\nDebug info: %s" % (
-                    file_, target_file,
-                    {'fetched_file': fetched_file, 'target_files': target_files}))
+                if os.path.exists(fetched_file):
+                    target_dir = os.path.dirname(target_file)
+                    if not os.path.exists(target_dir):
+                        os.makedirs(target_dir)
+                    shutil.move(fetched_file, target_file)
+                else:
+                    raise Exception("An error occured while fetching %s; the expected target file cannot be found. (%s)\nDebug info: %s" % (
+                        file_, target_file,
+                        {'fetched_file': fetched_file, 'target_files': target_files}))
 
             if opts.get('uncompress') and delete_archive:
                 os.remove(fetched_file)
