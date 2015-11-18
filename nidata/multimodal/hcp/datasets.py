@@ -13,12 +13,14 @@ class HcpHttpFetcher(HttpFetcher):
 
     def fetch(self, files, force=False, resume=True, check=False, verbose=1):
         if self.jsession_id is None:
+            # Log in to the website.
             import requests
             resp = requests.post('https://db.humanconnectome.org/data/JSESSION',
                                  data={},
                                  auth=(self.username, self.passwd))
             resp.raise_for_status()
 
+            # Get the login information.
             self.jsession_id = resp.cookies.get('JSESSIONID')
             if self.jsession_id is None:
                 raise Exception('Failed to create HCP session.')
