@@ -48,8 +48,7 @@ To run an example,
 To download data,
 ```python
 from nidata.multimodal import HcpDataset
-HcpDataset().fetch(n_subjects=1)
-
+HcpDataset(username=#####, passwd=######).fetch(n_subjects=1, data_types=['anat'])
 ```
 
 
