@@ -10,7 +10,6 @@ class HcpHttpFetcher(HttpFetcher):
     def __init__(self, data_dir=None, username=None, passwd=None):
         super(HcpHttpFetcher, self).__init__(data_dir=data_dir, username=username, passwd=passwd)
         self.jsession_id = None
-
     def fetch(self, files, force=False, resume=True, check=False, verbose=1):
         if self.jsession_id is None:
             # Log in to the website.
@@ -33,7 +32,7 @@ class HcpHttpFetcher(HttpFetcher):
             opts['cookies'] = opts.get('cookies', dict())
             opts['cookies'].update({'JSESSIONID': self.jsession_id})
 
-        super(HcpHttpFetcher, self).fetch(files=files, force=force, resume=resume, check=check, verbose=verbose)
+        return super(HcpHttpFetcher, self).fetch(files=files, force=force, resume=resume, check=check, verbose=verbose)
 
 
 class HcpDataset(Dataset):
