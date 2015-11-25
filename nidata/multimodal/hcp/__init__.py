@@ -69,6 +69,12 @@ class HcpDataset(Dataset):
                                           passwd=passwd)
         else:
             raise NotImplementedError(fetcher_type)
+    def prepend(self, src_files, files):
+        for src_file in src_files:
+            if isinstance(self.fetcher, HttpFetcher):
+                files.append((src_file, 'https://db.humanconnectome.org/data/archive/projects/HCP_500/subjects/' + src_file))
+            elif isinstance(self.fetcher, AmazonS3Fetcher):
+                files.append((src_file, 'HCP/' + src_file))
 
     def get_subject_list(self, n_subjects=500):
         """Get the list of subject IDs. Depends on the # of subjects,
@@ -168,10 +174,5 @@ class HcpDataset(Dataset):
 
         # Massage paths, based on fetcher type.
         files = []
-        for src_file in src_files:
-            if isinstance(self.fetcher, HttpFetcher):
-                files.append((src_file, 'https://db.humanconnectome.org/data/archive/projects/HCP_500/subjects/' + src_file))
-            elif isinstance(self.fetcher, AmazonS3Fetcher):
-                files.append((src_file, 'HCP/' + src_file))
-
+        self.prepend(src_files,files);
         return self.fetcher.fetch(files, force=force, check=check, verbose=verbose)
