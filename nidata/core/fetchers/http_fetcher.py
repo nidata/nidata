@@ -161,7 +161,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         path of file to be uncompressed.
 
     delete_archive: bool, optional
-        Wheteher or not to delete archive once it is uncompressed.
+        Whether or not to delete archive once it is uncompressed.
         Default: True
 
     verbose: int, optional
@@ -397,7 +397,7 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
-    the given urls. Note to developpers: All the files will be first
+    the given urls. Note to developers: All the files will be first
     downloaded in a sandbox and, if everything goes well, they will be moved
     into the folder of the dataset. This prevents corrupting previously
     downloaded data. In case of a big dataset, do not hesitate to make several
@@ -513,7 +513,7 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
                         os.makedirs(target_dir)
                     shutil.move(fetched_file, target_file)
                 else:
-                    raise Exception("An error occured while fetching %s; the expected target file cannot be found. (%s)\nDebug info: %s" % (
+                    raise Exception("An error occurred while fetching %s; the expected target file cannot be found. (%s)\nDebug info: %s" % (
                         file_, target_file,
                         {'fetched_file': fetched_file, 'target_files': target_files}))
 
