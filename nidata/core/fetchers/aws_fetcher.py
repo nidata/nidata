@@ -13,7 +13,7 @@ from .base import chunk_report, Fetcher
 
 
 def test_cb(cur_bytes, total_bytes, t0=None, **kwargs):
-    return _chunk_report_(bytes_so_far=cur_bytes, total_size=total_bytes, initial_size=0, t0=t0)
+    return chunk_report(bytes_so_far=cur_bytes, total_size=total_bytes, initial_size=0, t0=t0)
 
 
 class AmazonS3Fetcher(Fetcher):
@@ -68,7 +68,7 @@ class AmazonS3Fetcher(Fetcher):
                         if not os.path.isdir(destination_dir):
                             if verbose > 0:
                                 print("Creating base directory %s" % destination_dir)
-                            os.mkdir(destination_dir)
+                            os.makedirs(destination_dir)
 
                         if verbose > 0:
                             print("Downloading [%s]/%s to %s." % (
