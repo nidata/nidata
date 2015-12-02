@@ -40,6 +40,7 @@ class HcpDataset(Dataset):
                  username=None, passwd=None):
         """fetcher_type: aws or XNAT"""
         super(HcpDataset, self).__init__(data_dir=data_dir)
+        self.fetcher_type = fetcher_type
         if fetcher_type == 'aws':
             self.fetcher = AmazonS3Fetcher(data_dir=self.data_dir,
                                            profile_name=profile_name,
@@ -69,7 +70,11 @@ class HcpDataset(Dataset):
         subj_ids = self.get_subject_list(n_subjects=n_subjects)
 
         def get_files(dat_type, vol_type):
-            subj_path = '{subj_id}/experiments/{subj_id}_CREST/resources/{subj_id}_CREST/files'
+            if self.fetcher_type == 'aws':
+                # S3 bucket specific layout
+                subj_path = '{subj_id}'
+            else:  # xnat/http
+                subj_path = '{subj_id}/experiments/{subj_id}_CREST/resources/{subj_id}_CREST/files'
 
             files = []
             if dat_type.startswith('http'):  # assume that absolute urls have been passed
