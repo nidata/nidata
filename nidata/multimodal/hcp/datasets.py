@@ -8,14 +8,15 @@ class HcpHttpFetcher(HttpFetcher):
     dependencies = ['requests']
 
     def __init__(self, data_dir=None, username=None, passwd=None):
+        username = username or os.environ.get("NIDATA_USERNAME")
+        passwd = passwd or os.environ.get("NIDATA_PASSWD")
+
         super(HcpHttpFetcher, self).__init__(data_dir=data_dir, username=username, passwd=passwd)
         self.jsession_id = None
     def fetch(self, files, force=False, resume=True, check=False, verbose=1):
         if self.jsession_id is None:
             # Log in to the website.
             import requests
-            self.username = os.environ.get("NIDATA_USERNAME")
-            self.passwd = os.environ.get("NIDATA_PASSWD")
             resp = requests.post('https://db.humanconnectome.org/data/JSESSION',
                                  data={},
                                  auth=(self.username, self.passwd))
