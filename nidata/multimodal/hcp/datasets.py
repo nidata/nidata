@@ -2,12 +2,15 @@
 """
 from ...core.fetchers import AmazonS3Fetcher, HttpFetcher
 from ...core.datasets import Dataset
-
+import os;
 
 class HcpHttpFetcher(HttpFetcher):
     dependencies = ['requests']
 
     def __init__(self, data_dir=None, username=None, passwd=None):
+        username = username or os.environ.get("NIDATA_USERNAME")
+        passwd = passwd or os.environ.get("NIDATA_PASSWD")
+
         super(HcpHttpFetcher, self).__init__(data_dir=data_dir, username=username, passwd=passwd)
         self.jsession_id = None
     def fetch(self, files, force=False, resume=True, check=False, verbose=1):
