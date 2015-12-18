@@ -2,7 +2,7 @@
 """
 from ...core.fetchers import AmazonS3Fetcher, HttpFetcher
 from ...core.datasets import Dataset
-
+import os;
 
 class HcpHttpFetcher(HttpFetcher):
     dependencies = ['requests']
@@ -14,6 +14,8 @@ class HcpHttpFetcher(HttpFetcher):
         if self.jsession_id is None:
             # Log in to the website.
             import requests
+            self.username = os.environ.get("NIDATA_USERNAME")
+            self.passwd = os.environ.get("NIDATA_PASSWD")
             resp = requests.post('https://db.humanconnectome.org/data/JSESSION',
                                  data={},
                                  auth=(self.username, self.passwd))
