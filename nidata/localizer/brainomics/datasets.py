@@ -5,7 +5,7 @@ Utilities to download localizer fMRI datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import os
+import os.path as op
 import warnings
 
 import numpy as np
@@ -274,7 +274,7 @@ class BrainomicsDataset(HttpDataset):
                 for contrast_id, contrast in enumerate(contrasts_wrapped):
                     name_aux = str.replace(
                         str.join('_', [data_type, contrast]), ' ', '_')
-                    file_path = os.path.join(
+                    file_path = op.join(
                         "brainomics_data", subject_id, "%s.nii.gz" % name_aux)
                     file_tarball_url = urls[contrast_id]
                     filenames.append((file_path, file_tarball_url, opts))
@@ -286,7 +286,7 @@ class BrainomicsDataset(HttpDataset):
                                                       "label": "mask"},
                                         safe=',()')))
             for subject_id in subject_ids:
-                file_path = os.path.join(
+                file_path = op.join(
                     "brainomics_data", subject_id, "boolean_mask_mask.nii.gz")
                 file_tarball_url = urls[-1]
                 filenames.append((file_path, file_tarball_url, opts))
@@ -298,7 +298,7 @@ class BrainomicsDataset(HttpDataset):
                                                       "label": "anatomy"},
                                         safe=',()')))
             for subject_id in subject_ids:
-                file_path = os.path.join(
+                file_path = op.join(
                     "brainomics_data", subject_id,
                     "normalized_T1_anat_defaced.nii.gz")
                 file_tarball_url = urls[-1]

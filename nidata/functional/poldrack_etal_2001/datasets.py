@@ -6,7 +6,7 @@ Utilities to download functional MRI datasets
 # License: simplified BSD
 
 import glob
-import os
+import os.path as op
 import re
 
 import pandas as pd
@@ -68,7 +68,7 @@ class OpenFMriDataset(HttpDataset):
             all_beta_files = [get_beta_filepath(func_file, cond)
                               for cond in all_conds]
             # All betas are done.
-            if np.all([os.path.exists(f) for f in all_beta_files]):
+            if np.all([op.exists(f) for f in all_beta_files]):
                 beta_files += all_beta_files
                 continue
 
@@ -118,24 +118,24 @@ class PoldrackEtal2001Dataset(OpenFMriDataset):
               url=None, resume=True, force=False, verbose=1):
 
         # Prep the URLs
-        if not os.path.exists(os.path.join(self.data_dir, 'ds052_BIDS')):
+        if not op.exists(op.join(self.data_dir, 'ds052_BIDS')):
             url = 'http://openfmri.s3.amazonaws.com/tarballs/ds052_raw.tgz'
             opts = {'uncompress': True}
             files = [('ds052', url, opts)]
             files = self.fetcher.fetch(files, resume=resume, force=force, verbose=verbose)
 
             # Move around the files to BIDS format.
-            convert(source_dir=os.path.join(self.data_dir, 'ds052'),
-                    dest_dir=os.path.join(self.data_dir, 'ds052_BIDS'),
+            convert(source_dir=op.join(self.data_dir, 'ds052'),
+                    dest_dir=op.join(self.data_dir, 'ds052_BIDS'),
                     nii_handling='link')
 
 
         # Loop over subjects to extract files.
         anat_files = []
         func_files = []
-        for subj_dir in glob.glob(os.path.join(self.data_dir, 'ds052_BIDS', 'sub-*')):
-            anat_files += glob.glob(os.path.join(subj_dir, 'anatomy', '*_T1w_run*.nii.gz'))
-            func_files += glob.glob(os.path.join(subj_dir, 'functional', '*_task-*_bold*.nii.gz'))
+        for subj_dir in glob.glob(op.join(self.data_dir, 'ds052_BIDS', 'sub-*')):
+            anat_files += glob.glob(op.join(subj_dir, 'anatomy', '*_T1w_run*.nii.gz'))
+            func_files += glob.glob(op.join(subj_dir, 'functional', '*_task-*_bold*.nii.gz'))
 
             # if not (i == 2 and anat_file == 'highres002.nii.gz') and not i==11]
 

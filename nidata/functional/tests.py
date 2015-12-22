@@ -5,6 +5,7 @@ Test the datasets module
 # License: simplified BSD
 
 import os
+import os.path as op
 from nose import with_setup
 
 from nidata.core import fetchers
@@ -18,27 +19,27 @@ from nidata.core.fetchers.tests.test_fetchers import (get_file_mock, setup_tmpda
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_haxby_simple():
-    local_url = "file://" + os.path.join(get_datadir(), "pymvpa-exampledata.tar.bz2")
+    local_url = "file://" + op.join(get_datadir(), "pymvpa-exampledata.tar.bz2")
     haxby = datasets.fetch_haxby_simple(data_dir=get_tmpdir(), url=local_url,
                                         verbose=0)
-    datasetdir = os.path.join(get_tmpdir(), 'haxby2001_simple', 'pymvpa-exampledata')
+    datasetdir = op.join(get_tmpdir(), 'haxby2001_simple', 'pymvpa-exampledata')
     for key, file in [
             ('session_target', 'attributes.txt'),
             ('func', 'bold.nii.gz'),
             ('mask', 'mask.nii.gz'),
             ('conditions_target', 'attributes_literal.txt')]:
-        assert_equal(haxby[key], os.path.join(datasetdir, file))
-        assert_true(os.path.exists(os.path.join(datasetdir, file)))
+        assert_equal(haxby[key], op.join(datasetdir, file))
+        assert_true(op.exists(op.join(datasetdir, file)))
 
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fail_fetch_haxby_simple():
     # Test a dataset fetching failure to validate sandboxing
-    local_url = "file://" + os.path.join(get_datadir(), "pymvpa-exampledata.tar.bz2")
-    datasetdir = os.path.join(get_tmpdir(), 'haxby2001_simple', 'pymvpa-exampledata')
+    local_url = "file://" + op.join(get_datadir(), "pymvpa-exampledata.tar.bz2")
+    datasetdir = op.join(get_tmpdir(), 'haxby2001_simple', 'pymvpa-exampledata')
     os.makedirs(datasetdir)
     # Create a dummy file. If sandboxing is successful, it won't be overwritten
-    dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'w')
+    dummy = open(op.join(datasetdir, 'attributes.txt'), 'w')
     dummy.write('stuff')
     dummy.close()
 
@@ -46,16 +47,16 @@ def test_fail_fetch_haxby_simple():
 
     opts = {'uncompress': True}
     files = [
-            (os.path.join(path, 'attributes.txt'), local_url, opts),
+            (op.join(path, 'attributes.txt'), local_url, opts),
             # The following file does not exists. It will cause an abortion of
             # the fetching procedure
-            (os.path.join(path, 'bald.nii.gz'), local_url, opts)
+            (op.join(path, 'bald.nii.gz'), local_url, opts)
     ]
 
     assert_raises(IOError, fetchers.fetch_files,
-            os.path.join(get_tmpdir(), 'haxby2001_simple'), files,
+            op.join(get_tmpdir(), 'haxby2001_simple'), files,
             verbose=0)
-    dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
+    dummy = open(op.join(datasetdir, 'attributes.txt'), 'r')
     stuff = dummy.read(5)
     dummy.close()
     assert_equal(stuff, 'stuff')

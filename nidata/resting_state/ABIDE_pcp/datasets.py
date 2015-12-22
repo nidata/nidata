@@ -5,7 +5,7 @@ Utilities to download resting state MRI datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import os
+import os.path as op
 import re
 
 import numpy as np
@@ -160,7 +160,7 @@ class AbidePcpDataset(HttpDataset):
         pheno = pheno[user_filter]
 
         # Go into specific data folder and url
-        data_dir = os.path.join(self.data_dir, pipeline, strategy)
+        data_dir = op.join(self.data_dir, pipeline, strategy)
         url = '/'.join([url, 'Outputs', pipeline, strategy])
 
         # Get the files

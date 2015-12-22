@@ -5,7 +5,7 @@ Utilities to download NeuroImaging-based atlases
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import os
+import os.path as op
 
 from sklearn.datasets.base import Bunch
 
@@ -77,7 +77,7 @@ class Yeo2011Dataset(HttpDataset):
             "Yeo2011_17Networks_ColorLUT.txt",
             "FSL_MNI152_FreeSurferConformed_1mm.nii.gz")
 
-        filenames = [(os.path.join("Yeo_JNeurophysiol11_MNI152", f), url, opts)
+        filenames = [(op.join("Yeo_JNeurophysiol11_MNI152", f), url, opts)
                      for f in basenames]
 
         sub_files = self.fetcher.fetch(filenames, resume=resume,

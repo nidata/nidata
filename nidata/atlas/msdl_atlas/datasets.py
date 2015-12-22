@@ -5,7 +5,7 @@ Utilities to download NeuroImaging-based atlases
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import os
+import os.path as op
 
 from sklearn.datasets.base import Bunch
 
@@ -55,8 +55,8 @@ class MSDLDataset(HttpDataset):
         opts = {'uncompress': True}
 
         dataset_name = "msdl_atlas"
-        files = [(os.path.join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
-                 (os.path.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
+        files = [(op.join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
+                 (op.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
         files = self.fetcher.fetch(files, force=not resume, verbose=verbose)
         return Bunch(labels=files[0], maps=files[1])
 

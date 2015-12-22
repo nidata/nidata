@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import errno
 import os
+import os.path as op
 import shutil
 import json
 import re
@@ -44,28 +45,28 @@ def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=pri
         try:
             os.makedirs(path)
         except OSError as exc: # Python >2.5
-            if exc.errno == errno.EEXIST and os.path.isdir(path):
+            if exc.errno == errno.EEXIST and op.isdir(path):
                 pass
             else: raise
-    
+
     openfmri_subjects = [s.split(os.sep)[-1] for s in glob(path.join(source_dir, "sub*"))]
     print("OpenfMRI subject IDs: " + str(openfmri_subjects))
     n_digits = len(str(len(openfmri_subjects)))
     subject_template = "sub-%0" + str(n_digits) + "d"
     BIDS_subjects = [subject_template%int(s[-3:]) for s in openfmri_subjects]
     print("BIDS subject IDs: " + str(BIDS_subjects))
-    
+
     mkdir(dest_dir)
     for openfmri_s, BIDS_s in zip(openfmri_subjects, BIDS_subjects):
         mkdir(path.join(dest_dir, BIDS_s))
-        
+
     tasks = set([s[:7] for s in os.listdir(path.join(source_dir, openfmri_subjects[0], "BOLD")) if s.startswith("task")])
-    
+
     tasks_dict = {}
     for task in tasks:
         tasks_dict[task] = {"runs": set([s[8:] for s in os.listdir(path.join(source_dir, openfmri_subjects[0], "BOLD")) if s.startswith(task)])}
-    
-    with open(os.path.join(source_dir, "models", "model001", "condition_key.txt")) as f:
+
+    with open(op.join(source_dir, "models", "model001", "condition_key.txt")) as f:
         for line in f:
             if line.strip() == "":
                 break
@@ -76,12 +77,12 @@ def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=pri
             if "conditions" not in tasks_dict[task]:
                 tasks_dict[task]["conditions"] = {}
             tasks_dict[task]["conditions"][condition] = condition_name
-    
-    with open(os.path.join(source_dir, "task_key.txt")) as f:
+
+    with open(op.join(source_dir, "task_key.txt")) as f:
         for line in f:
             words = line.split()
             tasks_dict[words[0]]['name'] = " ".join(words[1:])
-    
+
     for openfmri_s, BIDS_s in zip(openfmri_subjects, BIDS_subjects):
         for task in tasks:
             for run in tasks_dict[task]["runs"]:
@@ -90,31 +91,31 @@ def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=pri
                 else:
                     trg_run = "_run%s"%run[4:]
                 mkdir(path.join(dest_dir, BIDS_s, folder_ses, "functional"))
-                dst = path.join(dest_dir, 
+                dst = path.join(dest_dir,
                                 BIDS_s,
-                                folder_ses, 
+                                folder_ses,
                                 "functional",
                                 "%s_%s%s%s_bold.nii.gz"%(BIDS_s, filename_ses, "task-%s"%sanitize_label(tasks_dict[task]['name']), trg_run))
-                src = path.join(source_dir, 
-                                openfmri_s, 
-                                "BOLD", 
-                                "%s_%s"%(task, run), 
+                src = path.join(source_dir,
+                                openfmri_s,
+                                "BOLD",
+                                "%s_%s"%(task, run),
                                 "bold.nii.gz")
-                if not os.path.exists(src):
+                if not op.exists(src):
                     warning("%s does not exist"%src)
                     continue
 
                 handle_nii(nii_handling, src=src, dest=dst)
-    
+
     anatomy_mapping = {"highres": "T1w",
                        "inplane": "inplaneT2"}
-                    
+
     for openfmri_s, BIDS_s in zip(openfmri_subjects, BIDS_subjects):
         mkdir(path.join(dest_dir, BIDS_s, folder_ses, "anatomy"))
         for anatomy_openfmri, anatomy_bids in anatomy_mapping.iteritems():
-            runs = [s[-10:-7] for s in glob(path.join(source_dir, 
-                                                      openfmri_s, 
-                                                      "anatomy", 
+            runs = [s[-10:-7] for s in glob(path.join(source_dir,
+                                                      openfmri_s,
+                                                      "anatomy",
                                                       "%s*.nii.gz"%anatomy_openfmri))]
             for run in runs:
                 src_run = run
@@ -126,26 +127,26 @@ def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=pri
                     int(run)
                 except:
                     continue
-                
+
                 if len([s for s in runs if s.isdigit()]) <= 1:
                     trg_run = ""
                 else:
                     trg_run = "_run%s"%run[1:]
-                    
-                dst = path.join(dest_dir, 
+
+                dst = path.join(dest_dir,
                                 BIDS_s,
                                 folder_ses,
                                 "anatomy",
                                 "%s_%s%s%s.nii.gz"%(BIDS_s, filename_ses, anatomy_bids, trg_run))
-                src = path.join(source_dir, 
-                                openfmri_s, 
-                                "anatomy", 
+                src = path.join(source_dir,
+                                openfmri_s,
+                                "anatomy",
                                 "%s%s.nii.gz"%(anatomy_openfmri, src_run))
 
                 handle_nii(nii_handling, src=src, dest=dst)
-    
+
     scan_parameters_dict = {}
-    with open(os.path.join(source_dir, "scan_key.txt")) as f:
+    with open(op.join(source_dir, "scan_key.txt")) as f:
         for line in f:
             items = line.split()
             if items[0] == "TR":
@@ -164,14 +165,14 @@ def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=pri
                 parametric_columns = []
                 for condition_id, condition_name in tasks_dict[task]["conditions"].iteritems():
                     # TODO: check if onsets are in seconds
-                    fpath = os.path.join(source_dir, 
-                                       openfmri_s, 
-                                       "model", 
-                                       "model001", 
-                                       "onsets", 
-                                       "%s_%s"%(task, run), 
+                    fpath = op.join(source_dir,
+                                       openfmri_s,
+                                       "model",
+                                       "model001",
+                                       "onsets",
+                                       "%s_%s"%(task, run),
                                        "%s.txt"%condition_id)
-                    if not os.path.exists(fpath):
+                    if not op.exists(fpath):
                         warning("%s does not exist"%fpath)
                         continue
                     if os.stat(fpath).st_size == 0:
@@ -179,22 +180,22 @@ def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=pri
                         continue
                     tmp_df = pd.read_csv(fpath,
                                          delimiter=r"\s+",
-                                         names=["onset", "duration", "weight"], 
+                                         names=["onset", "duration", "weight"],
                                          header=None,
                                          engine="python",
                                          index_col=False,
                                          skip_blank_lines=True
                                         )
                     if tmp_df.duration.isnull().sum() > 0:
-                        tmp_df = pd.read_csv(os.path.join(source_dir, 
-                                                      openfmri_s, 
-                                                      "model", 
-                                                      "model001", 
-                                                      "onsets", 
-                                                      "%s_%s"%(task, run), 
+                        tmp_df = pd.read_csv(op.join(source_dir,
+                                                      openfmri_s,
+                                                      "model",
+                                                      "model001",
+                                                      "onsets",
+                                                      "%s_%s"%(task, run),
                                                       "%s.txt"%condition_id),
                                          sep=" ",
-                                         names=["onset", "duration", "weight"], 
+                                         names=["onset", "duration", "weight"],
                                          header=None,
                                          engine="python",
                                          index_col=False
@@ -211,14 +212,14 @@ def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=pri
                     events_df.drop('weight', axis=1, inplace=True)
                 else:
                     continue
-                
-                
-                beh_path = os.path.join(source_dir, 
-                                        openfmri_s, 
+
+
+                beh_path = op.join(source_dir,
+                                        openfmri_s,
                                         "behav",
                                         "%s_%s"%(task, run),
                                         "behavdata.txt")
-                if os.path.exists(beh_path):
+                if op.exists(beh_path):
                     # There is a timing discrepancy between cond and behav - we need to use approximation to match them
                     if os.stat(beh_path).st_size == 0:
                         warning("%s is empty"%beh_path)
@@ -239,7 +240,7 @@ def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=pri
                             beh_df.rename(columns={'TR': 'onset'}, inplace=True)
                             all_df = pd.concat([events_df, beh_df])
                             unlabeled_beh = True
-                            
+
                         if "Onset" not in beh_df.columns:
                             if "onset" not in beh_df.columns:
                                 beh_df_no_header = pd.read_csv(beh_path, sep=None, engine="python", index_col=False, header=None)
@@ -274,13 +275,13 @@ def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=pri
                                     all_df = events_df
                             else:
                                 beh_df.rename(columns={'onset': 'Onset'}, inplace=True)
-                    
+
                         if not scans_dfs and not unlabeled_beh:
                             events_df["approx_onset"] = np.around(events_df["onset"],1)
                             beh_df["approx_onset"] = np.around(beh_df["Onset"],1)
-        
+
                             all_df = pd.merge(left=events_df, right=beh_df, left_on="approx_onset", right_on="approx_onset", how="outer")
-        
+
                             # Set onset to the average of onsets reported in cond and behav since we do not know which one is true
                             all_df["onset"].fillna(all_df["Onset"], inplace=True)
                             all_df["Onset"].fillna(all_df["onset"], inplace=True)
@@ -288,9 +289,9 @@ def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=pri
                             all_df = all_df.drop(["Onset","approx_onset"], axis=1)
                 else:
                     all_df = events_df
-                
+
                 all_df.sort(columns=["onset"], inplace=True)
-                dest = path.join(dest_dir, 
+                dest = path.join(dest_dir,
                                  BIDS_s,
                                  folder_ses,
                                  "functional",
@@ -306,18 +307,18 @@ def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=pri
                 cols.insert(1, cols.pop(cols.index("duration")))
                 cols.insert(2, cols.pop(cols.index("trial_type")))
                 all_df = all_df[cols]
-                
+
                 all_df.to_csv(dest, sep="\t", na_rep="n/a", index=False)
-                
+
         if scans_dfs:
             all_df = pd.concat(scans_dfs)
-            all_df.to_csv(path.join(dest_dir, 
+            all_df.to_csv(path.join(dest_dir,
                                     BIDS_s,
                                     folder_ses,
                                     "%s%s_scans.tsv"%(filename_ses, BIDS_s)), sep="\t", na_rep="n/a", index=True)
-            
-    dem_file = os.path.join(source_dir,"demographics.txt")
-    if not os.path.exists(dem_file):
+
+    dem_file = op.join(source_dir,"demographics.txt")
+    if not op.exists(dem_file):
         warning("%s does not exist"%dem_file)
     else:
         id_dict = dict(zip(openfmri_subjects, BIDS_subjects))
@@ -328,10 +329,10 @@ def convert(source_dir, dest_dir, nii_handling=NII_HANDLING_OPTS[0], warning=pri
             participants = pd.read_csv(dem_file, delimiter=r"\s+", header=None, names=["dataset", "subject_id", "sex", "age", "handedness", "ethnicity"], skip_blank_lines=True).drop(["dataset"], axis=1)
             participants["subject_id"] = participants["subject_id"].apply(lambda x: id_dict[x])
         participants = participants.dropna(axis=1,how='all')
-        participants.to_csv(os.path.join(dest_dir, "participants.tsv"), sep="\t", index=False, na_rep="n/a")
-    
+        participants.to_csv(op.join(dest_dir, "participants.tsv"), sep="\t", index=False, na_rep="n/a")
+
     for task in tasks:
         scan_parameters_dict["TaskName"] = tasks_dict[task]['name']
-        json.dump(scan_parameters_dict, open(os.path.join(dest_dir, 
+        json.dump(scan_parameters_dict, open(op.join(dest_dir,
                                                           "%stask-%s_bold.json"%(filename_ses, sanitize_label(tasks_dict[task]['name']))), "w"),
                   sort_keys=True, indent=4, separators=(',', ': '))

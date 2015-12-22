@@ -4,7 +4,7 @@ A data loader utility for downloading fMRI data from OpenfMRI.org
 Adapted by: Alison Campbell
 """
 import glob
-import os
+import os.path as op
 from collections import defaultdict
 
 from sklearn.datasets.base import Bunch
@@ -14,7 +14,7 @@ from ...core.fetchers import readmd5_sum_file
 
 
 class MyConnectome2015Dataset(HttpDataset):
-# class [A CLASS]([A SUPER CLASS]) 
+# class [A CLASS]([A SUPER CLASS])
 
     def fetch(self, data_types=None, session_ids=None,
               resume=True, force=False, verbose=1):
@@ -70,21 +70,21 @@ class MyConnectome2015Dataset(HttpDataset):
 
         # Now, fetch the files.
         self.fetcher.fetch(files, resume=resume, force=force, verbose=verbose, delete_archive=False)
-        
+
         # Group the data according to modality.
         out_dict = defaultdict(lambda: [])
-        for session_path in glob.glob(os.path.join(self.data_dir, 'ds031', 'sub00001', 'ses*')):
-            session_dirname = os.path.basename(session_path)
+        for session_path in glob.glob(op.join(self.data_dir, 'ds031', 'sub00001', 'ses*')):
+            session_dirname = op.basename(session_path)
             if (session_dirname not in session_ids and
                 int(session_dirname[3:]) not in session_ids):
                 continue
 
             for data_type in data_types:
-                data_type_path = os.path.join(session_path, data_type)
-                if not os.path.exists(data_type_path):
+                data_type_path = op.join(session_path, data_type)
+                if not op.exists(data_type_path):
                     continue
 
-                for img_path in glob.glob(os.path.join(data_type_path, '*.nii.gz')):
+                for img_path in glob.glob(op.join(data_type_path, '*.nii.gz')):
                     out_dict[data_type].append(img_path)
 
         # return the data

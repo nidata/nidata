@@ -10,6 +10,8 @@
 
 __docformat__ = 'restructuredtext'
 
+import os.path as op
+
 import numpy as np
 
 from mvpa2.base import externals
@@ -30,7 +32,7 @@ class MelodicResults( object ):
         rpath = None
         lookup = ['', 'filtered_func_data.ica']
         for lu in lookup:
-            if os.path.exists(pathjoin(path, lu, 'melodic_IC' + fext)):
+            if op.exists(pathjoin(path, lu, 'melodic_IC' + fext)):
                 rpath = pathjoin(path, lu)
                 break
         if rpath is None:

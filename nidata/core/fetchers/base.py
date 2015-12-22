@@ -8,6 +8,7 @@ Utilities to download NeuroImaging datasets
 import contextlib
 import collections
 import os
+import os.path as op
 import tarfile
 import zipfile
 import sys
@@ -68,9 +69,9 @@ def readlinkabs(link):
     of a symlink
     """
     path = os.readlink(link)
-    if os.path.isabs(path):
+    if op.isabs(path):
         return path
-    return os.path.join(os.path.dirname(link), path)
+    return op.join(op.dirname(link), path)
 
 def _filter_column(array, col, criteria):
     """ Return index array matching criteria
@@ -198,7 +199,7 @@ class Fetcher(object):
 
     def __init__(self, data_dir=None, verbose=1):
         self.data_dir = data_dir or os.environ.get('NIDATA_PATH') or 'nidata_data'
-        if verbose > 0 and not os.path.exists(self.data_dir):
+        if verbose > 0 and not op.exists(self.data_dir):
             print("Files will be downloaded to %s" % self.data_dir)
 
     @classmethod
@@ -211,11 +212,11 @@ class Fetcher(object):
         for fil in files:
             if isinstance(fil, _basestring):
                 if len(files) == 1:
-                    common_prefix = os.path.dirname(fil) + '/'
+                    common_prefix = op.dirname(fil) + '/'
                 elif common_path is None:
-                    common_prefix = os.path.commonprefix(files)
+                    common_prefix = op.commonprefix(files)
                 if fil[len(common_prefix):][0] != '/':
-                    common_path = os.path.dirname(common_prefix) + '/'
+                    common_path = op.dirname(common_prefix) + '/'
                 else:
                     common_path = common_prefix
                 out_files.append((fil[len(common_path):], fil, dict()))

@@ -5,7 +5,7 @@ Utilities to download functional MRI datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import os
+import os.path as op
 
 from sklearn.datasets.base import Bunch
 
@@ -103,10 +103,10 @@ class Haxby2001Dataset(HttpDataset):
 
             opts = {'uncompress': True}
             files = [
-                (os.path.join('pymvpa-exampledata', 'attributes.txt'), url, opts),
-                (os.path.join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
-                (os.path.join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
-                (os.path.join('pymvpa-exampledata', 'attributes_literal.txt'),
+                (op.join('pymvpa-exampledata', 'attributes.txt'), url, opts),
+                (op.join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
+                (op.join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
+                (op.join('pymvpa-exampledata', 'attributes_literal.txt'),
                      url, opts),
             ]
 
@@ -136,7 +136,7 @@ class Haxby2001Dataset(HttpDataset):
             n_files = len(sub_files)
 
             files = [
-                    (os.path.join('subj%d' % i, sub_file),
+                    (op.join('subj%d' % i, sub_file),
                      url + 'subj%d-2010.01.14.tar.gz' % i,
                      {'uncompress': True,
                       'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
@@ -152,12 +152,12 @@ class Haxby2001Dataset(HttpDataset):
 
             kwargs = {}
             if fetch_stimuli:
-                stimuli_files = [(os.path.join('stimuli', 'README'),
+                stimuli_files = [(op.join('stimuli', 'README'),
                                   url + 'stimuli-2010.01.14.tar.gz',
                                   {'uncompress': True})]
                 readme = self.fetcher.fetch(stimuli_files, resume=resume,
                                             force=force, verbose=verbose)[0]
-                kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
+                kwargs['stimuli'] = _tree(op.dirname(readme), pattern='*.jpg',
                                           dictionary=True)
 
             # return the data

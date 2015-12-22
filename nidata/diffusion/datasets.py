@@ -1,6 +1,7 @@
 from __future__ import division, print_function, absolute_import
 
 import os
+import os.path as op
 import sys
 import textwrap
 import contextlib
@@ -28,7 +29,7 @@ class FetcherError(Exception):
 def _log(msg):
     print(msg)
 
-dipy_home = pjoin(os.path.expanduser('~'), '.dipy')
+dipy_home = pjoin(op.expanduser('~'), '.dipy')
 
 def fetch_data(files, folder):
     """Downloads files to folder and checks their md5 checksums
@@ -50,7 +51,7 @@ def fetch_data(files, folder):
         value. The downloaded file is not deleted when this error is raised.
 
     """
-    if not os.path.exists(folder):
+    if not op.exists(folder):
         _log("Creating new folder %s" % (folder))
         os.makedirs(folder)
 
@@ -58,7 +59,7 @@ def fetch_data(files, folder):
     for f in files:
         url, md5 = files[f]
         fullpath = pjoin(folder, f)
-        if os.path.exists(fullpath) and (_get_file_md5(fullpath) == md5):
+        if op.exists(fullpath) and (_get_file_md5(fullpath) == md5):
             continue
         all_skip = False
         _log('Downloading "%s" to %s' % (f, folder))
@@ -86,7 +87,7 @@ def fetch_scil_b0():
     uraw = url + zipname + '.zip'
     folder = pjoin(dipy_home, zipname)
 
-    if not os.path.exists(folder):
+    if not op.exists(folder):
         print('Creating new directory %s' % folder)
         os.makedirs(folder)
         print('Downloading SCIL b=0 datasets from multiple sites and multiple companies (9.2MB)...')
@@ -187,7 +188,7 @@ def fetch_isbi2013_2shell():
     url_list = [uraw, ubval, ubvec]
     fname_list = ['phantom64.nii.gz', 'phantom64.bval', 'phantom64.bvec']
 
-    if not os.path.exists(folder):
+    if not op.exists(folder):
         print('Creating new directory %s' % folder)
         os.makedirs(folder)
         print('Downloading raw 2-shell synthetic data (20MB)...')
@@ -248,7 +249,7 @@ def fetch_sherbrooke_3shell():
     url_list = [uraw, ubval, ubvec]
     fname_list = ['HARDI193.nii.gz', 'HARDI193.bval', 'HARDI193.bvec']
 
-    if not os.path.exists(folder):
+    if not op.exists(folder):
         print('Creating new directory %s' % folder)
         os.makedirs(folder)
         print('Downloading raw 3-shell data (184MB)...')
@@ -335,7 +336,7 @@ def fetch_stanford_hardi():
     url_list = [uraw, ubval, ubvec]
     fname_list = ['HARDI150.nii.gz', 'HARDI150.bval', 'HARDI150.bvec']
 
-    if not os.path.exists(folder):
+    if not op.exists(folder):
         print('Creating new directory %s' % folder)
         os.makedirs(folder)
         print('Downloading raw HARDI data (87MB)...')
@@ -440,7 +441,7 @@ def fetch_taiwan_ntu_dsi():
     url_list = [uraw, ubval, ubvec, ureadme]
     fname_list = ['DSI203.nii.gz', 'DSI203.bval', 'DSI203.bvec', 'DSI203_license.txt']
 
-    if not os.path.exists(folder):
+    if not op.exists(folder):
         print('Creating new directory %s' % folder)
         os.makedirs(folder)
         print('Downloading raw DSI data (91MB)...')
@@ -496,7 +497,7 @@ def fetch_syn_data():
     url = 'https://dl.dropboxusercontent.com/u/5918983/'
     t1 = url + 't1.nii.gz'
     b0 = url + 'b0.nii.gz'
-    
+
     folder = pjoin(dipy_home, 'syn_test')
 
     md5_list = ['701bda02bb769655c7d4a9b1df2b73a6', # t1
@@ -505,7 +506,7 @@ def fetch_syn_data():
     url_list = [t1, b0]
     fname_list = ['t1.nii.gz', 'b0.nii.gz']
 
-    if not os.path.exists(folder):
+    if not op.exists(folder):
         print('Creating new directory %s' % folder)
         os.makedirs(folder)
         print('Downloading t1 and b0 volumes from the same session (12MB)...')

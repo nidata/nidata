@@ -5,7 +5,7 @@ Utilities to download NeuroImaging-based atlases
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import os
+import os.path as op
 
 from sklearn.datasets.base import Bunch
 
@@ -65,7 +65,7 @@ class ICBM152Dataset(HttpDataset):
         keys = ("csf", "gm", "wm",
                 "pd", "t1", "t2", "t2_relax",
                 "eye_mask", "face_mask", "mask")
-        filenames = [(os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
+        filenames = [(op.join("mni_icbm152_nlin_sym_09a", name), url, opts)
                      for name in ("mni_icbm152_csf_tal_nlin_sym_09a.nii",
                                   "mni_icbm152_gm_tal_nlin_sym_09a.nii",
                                   "mni_icbm152_wm_tal_nlin_sym_09a.nii",

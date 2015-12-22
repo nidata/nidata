@@ -4,6 +4,7 @@
 import contextlib
 import collections
 import os
+import os.path as op
 import tarfile
 import zipfile
 import sys
@@ -31,15 +32,15 @@ def movetree(src, dst):
     names = os.listdir(src)
 
     # Create destination dir if it does not exist
-    if not os.path.exists(dst):
+    if not op.exists(dst):
         os.makedirs(dst)
     errors = []
 
     for name in names:
-        srcname = os.path.join(src, name)
-        dstname = os.path.join(dst, name)
+        srcname = op.join(src, name)
+        dstname = op.join(dst, name)
         try:
-            if os.path.isdir(srcname) and os.path.isdir(dstname):
+            if op.isdir(srcname) and op.isdir(dstname):
                 movetree(srcname, dstname)
                 os.rmdir(srcname)
             else:
@@ -71,8 +72,8 @@ def _tree(path, pattern=None, dictionary=False):
     files = []
     dirs = [] if not dictionary else {}
     for file_ in os.listdir(path):
-        file_path = os.path.join(path, file_)
-        if os.path.isdir(file_path):
+        file_path = op.join(path, file_)
+        if op.isdir(file_path):
             if not dictionary:
                 dirs.append((file_, _tree(file_path, pattern)))
             else:
@@ -173,10 +174,10 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
     """
     if verbose > 0:
         print('Extracting data from %s...' % file_)
-    data_dir = os.path.dirname(file_)
+    data_dir = op.dirname(file_)
     # We first try to see if it is a zip file
     try:
-        filename, ext = os.path.splitext(file_)
+        filename, ext = op.splitext(file_)
         with open(file_, "rb") as fd:
             header = fd.read(4)
         processed = False
@@ -199,7 +200,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             if delete_archive:
                 os.remove(file_)
             file_ = filename
-            filename, ext = os.path.splitext(file_)
+            filename, ext = op.splitext(file_)
             processed = True
 
         if tarfile.is_tarfile(file_):
@@ -277,24 +278,24 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         cookies = dict()
 
     # Determine data path
-    if not os.path.exists(data_dir):
+    if not op.exists(data_dir):
         os.makedirs(data_dir)
 
     # Determine filename using URL
     parse = _urllib.parse.urlparse(url)
-    file_name = os.path.basename(parse.path)
+    file_name = op.basename(parse.path)
     if file_name == '':
         file_name = md5_hash(parse.path)
 
     temp_file_name = file_name + ".part"
-    full_name = os.path.join(data_dir, file_name)
-    temp_full_name = os.path.join(data_dir, temp_file_name)
-    if os.path.exists(full_name):
+    full_name = op.join(data_dir, file_name)
+    temp_full_name = op.join(data_dir, temp_file_name)
+    if op.exists(full_name):
         if overwrite:
             os.remove(full_name)
         else:
             return full_name
-    if os.path.exists(temp_full_name):
+    if op.exists(temp_full_name):
         if overwrite:
             os.remove(temp_full_name)
     t0 = time.time()
@@ -328,13 +329,13 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         if verbose > 0:
             displayed_url = url.split('?')[0] if verbose == 1 else url
             print('Downloading data from %s ...' % displayed_url)
-        if not resume or not os.path.exists(temp_full_name):
+        if not resume or not op.exists(temp_full_name):
             # Simple case: no resume
             data = url_opener.open(request)
             local_file = open(temp_full_name, "wb")
         else:
             # Complex case: download has been interrupted, we try to resume it.
-            local_file_size = os.path.getsize(temp_full_name)
+            local_file_size = op.getsize(temp_full_name)
             # If the file exists, then only download the remainder
             request.add_header("Range", "bytes=%s-" % (local_file_size))
             try:
@@ -442,7 +443,7 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
                          ' administrator to solve the problem')
 
     # Create destination dirs
-    if not os.path.exists(data_dir):
+    if not op.exists(data_dir):
         os.makedirs(data_dir)
 
     files_ = []
@@ -455,7 +456,7 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
         #   deleted.
         files_pickle = cPickle.dumps(url)
         files_md5 = hashlib.md5(files_pickle).hexdigest()
-        temp_dir = os.path.join(data_dir, files_md5)
+        temp_dir = op.join(data_dir, files_md5)
 
         # 3 possibilities:
         # - the file exists in data_dir, nothing to do.
@@ -464,10 +465,10 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
         #   downloaded. There is nothing to do
 
         # Target file in the data_dir
-        target_file = os.path.join(data_dir, file_)
+        target_file = op.join(data_dir, file_)
 
-        if force or not os.path.exists(target_file):
-            # if not os.path.exists(temp_target_dir):
+        if force or not op.exists(target_file):
+            # if not op.exists(temp_target_dir):
             #     os.makedirs(temp_target_dir)
             # Fetch the file, if it doesn't already exist.
             fetched_file = _fetch_file(url, temp_dir,
@@ -491,25 +492,25 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
                 raise NotImplementedError('Move options has been removed. Sorry!')
 
                 # XXX: here, move is supposed to be a dir, it can be a name
-                move = os.path.join(temp_dir, opts['move'])
+                move = op.join(temp_dir, opts['move'])
 
                 if len(target_files) > 1:
-                    target_files = [os.path.join(os.path.dirname(move),
-                                         os.path.basename(f))
+                    target_files = [op.join(op.dirname(move),
+                                         op.basename(f))
                                     for f in target_files]
                     # Do the move
                 else:
-                    if not os.path.exists(move_dir):
+                    if not op.exists(move_dir):
                         os.makedirs(move_dir)
                     shutil.move(fetched_file, move)
                     target_files = [move]
                 temp_target_file = move
 
             # Let's examine our work
-            if not os.path.exists(target_file):
-                if os.path.exists(fetched_file):
-                    target_dir = os.path.dirname(target_file)
-                    if not os.path.exists(target_dir):
+            if not op.exists(target_file):
+                if op.exists(fetched_file):
+                    target_dir = op.dirname(target_file)
+                    if not op.exists(target_dir):
                         os.makedirs(target_dir)
                     shutil.move(fetched_file, target_file)
                 else:
@@ -521,7 +522,7 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
                 os.remove(fetched_file)
 
             # If needed, move files from temps directory to final directory.
-            if os.path.exists(temp_dir):
+            if op.exists(temp_dir):
                 #XXX We could only moved the files requested
                 #XXX Movetree can go wrong
                 movetree(temp_dir, data_dir)
@@ -537,7 +538,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
     import shutil
     import stat
 
-    if not os.path.exists(dst):
+    if not op.exists(dst):
         os.makedirs(dst)
         shutil.copystat(src, dst)
     lst = os.listdir(src)
@@ -545,10 +546,10 @@ def copytree(src, dst, symlinks=False, ignore=None):
         excl = ignore(src, lst)
         lst = [x for x in lst if x not in excl]
     for item in lst:
-        s = os.path.join(src, item)
-        d = os.path.join(dst, item)
-        if symlinks and os.path.islink(s):
-            if os.path.lexists(d):
+        s = op.join(src, item)
+        d = op.join(dst, item)
+        if symlinks and op.islink(s):
+            if op.lexists(d):
                 os.remove(d)
             os.symlink(os.readlink(s), d)
             try:
@@ -557,7 +558,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
                 os.lchmod(d, mode)
             except:
               pass # lchmod not available
-        elif os.path.isdir(s):
+        elif op.isdir(s):
             copytree(s, d, symlinks, ignore)
         else:
             shutil.copy2(s, d)

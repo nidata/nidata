@@ -373,7 +373,9 @@ class SetLogger(Logger):
 
 if __debug__:
 
-    import os, re
+    import os
+    import os.path as op
+    import re
     import traceback
     import time
     from os import getpid
@@ -516,7 +518,7 @@ if __debug__:
             if self.__collide:
                 # lets remove part which is common with previous invocation
                 prev_next = sftb
-                common_prefix = os.path.commonprefix((self.__prev, sftb))
+                common_prefix = op.commonprefix((self.__prev, sftb))
                 common_prefix2 = re.sub('>[^>]*$', '', common_prefix)
 
                 if common_prefix2 != "":

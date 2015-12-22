@@ -5,7 +5,7 @@ Utilities to download resting state MRI datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import os
+import os.path as op
 
 from sklearn.datasets.base import Bunch
 
@@ -101,21 +101,21 @@ class NyuRestDataset(HttpDataset):
         fa3 = 'http://www.nitrc.org/frs/download.php/1075/NYU_TRT_session3a.tar.gz'
         fb3 = 'http://www.nitrc.org/frs/download.php/1076/NYU_TRT_session3b.tar.gz'
         fa1_opts = {'uncompress': True,
-                    'move': os.path.join('session1', 'NYU_TRT_session1a.tar.gz')}
+                    'move': op.join('session1', 'NYU_TRT_session1a.tar.gz')}
         fb1_opts = {'uncompress': True,
-                    'move': os.path.join('session1', 'NYU_TRT_session1b.tar.gz')}
+                    'move': op.join('session1', 'NYU_TRT_session1b.tar.gz')}
         fa2_opts = {'uncompress': True,
-                    'move': os.path.join('session2', 'NYU_TRT_session2a.tar.gz')}
+                    'move': op.join('session2', 'NYU_TRT_session2a.tar.gz')}
         fb2_opts = {'uncompress': True,
-                    'move': os.path.join('session2', 'NYU_TRT_session2b.tar.gz')}
+                    'move': op.join('session2', 'NYU_TRT_session2b.tar.gz')}
         fa3_opts = {'uncompress': True,
-                    'move': os.path.join('session3', 'NYU_TRT_session3a.tar.gz')}
+                    'move': op.join('session3', 'NYU_TRT_session3a.tar.gz')}
         fb3_opts = {'uncompress': True,
-                    'move': os.path.join('session3', 'NYU_TRT_session3b.tar.gz')}
+                    'move': op.join('session3', 'NYU_TRT_session3b.tar.gz')}
 
-        p_anon = os.path.join('anat', 'mprage_anonymized.nii.gz')
-        p_skull = os.path.join('anat', 'mprage_skullstripped.nii.gz')
-        p_func = os.path.join('func', 'lfo.nii.gz')
+        p_anon = op.join('anat', 'mprage_anonymized.nii.gz')
+        p_skull = op.join('anat', 'mprage_skullstripped.nii.gz')
+        p_func = op.join('func', 'lfo.nii.gz')
 
         subs_a = ['sub05676', 'sub08224', 'sub08889', 'sub09607', 'sub14864',
                   'sub18604', 'sub22894', 'sub27641', 'sub33259', 'sub34482',
@@ -126,45 +126,45 @@ class NyuRestDataset(HttpDataset):
 
         # Generate the list of files by session
         anat_anon_files = [
-            [(os.path.join('session1', sub, p_anon), fa1, fa1_opts)
+            [(op.join('session1', sub, p_anon), fa1, fa1_opts)
                 for sub in subs_a]
-            + [(os.path.join('session1', sub, p_anon), fb1, fb1_opts)
+            + [(op.join('session1', sub, p_anon), fb1, fb1_opts)
                 for sub in subs_b],
-            [(os.path.join('session2', sub, p_anon), fa2, fa2_opts)
+            [(op.join('session2', sub, p_anon), fa2, fa2_opts)
                 for sub in subs_a]
-            + [(os.path.join('session2', sub, p_anon), fb2, fb2_opts)
+            + [(op.join('session2', sub, p_anon), fb2, fb2_opts)
                 for sub in subs_b],
-            [(os.path.join('session3', sub, p_anon), fa3, fa3_opts)
+            [(op.join('session3', sub, p_anon), fa3, fa3_opts)
                 for sub in subs_a]
-            + [(os.path.join('session3', sub, p_anon), fb3, fb3_opts)
+            + [(op.join('session3', sub, p_anon), fb3, fb3_opts)
                 for sub in subs_b]]
 
         anat_skull_files = [
-            [(os.path.join('session1', sub, p_skull), fa1, fa1_opts)
+            [(op.join('session1', sub, p_skull), fa1, fa1_opts)
                 for sub in subs_a]
-            + [(os.path.join('session1', sub, p_skull), fb1, fb1_opts)
+            + [(op.join('session1', sub, p_skull), fb1, fb1_opts)
                 for sub in subs_b],
-            [(os.path.join('session2', sub, p_skull), fa2, fa2_opts)
+            [(op.join('session2', sub, p_skull), fa2, fa2_opts)
                 for sub in subs_a]
-            + [(os.path.join('session2', sub, p_skull), fb2, fb2_opts)
+            + [(op.join('session2', sub, p_skull), fb2, fb2_opts)
                 for sub in subs_b],
-            [(os.path.join('session3', sub, p_skull), fa3, fa3_opts)
+            [(op.join('session3', sub, p_skull), fa3, fa3_opts)
                 for sub in subs_a]
-            + [(os.path.join('session3', sub, p_skull), fb3, fb3_opts)
+            + [(op.join('session3', sub, p_skull), fb3, fb3_opts)
                 for sub in subs_b]]
 
         func_files = [
-            [(os.path.join('session1', sub, p_func), fa1, fa1_opts)
+            [(op.join('session1', sub, p_func), fa1, fa1_opts)
                 for sub in subs_a]
-            + [(os.path.join('session1', sub, p_func), fb1, fb1_opts)
+            + [(op.join('session1', sub, p_func), fb1, fb1_opts)
                 for sub in subs_b],
-            [(os.path.join('session2', sub, p_func), fa2, fa2_opts)
+            [(op.join('session2', sub, p_func), fa2, fa2_opts)
                 for sub in subs_a]
-            + [(os.path.join('session2', sub, p_func), fb2, fb2_opts)
+            + [(op.join('session2', sub, p_func), fb2, fb2_opts)
                 for sub in subs_b],
-            [(os.path.join('session3', sub, p_func), fa3, fa3_opts)
+            [(op.join('session3', sub, p_func), fa3, fa3_opts)
                 for sub in subs_a]
-            + [(os.path.join('session3', sub, p_func), fb3, fb3_opts)
+            + [(op.join('session3', sub, p_func), fb3, fb3_opts)
                 for sub in subs_b]]
 
         max_subjects = len(subs_a) + len(subs_b)

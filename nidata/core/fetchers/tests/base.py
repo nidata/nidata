@@ -1,7 +1,7 @@
 import contextlib
 import functools
 import inspect
-import os
+import os.path as op
 import re
 import sys
 import tempfile
@@ -98,7 +98,7 @@ class FetchFilesMock (object):
         filenames = self._mockfetch_files(*args, **kwargs)
         # Fill CSV files with given content if needed
         for fname in filenames:
-            basename = os.path.basename(fname)
+            basename = op.basename(fname)
             if basename in self.csv_files:
                 array = self.csv_files[basename]
 

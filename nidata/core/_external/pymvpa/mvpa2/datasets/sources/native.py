@@ -10,8 +10,7 @@
 
 __docformat__ = 'restructuredtext'
 
-import os
-from os.path import join as pathjoin
+import os.path as op
 import numpy as np
 import mvpa2
 from mvpa2.base import externals
@@ -24,9 +23,9 @@ def load_example_fmri_dataset(name='1slice', literal=False):
     from mvpa2.datasets.mri import fmri_dataset
     from mvpa2.misc.io import SampleAttributes
 
-    basedir = pathjoin(pymvpa_dataroot, 'haxby2001')
-    mask = {'1slice': pathjoin(pymvpa_dataroot, 'mask.nii.gz'),
-            '25mm': pathjoin(basedir, 'sub001', 'masks', '25mm',
+    basedir = op.join(pymvpa_dataroot, 'haxby2001')
+    mask = {'1slice': op.join(pymvpa_dataroot, 'mask.nii.gz'),
+            '25mm': op.join(basedir, 'sub001', 'masks', '25mm',
                                  'brain.nii.gz')}[name]
 
     if literal:
@@ -45,8 +44,8 @@ def load_example_fmri_dataset(name='1slice', literal=False):
         if name == '25mm':
             raise ValueError("The 25mm dataset is no longer available with "
                              "numerical labels")
-        attr = SampleAttributes(pathjoin(pymvpa_dataroot, 'attributes.txt'))
-        ds = fmri_dataset(samples=pathjoin(pymvpa_dataroot, 'bold.nii.gz'),
+        attr = SampleAttributes(op.join(pymvpa_dataroot, 'attributes.txt'))
+        ds = fmri_dataset(samples=op.join(pymvpa_dataroot, 'bold.nii.gz'),
                           targets=attr.targets, chunks=attr.chunks,
                           mask=mask)
 
@@ -86,34 +85,34 @@ def load_tutorial_data(path=None, roi='brain', add_fa=None, flavor=None):
     if path is None:
         if flavor in ('1slice', '25mm'):
             # we know that this part is there
-            path = pathjoin(pymvpa_dataroot)
+            path = op.join(pymvpa_dataroot)
         else:
             # check config for info, pretend it is in the working dir otherwise
             path = mvpa2.cfg.get('location',
                                  'tutorial data',
-                                 default=os.path.curdir)
+                                 default=op.curdir)
     # we need the haxby2001 portion of the tutorial data
-    path = pathjoin(path, 'haxby2001')
+    path = op.join(path, 'haxby2001')
 
     import nibabel as nb
     from mvpa2.datasets.sources.openfmri import OpenFMRIDataset
     model = subj = 1
     dhandle = OpenFMRIDataset(path)
     if flavor is None:
-        maskpath = pathjoin(path, 'sub001', 'masks', 'orig')
+        maskpath = op.join(path, 'sub001', 'masks', 'orig')
     else:
-        maskpath = pathjoin(path, 'sub001', 'masks', flavor)
+        maskpath = op.join(path, 'sub001', 'masks', flavor)
     if roi is None:
         mask = None
     elif isinstance(roi, str):
-        mask = pathjoin(maskpath, roi + '.nii.gz')
+        mask = op.join(maskpath, roi + '.nii.gz')
     elif isinstance(roi, int):
-        nimg = nb.load(pathjoin(maskpath, 'hoc.nii.gz'))
+        nimg = nb.load(op.join(maskpath, 'hoc.nii.gz'))
         tmpmask = nimg.get_data() == roi
         mask = nb.Nifti1Image(tmpmask.astype(int), nimg.get_affine(),
                               nimg.get_header())
     elif isinstance(roi, tuple) or isinstance(roi, list):
-        nimg = nb.load(pathjoin(maskpath, 'hoc.nii.gz'))
+        nimg = nb.load(op.join(maskpath, 'hoc.nii.gz'))
         if externals.versions['nibabel'] >= '1.2':
             img_shape = nimg.shape
         else:
