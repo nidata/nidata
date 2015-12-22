@@ -1,10 +1,13 @@
 """
-Functions for dynamically managing dependencies
+Functions for dynamically managing dependencies.
 """
 import sys
 
 
 def install_dependency(module):
+    """
+    TODO: install_dependency docstring.
+    """
     import pip
     old_arg, sys.argv = sys.argv, ['pip', 'install', module]
     try:
@@ -17,8 +20,14 @@ def install_dependency(module):
 
 
 class DependenciesMeta(type):
+    """
+    TODO: DependenciesMeta docstring.
+    """
     def __new__(cls, name, parents, props):
         def get_missing_dependencies(cls):
+            """
+            TODO: get_missing_dependencies docstring
+            """
             missing_dependencies = []
             for dep in getattr(cls, 'dependencies', []):
                 try:
@@ -29,22 +38,35 @@ class DependenciesMeta(type):
             return missing_dependencies
 
         def install_missing_dependencies(cls):
+            """
+            TODO: install_missing_dependencies docstring
+            """
             for dep in get_missing_dependencies(cls):
-                print("Installing missing dependencies '%s', for %s" % (dep, str(cls)))
+                print("Installing missing dependencies '%s', for %s" % (
+                    dep, str(cls)))
                 if not install_dependency(dep):
-                    raise Exception("Failed to install dependency '%s'; you will need to install it manually and re-run your code." % dep)
+                    raise Exception("Failed to install dependency '%s'; "
+                                    "you will need to install it manually "
+                                    "and re-run your code." % dep)
 
-        def __init__wrapper(init_fn):
+        def _init__wrapper(init_fn):
+            """
+            TODO: _init__wrapper docstring
+            """
             def wrapper_fn(self, *args, **kwargs):
                 install_missing_dependencies(self.__class__)
                 return init_fn(self, *args, **kwargs)
             return wrapper_fn
 
         def super_init(cls):
+            """
+            TODO: super_init docstring
+            """
             def wrapper_fn(self, *args, **kwargs):
                 return super(cls, self).__init__(*args, **kwargs)
             return wrapper_fn
 
-        new_cls = super(DependenciesMeta, cls).__new__(cls, name, parents, props)
-        new_cls.__init__ = __init__wrapper(new_cls.__init__)
+        new_cls = super(DependenciesMeta, cls) \
+            .__new__(cls, name, parents, props)
+        new_cls.__init__ = _init__wrapper(new_cls.__init__)
         return new_cls

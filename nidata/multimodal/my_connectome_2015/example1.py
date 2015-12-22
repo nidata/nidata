@@ -1,8 +1,9 @@
 # from [AN IMPORT PATH] import [A CLASS]
-from nidata.multimodal.my_connectome_2015.datasets import MyConnectome2015Dataset
+from nidata.multimodal import MyConnectome2015Dataset
 
 # runs the member function 'fetch' from the class 'Laumann2015Dataset'
-dataset = MyConnectome2015Dataset().fetch(data_types=['functional'], session_ids=range(2, 13))
+dataset = MyConnectome2015Dataset().fetch(data_types=['functional'],
+                                          session_ids=range(2, 13))
 print(dataset)
 
 from nilearn.plotting import plot_anat

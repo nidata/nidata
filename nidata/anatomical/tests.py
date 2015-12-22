@@ -1,5 +1,5 @@
 """
-Test the datasets module
+Test for the anatomical datasets module
 """
 # Author: Alexandre Abraham
 # License: simplified BSD
