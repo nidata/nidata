@@ -1,3 +1,6 @@
+"""
+TODO: poldrack_etal_2001 dataset example.
+"""
 from matplotlib import pyplot as plt
 
 import nibabel as nb

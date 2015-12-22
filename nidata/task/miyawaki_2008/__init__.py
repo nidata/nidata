@@ -1,11 +1,8 @@
 # *- encoding: utf-8 -*-
-"""
-Utilities to download functional MRI datasets
-"""
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import os
+import os.path as op
 
 from sklearn.datasets.base import Bunch
 
@@ -57,10 +54,10 @@ class Miyawaki2008Dataset(HttpDataset):
         #   * 20 random scans (usually used for training)
         #   * 12 figure scans (usually used for testing)
 
-        func_figure = [(os.path.join('func', 'data_figure_run%02d.nii.gz' % i),
+        func_figure = [(op.join('func', 'data_figure_run%02d.nii.gz' % i),
                         url, opts) for i in range(1, 13)]
 
-        func_random = [(os.path.join('func', 'data_random_run%02d.nii.gz' % i),
+        func_random = [(op.join('func', 'data_random_run%02d.nii.gz' % i),
                         url, opts) for i in range(1, 21)]
 
         # Labels, 10x10 patches, stimuli shown to the subject:
@@ -68,10 +65,10 @@ class Miyawaki2008Dataset(HttpDataset):
         #   * 12 figure labels (letters and shapes)
 
         label_filename = 'data_%s_run%02d_label.csv'
-        label_figure = [(os.path.join('label', label_filename % ('figure', i)),
+        label_figure = [(op.join('label', label_filename % ('figure', i)),
                          url, opts) for i in range(1, 13)]
 
-        label_random = [(os.path.join('label', label_filename % ('random', i)),
+        label_random = [(op.join('label', label_filename % ('random', i)),
                          url, opts) for i in range(1, 21)]
 
         # Masks
@@ -118,12 +115,13 @@ class Miyawaki2008Dataset(HttpDataset):
             'RHVP.nii.gz'
         ]
 
-        file_mask = [(os.path.join('mask', m), url, opts) for m in file_mask]
+        file_mask = [(op.join('mask', m), url, opts) for m in file_mask]
 
         file_names = func_figure + func_random + label_figure + label_random
         file_names += file_mask
 
-        files = self.fetcher.fetch(file_names, resume=resume, force=force, verbose=verbose)
+        files = self.fetcher.fetch(file_names, resume=resume, force=force,
+                                   verbose=verbose)
 
         # Return the data
         return Bunch(

@@ -1,16 +1,15 @@
 # *- encoding: utf-8 -*-
-"""
-Utilities to download functional MRI datasets
-"""
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import os
+import os.path as op
+import warnings
 
 from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 from ...core.fetchers import readmd5_sum_file
+from ...core.fetchers.http_fetcher import _tree
 
 
 class Haxby2001Dataset(HttpDataset):
@@ -96,21 +95,22 @@ class Haxby2001Dataset(HttpDataset):
               url=None, resume=True, force=False, verbose=1):
 
         if self.simple:
-            # URL of the dataset. It is optional because a test uses it to test dataset
-            # downloading
+            # URL of the dataset. It is optional because a test uses it
+            # to test dataset downloading
             if url is None:
                 url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
 
             opts = {'uncompress': True}
             files = [
-                (os.path.join('pymvpa-exampledata', 'attributes.txt'), url, opts),
-                (os.path.join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
-                (os.path.join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
-                (os.path.join('pymvpa-exampledata', 'attributes_literal.txt'),
-                     url, opts),
+                (op.join('pymvpa-exampledata', 'attributes.txt'), url, opts),
+                (op.join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
+                (op.join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
+                (op.join('pymvpa-exampledata', 'attributes_literal.txt'),
+                 url, opts),
             ]
 
-            files = self.fetcher.fetch(files, resume=resume, force=force, verbose=verbose)
+            files = self.fetcher.fetch(files, resume=resume, force=force,
+                                       verbose=verbose)
 
             # return the data
             return Bunch(func=files[1], session_target=files[0], mask=files[2],
@@ -125,52 +125,52 @@ class Haxby2001Dataset(HttpDataset):
             if url is None:
                 url = 'http://data.pymvpa.org/datasets/haxby2001/'
             md5sums = self.fetcher.fetch([('MD5SUMS', url + 'MD5SUMS', {})],
-                                   resume=resume, force=force, verbose=verbose)[0]
+                                         resume=resume, force=force,
+                                         verbose=verbose)[0]
             md5sums = readmd5_sum_file(md5sums)
 
             # definition of dataset files
             sub_files = ['bold.nii.gz', 'labels.txt',
-                          'mask4_vt.nii.gz', 'mask8b_face_vt.nii.gz',
-                          'mask8b_house_vt.nii.gz', 'mask8_face_vt.nii.gz',
-                          'mask8_house_vt.nii.gz', 'anat.nii.gz']
+                         'mask4_vt.nii.gz', 'mask8b_face_vt.nii.gz',
+                         'mask8b_house_vt.nii.gz', 'mask8_face_vt.nii.gz',
+                         'mask8_house_vt.nii.gz', 'anat.nii.gz']
             n_files = len(sub_files)
 
-            files = [
-                    (os.path.join('subj%d' % i, sub_file),
-                     url + 'subj%d-2010.01.14.tar.gz' % i,
-                     {'uncompress': True,
-                      'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
-                    for i in range(1, n_subjects + 1)
-                    for sub_file in sub_files
-                    if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
-            ]
+            files = [(op.join('subj%d' % i, sub_file),
+                      url + 'subj%d-2010.01.14.tar.gz' % i,
+                      {'uncompress': True,
+                       'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i)})
+                     for i in range(1, n_subjects + 1)
+                     for sub_file in sub_files
+                     if sub_file != 'anat.nii.gz' and i == 6]  # no anat for s6
 
-            files = self.fetcher.fetch(files, resume=resume, force=force, verbose=verbose)
+            files = self.fetcher.fetch(files, resume=resume, force=force,
+                                       verbose=verbose)
 
             if n_subjects == 6:
                 files.append(None)  # None value because subject 6 has no anat
 
             kwargs = {}
             if fetch_stimuli:
-                stimuli_files = [(os.path.join('stimuli', 'README'),
+                stimuli_files = [(op.join('stimuli', 'README'),
                                   url + 'stimuli-2010.01.14.tar.gz',
                                   {'uncompress': True})]
                 readme = self.fetcher.fetch(stimuli_files, resume=resume,
                                             force=force, verbose=verbose)[0]
-                kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
+                kwargs['stimuli'] = _tree(op.dirname(readme), pattern='*.jpg',
                                           dictionary=True)
 
             # return the data
             return Bunch(
-                    anat=files[7::n_files],
-                    func=files[0::n_files],
-                    session_target=files[1::n_files],
-                    mask_vt=files[2::n_files],
-                    mask_face=files[3::n_files],
-                    mask_house=files[4::n_files],
-                    mask_face_little=files[5::n_files],
-                    mask_house_little=files[6::n_files],
-                    **kwargs)
+                anat=files[7::n_files],
+                func=files[0::n_files],
+                session_target=files[1::n_files],
+                mask_vt=files[2::n_files],
+                mask_face=files[3::n_files],
+                mask_house=files[4::n_files],
+                mask_face_little=files[5::n_files],
+                mask_house_little=files[6::n_files],
+                **kwargs)
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):

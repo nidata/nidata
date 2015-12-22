@@ -11,6 +11,7 @@
 
 __docformat__ = 'restructuredtext'
 import os
+import os.path as op
 import numpy as np                      # NumPy is required anyways
 
 from mvpa2.base import warning
@@ -286,7 +287,7 @@ def __check_atlas_family(family):
     from mvpa2.atlases.warehouse import KNOWN_ATLAS_FAMILIES
     names, pathpattern = KNOWN_ATLAS_FAMILIES[family]
     filename = pathpattern % {'name':names[0]}
-    if not os.path.exists(filename):
+    if not op.exists(filename):
         raise ImportError, "Cannot find file %s for atlas family %s" \
               % (filename, family)
     pass

@@ -5,6 +5,7 @@ Test the datasets module
 # License: simplified BSD
 
 import os
+import os.path as op
 import numpy as np
 
 import nibabel
@@ -28,15 +29,15 @@ def test_fail_fetch_harvard_oxford():
     target_atlas = 'cort-maxprob-thr0-1mm'
     target_atlas_fname = 'HarvardOxford-' + target_atlas + '.nii.gz'
 
-    HO_dir = os.path.join(get_tmpdir(), 'harvard_oxford')
+    HO_dir = op.join(get_tmpdir(), 'harvard_oxford')
     os.mkdir(HO_dir)
-    nifti_dir = os.path.join(HO_dir, 'HarvardOxford')
+    nifti_dir = op.join(HO_dir, 'HarvardOxford')
     os.mkdir(nifti_dir)
 
-    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
+    target_atlas_nii = op.join(nifti_dir, target_atlas_fname)
     datasets.load_mni152_template().to_filename(target_atlas_nii)
 
-    dummy = open(os.path.join(HO_dir, 'HarvardOxford-Cortical.xml'), 'w')
+    dummy = open(op.join(HO_dir, 'HarvardOxford-Cortical.xml'), 'w')
     dummy.write("<?xml version='1.0' encoding='us-ascii'?> "
                 "<metadata>"
                 "</metadata>")
@@ -69,7 +70,7 @@ def test_fetch_craddock_2012_atlas():
     ]
     assert_equal(len(get_url_request().urls), 1)
     for key, fn in zip(keys, filenames):
-        assert_equal(bunch[key], os.path.join(get_tmpdir(), 'craddock_2012', fn))
+        assert_equal(bunch[key], op.join(get_tmpdir(), 'craddock_2012', fn))
 
 
 @with_setup(setup_mock)
@@ -90,7 +91,7 @@ def test_fetch_smith_2009_atlas():
 
     assert_equal(len(get_url_request().urls), 6)
     for key, fn in zip(keys, filenames):
-        assert_equal(bunch[key], os.path.join(get_tmpdir(), 'smith_2009', fn))
+        assert_equal(bunch[key], op.join(get_tmpdir(), 'smith_2009', fn))
 
 
 @with_setup(setup_mock)

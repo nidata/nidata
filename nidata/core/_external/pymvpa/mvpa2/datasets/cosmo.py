@@ -70,12 +70,12 @@ These can be stored in Matlab by::
 and loaded in Python using::
 
 >>> import mvpa2
->>> import os
+>>> import os.path as op
 >>> from mvpa2.datasets.cosmo import from_any, CosmoSearchlight
 >>> from mvpa2.mappers.fx import mean_feature
->>> data_path=os.path.join(mvpa2.pymvpa_dataroot,'cosmo')
->>> fn_mat_ds=os.path.join(data_path,'ds_tiny.mat')
->>> fn_mat_nbrhood=os.path.join(data_path,'nbrhood_tiny.mat')
+>>> data_path=op.join(mvpa2.pymvpa_dataroot,'cosmo')
+>>> fn_mat_ds=op.join(data_path,'ds_tiny.mat')
+>>> fn_mat_nbrhood=op.join(data_path,'nbrhood_tiny.mat')
 >>> ds=from_any(fn_mat_ds)
 >>> print ds
 <Dataset: 2x3@float64, <sa: chunks,labels,targets>, <fa: i,j>, <a: name>>

@@ -5,9 +5,10 @@ Mixin for cache with joblib
 # License: simplified BSD
 
 import json
-import warnings
 import os
+import os.path as op
 import shutil
+import warnings
 from distutils.version import LooseVersion
 
 import nibabel
@@ -35,10 +36,10 @@ def _safe_cache(memory, func, **kwargs):
     if cachedir is None or cachedir in __cache_checked:
         return memory.cache(func, **kwargs)
 
-    version_file = os.path.join(cachedir, 'module_versions.json')
+    version_file = op.join(cachedir, 'module_versions.json')
 
     versions = dict()
-    if os.path.exists(version_file):
+    if op.exists(version_file):
         with open(version_file, 'r') as _version_file:
             versions = json.load(_version_file)
 
@@ -57,9 +58,9 @@ def _safe_cache(memory, func, **kwargs):
                       "to false to avoid this behavior."
                       % cachedir)
         try:
-            tmp_dir = (os.path.split(cachedir)[:-1]
+            tmp_dir = (op.split(cachedir)[:-1]
                         + ('old_%i' % os.getpid(), ))
-            tmp_dir = os.path.join(*tmp_dir)
+            tmp_dir = op.join(*tmp_dir)
             # We use rename + unlink to be more robust to race
             # conditions
             os.rename(cachedir, tmp_dir)

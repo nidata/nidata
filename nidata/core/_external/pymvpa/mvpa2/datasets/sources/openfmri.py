@@ -14,7 +14,8 @@ __docformat__ = 'restructuredtext'
 __all__ = [ 'OpenFMRIDataset']
 
 import os
-from os.path import join as _opj
+import os.path as op
+
 import numpy as np
 from mvpa2.datasets import vstack
 from mvpa2.base import warning
@@ -60,7 +61,7 @@ def _id2int(id_, strip=None):
 
 def _get_description_dict(path, xfm_key=None):
     props = {}
-    if os.path.exists(path):
+    if op.exists(path):
         for line in open(path, 'r'):
             key = line.split()[0]
             value = line[len(key):].strip()
@@ -72,10 +73,10 @@ def _get_description_dict(path, xfm_key=None):
 
 def _subdirs2ids(path, prefix, **kwargs):
     ids = []
-    if not os.path.exists(path):
+    if not op.exists(path):
         return ids
     for item in os.listdir(path):
-        if item.startswith(prefix) and os.path.isdir(_opj(path, item)):
+        if item.startswith(prefix) and op.isdir(op.join(path, item)):
                 ids.append(_id2int(item, **kwargs))
     return sorted(ids)
 
@@ -103,7 +104,7 @@ class OpenFMRIDataset(object):
           Path to the dataset (i.e. the directory with the 'sub*'
           subdirectories).
         """
-        self.basedir = os.path.expanduser(os.path.expandvars(basedir))
+        self.basedir = op.expanduser(op.expandvars(basedir))
 
     def get_subj_ids(self):
         """Return a (sorted) list of IDs for all subjects in the dataset
@@ -374,7 +375,7 @@ class OpenFMRIDataset(object):
         if not flavor is None:
             path = _opj(self.basedir, _sub2id(subj),
                         'BOLD', _taskrun(task, run), flavor)
-        if not flavor is None and os.path.exists(path):
+        if not flavor is None and op.exists(path):
             from mvpa2.base.hdf5 import h5load
             ds = h5load(path)
         else:

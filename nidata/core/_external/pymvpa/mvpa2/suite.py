@@ -21,6 +21,7 @@ or
 
 __docformat__ = 'restructuredtext'
 
+import os.path as op
 
 from mvpa2 import *
 
@@ -318,7 +319,7 @@ def suite_stats(scope_dict={}):
         def __init__(self, d):
             dict.__init__(self, foreign={})
             # compute cruel stats
-            mvpa_str = '%smvpa' % os.path.sep
+            mvpa_str = '%smvpa' % op.sep
             for k, e in d.iteritems():
                 found = False
                 for ty, tk, check_path in (

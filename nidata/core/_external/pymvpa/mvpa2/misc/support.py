@@ -15,7 +15,7 @@ import math
 import random
 import re
 import os
-from os.path import join as pathjoin
+import os.path as op
 import sys
 
 # for SmartVersion
@@ -42,9 +42,9 @@ def reuse_absolute_path(file1, file2, force=False):
     force : bool
       if True, force it even if the file2 starts with /
     """
-    if not file2.startswith(os.path.sep) or force:
+    if not file2.startswith(op.sep) or force:
         # lets reuse path to file1
-        return pathjoin(os.path.dirname(file1), file2.lstrip(os.path.sep))
+        return op.join(op.dirname(file1), file2.lstrip(op.sep))
     else:
         return file2
 

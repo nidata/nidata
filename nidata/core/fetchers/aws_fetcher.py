@@ -2,6 +2,7 @@
 """
 
 import os
+import os.path as op
 import time
 import warnings
 from functools import partial
@@ -48,13 +49,13 @@ class AmazonS3Fetcher(Fetcher):
             for file_, remote_key, opts in files:
                 if opts.get('bucket') != bucket_name:
                     continue  # get all files from the current bucket only.
-                target_file = os.path.join(self.data_dir, file_)
+                target_file = op.join(self.data_dir, file_)
                 key = buck.get_key(remote_key)
                 if not key:
                     warnings.warn('Failed to find key: %s' % remote_key)
                     files_.append(None)
                 else:
-                    do_download = force or not os.path.exists(target_file)
+                    do_download = force or not op.exists(target_file)
                     try:
                         do_download = do_download or (check and nib.load(target_file).get_data() is not None)
                     except IOError as ioe:
@@ -64,8 +65,8 @@ class AmazonS3Fetcher(Fetcher):
 
                     if do_download:
                         # Ensure destination directory exists
-                        destination_dir = os.path.dirname(target_file)
-                        if not os.path.isdir(destination_dir):
+                        destination_dir = op.dirname(target_file)
+                        if not op.isdir(destination_dir):
                             if verbose > 0:
                                 print("Creating base directory %s" % destination_dir)
                             os.makedirs(destination_dir)

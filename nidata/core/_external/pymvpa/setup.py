@@ -13,6 +13,7 @@ from numpy.distutils.core import setup, Extension
 import fnmatch
 import glob
 import os
+import os.path as op
 import sys
 
 
@@ -59,10 +60,10 @@ if sys.argv.count('--no-libsvm'):
 # if requested:
 if bind_libsvm == 'local':
     # we will provide libsvm sources later on # if libsvm.a is available locally -- use it
-    #if os.path.exists(os.path.join('build', 'libsvm', 'libsvm.a')):
-    libsvm_3rd_path = os.path.join('3rd', 'libsvm')
+    #if op.exists(op.join('build', 'libsvm', 'libsvm.a')):
+    libsvm_3rd_path = op.join('3rd', 'libsvm')
     libsvmc_include_dirs += [libsvm_3rd_path]
-    libsvmc_extra_sources = [os.path.join(libsvm_3rd_path, 'svm.cpp')]
+    libsvmc_extra_sources = [op.join(libsvm_3rd_path, 'svm.cpp')]
 elif bind_libsvm == 'system':
     # look for libsvm in some places, when local one is not used
     libsvmc_libraries += ['svm']
@@ -87,7 +88,7 @@ else:
 # define the extension modules
 libsvmc_ext = Extension(
     'mvpa2.clfs.libsvmc._svmc',
-    sources=libsvmc_extra_sources + [os.path.join('mvpa2', 'clfs', 'libsvmc', 'svmc.i')],
+    sources=libsvmc_extra_sources + [op.join('mvpa2', 'clfs', 'libsvmc', 'svmc.i')],
     include_dirs=libsvmc_include_dirs,
     library_dirs=libsvmc_library_dirs,
     libraries=libsvmc_libraries,
@@ -97,7 +98,7 @@ libsvmc_ext = Extension(
 
 smlrc_ext = Extension(
     'mvpa2.clfs.libsmlrc.smlrc',
-    sources=[ os.path.join('mvpa2', 'clfs', 'libsmlrc', 'smlr.c') ],
+    sources=[ op.join('mvpa2', 'clfs', 'libsmlrc', 'smlr.c') ],
     #library_dirs = library_dirs,
     libraries=['m'] if not sys.platform.startswith('win') else [],
     # extra_compile_args = ['-O0'],
@@ -113,19 +114,19 @@ if bind_libsvm:
 # Version scheme is: major.minor.patch<suffix>
 
 def get_full_dir(path):
-    path_split = path.split(os.path.sep) # so we could run setup.py on any platform
-    path_proper = os.path.join(*path_split)
+    path_split = path.split(op.sep) # so we could run setup.py on any platform
+    path_proper = op.join(*path_split)
     return (path_proper,
-            [f for f in glob.glob(os.path.join(path_proper, '*'))
-             if os.path.isfile(f)])
+            [f for f in glob.glob(op.join(path_proper, '*'))
+             if op.isfile(f)])
 
 # borrowed from https://wiki.python.org/moin/Distutils/Tutorial
 ## Code borrowed from wxPython's setup and config files
 ## Thanks to Robin Dunn for the suggestion.
 ## I am not 100% sure what's going on, but it works!
 def opj(*args):
-    path = os.path.join(*args)
-    return os.path.normpath(path)
+    path = op.join(*args)
+    return op.normpath(path)
 
 def find_data_files(srcdir, *wildcards, **kw):
     # get a list of all files under the srcdir matching wildcards,
@@ -145,14 +146,14 @@ def find_data_files(srcdir, *wildcards, **kw):
 # define the setup
 def setup_package():
     # Perform 2to3 if needed
-    local_path = os.path.dirname(os.path.abspath(sys.argv[0]))
+    local_path = op.dirname(op.abspath(sys.argv[0]))
     src_path = local_path
     if sys.version_info[0] == 3:
-        src_path = os.path.join(local_path, 'build', 'py3k')
+        src_path = op.join(local_path, 'build', 'py3k')
         import py3tool
         print("Converting to Python3 via 2to3...")
-        py3tool.sync_2to3('mvpa2', os.path.join(src_path, 'mvpa2'))
-        py3tool.sync_2to3('3rd', os.path.join(src_path, '3rd'))
+        py3tool.sync_2to3('mvpa2', op.join(src_path, 'mvpa2'))
+        py3tool.sync_2to3('3rd', op.join(src_path, '3rd'))
 
     # Run build
     os.chdir(src_path)
@@ -211,11 +212,11 @@ def setup_package():
                      'mvpa2.tests.badexternals',
                      'mvpa2.viz',
                    ],
-          data_files=[('mvpa2', [os.path.join('mvpa2', 'COMMIT_HASH')])]
-                     + find_data_files(os.path.join('mvpa2', 'data'),
+          data_files=[('mvpa2', [op.join('mvpa2', 'COMMIT_HASH')])]
+                     + find_data_files(op.join('mvpa2', 'data'),
                                        '*.txt', '*.nii.gz', '*.rtc', 'README', '*.bin',
                                        '*.dat', '*.dat.gz', '*.mat', '*.fsf', '*.par'),
-          scripts=glob.glob(os.path.join('bin', '*')),
+          scripts=glob.glob(op.join('bin', '*')),
           ext_modules=ext_modules
           )
 

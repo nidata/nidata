@@ -13,7 +13,7 @@ __docformat__ = 'restructuredtext'
 
 import time, sys, subprocess
 import os
-from os.path import join as pathjoin
+import os.path as op
 import platform as pl
 from tempfile import mkstemp
 from StringIO import StringIO
@@ -44,9 +44,9 @@ def get_pymvpa_gitversion():
     None or str
       Version of PyMVPA according to git.
     """
-    gitpath = pathjoin(os.path.dirname(mvpa2.__file__), os.path.pardir)
-    gitpathgit = pathjoin(gitpath, '.git')
-    if not os.path.exists(gitpathgit):
+    gitpath = op.join(op.dirname(mvpa2.__file__), op.pardir)
+    gitpathgit = op.join(gitpath, '.git')
+    if not op.exists(gitpathgit):
         return None
     ver = None
     try:
@@ -121,9 +121,9 @@ class WTF(object):
         # Try to obtain git information if available
         out.write(" Version control (GIT):\n")
         try:
-            gitpath = pathjoin(os.path.dirname(mvpa2.__file__), os.path.pardir)
-            gitpathgit = pathjoin(gitpath, '.git')
-            if os.path.exists(gitpathgit):
+            gitpath = op.join(op.dirname(mvpa2.__file__), op.pardir)
+            gitpathgit = op.join(gitpath, '.git')
+            if op.exists(gitpathgit):
                 for scmd, cmd in [
                     ('Status', ['status']),
                     ('Reference', 'show-ref -h HEAD'.split(' ')),

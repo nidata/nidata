@@ -16,7 +16,7 @@ This module offers functions to import data from EEGLAB_ text files.
 __docformat__ = 'restructuredtext'
 
 import numpy as np
-import os
+import os.path as op
 
 from mvpa2.datasets.base import Dataset
 from mvpa2.mappers.flatten import FlattenMapper
@@ -25,7 +25,7 @@ from mvpa2.mappers.flatten import FlattenMapper
 __all__ = [ 'eeglab_dataset' ]
 
 def _looks_like_filename(s):
-    if os.path.exists(s):
+    if op.exists(s):
         return True
     return len(s) <= 256 and not '\n' in s
 
@@ -46,7 +46,7 @@ def eeglab_dataset(samples):
         raise ValueError("Samples should be a string")
 
     if _looks_like_filename(samples):
-        if not os.path.exists(samples):
+        if not op.exists(samples):
             raise ValueError("Input looks like a filename, but file"
                                 " %s does not exist" % samples)
         with open(samples) as f:
@@ -64,10 +64,10 @@ def eeglab_dataset(samples):
             channel_labels = line.split()
             n_channels = len(channel_labels)
         else:
-            # first value is the time point, the remainders the value 
+            # first value is the time point, the remainders the value
             # for each channel
             values = map(float, line.split())
-            t = values[0]  # time 
+            t = values[0]  # time
             eeg = values[1:] # values for each electrode
 
             if len(eeg) != n_channels:
@@ -135,7 +135,7 @@ def eeglab_dataset(samples):
     timepoint_array_3D = np.tile(np.reshape(timepoint_array, (-1, 1)),
                                             (1, 1, n_channels))
 
-    # for consistency use the flattan_mapper defined above to 
+    # for consistency use the flattan_mapper defined above to
     # flatten channel and timepoint names as well
     ds.fa['channelids'] = flatten_mapper.forward(channel_array_3D).ravel()
     ds.fa['timepoints'] = flatten_mapper.forward(timepoint_array_3D).ravel()
@@ -143,7 +143,7 @@ def eeglab_dataset(samples):
     # make some dynamic properties
     # XXX at the moment we don't have propert 'protection' in case
     # the feature space is sliced in a way so that some channels and/or
-    # timepoints occur more often than others 
+    # timepoints occur more often than others
     _eeglab_set_attributes(ds)
 
     return ds

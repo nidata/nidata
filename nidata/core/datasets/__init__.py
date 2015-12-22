@@ -2,12 +2,14 @@
 """
 import inspect
 import os
+import os.path as op
 
 from ..objdep import DependenciesMeta
+from ..fetchers.base import readlinkabs
 
 
 def get_dataset_descr(ds_path, ds_name):
-    rst_path = os.path.join(ds_path, ds_name + '.rst')
+    rst_path = op.join(ds_path, ds_name + '.rst')
     try:
         with open(rst_path) as rst_file:
             descr = rst_file.read()
@@ -71,18 +73,18 @@ def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
         if local_data is not None:
             paths.extend(local_data.split(':'))
 
-        paths.append(os.path.expanduser('~/nidata_path'))
+        paths.append(op.expanduser('~/nidata_path'))
 
     if verbose > 2:
         print('Dataset search paths: %s' % paths)
 
     # Check if the dataset exists somewhere
     for path in paths:
-        path = os.path.join(path, dataset_name)
-        if os.path.islink(path):
+        path = op.join(path, dataset_name)
+        if op.islink(path):
             # Resolve path
             path = readlinkabs(path)
-        if os.path.exists(path) and os.path.isdir(path):
+        if op.exists(path) and op.isdir(path):
             if verbose > 1:
                 print('\nDataset found in %s\n' % path)
             return path
@@ -90,8 +92,8 @@ def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
     # If not, create a folder in the first writeable directory
     errors = []
     for path in paths:
-        path = os.path.join(path, dataset_name)
-        if not os.path.exists(path):
+        path = op.join(path, dataset_name)
+        if not op.exists(path):
             try:
                 os.makedirs(path)
                 if verbose > 0:
@@ -111,10 +113,10 @@ class Dataset(object):
     dependencies = []
 
     def __init__(self, data_dir=None):
-        class_path = os.path.dirname(inspect.getfile(self.__class__))
+        class_path = op.dirname(inspect.getfile(self.__class__))
 
-        self.name = os.path.basename(class_path)
-        self.modality = os.path.basename(os.path.dirname(class_path))  # assume
+        self.name = op.basename(class_path)
+        self.modality = op.basename(op.dirname(class_path))  # assume
         self.description = get_dataset_descr(ds_path=class_path,
                                              ds_name=self.name)
 

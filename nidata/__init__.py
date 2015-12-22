@@ -1,4 +1,5 @@
 """
+TODO: Module docstring for nidata
 """
 import glob
 import gzip

@@ -12,7 +12,7 @@ __docformat__ = 'restructuredtext'
 
 from ConfigParser import SafeConfigParser
 import os
-from os.path import join as pathjoin
+import os.path as op
 
 
 class ConfigManager(SafeConfigParser):
@@ -98,17 +98,17 @@ class ConfigManager(SafeConfigParser):
         """Re-read settings from all configured locations.
         """
         # listof filenames to parse (custom plus some standard ones)
-        homedir = os.path.expanduser('~')
-        user_configfile = pathjoin(homedir, '.pymvpa2.cfg')
-        user_configfile_old = pathjoin(homedir, '.pymvpa.cfg')
+        homedir = op.expanduser('~')
+        user_configfile = op.join(homedir, '.pymvpa2.cfg')
+        user_configfile_old = op.join(homedir, '.pymvpa.cfg')
         # first load user config and then overwrite by local and custom config
         # files.
         filenames = [user_configfile, 'pymvpa2.cfg'] + self.__cfg_filenames
 
         # Check if config for previous version exists, we need to
         # warn users since they might need to copy it over
-        if not os.path.exists(user_configfile) and \
-            os.path.exists(user_configfile_old):
+        if not op.exists(user_configfile) and \
+            op.exists(user_configfile_old):
             # but we can't use our 'warning' since it would not be
             # defined yet and import here would be circular
             # so use stock Python one
