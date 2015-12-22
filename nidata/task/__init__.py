@@ -1,5 +1,5 @@
 """
-Functional MRI datasets
+Task-based functional MRI datasets
 """
 
 import os.path as _osp
