@@ -57,7 +57,7 @@ class AmazonS3Fetcher(Fetcher):
                 else:
                     do_download = force or not op.exists(target_file)
                     try:
-                        do_download = do_download or (check and nib.load(target_file).get_data() is not None)
+                        do_download = do_download or (check and nib.load(target_file).get_data() is None)
                     except IOError as ioe:
                         if verbose > 0:
                             print("Warning: %s corrupted, re-downloading (Error=%s)" % (target_file, ioe))
