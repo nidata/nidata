@@ -65,8 +65,6 @@ PACKAGES = ['nidata',
             'nidata.localizer',
             'nidata.multimodal',
             'nidata.resting_state',
-            'nidata.task',
-            'nidata.template',
-            'nidata.core.fetchers.tests']
+            'nidata.task']
 PACKAGE_DATA = {}
 REQUIRES = ["numpy"]
