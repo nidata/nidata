@@ -13,7 +13,7 @@ import hashlib
 import fnmatch
 
 from .._utils.compat import cPickle, _urllib, md5_hash
-from .base import chunk_report, Fetcher
+from .base import chunk_report, Fetcher, md5_sum_file
 
 
 def movetree(src, dst):
@@ -297,11 +297,13 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         if username:
             # Make sure we're secure, basic auth is unencrypted
             if parse.scheme and parse.scheme != 'https':
-                raise ValueError('Specifying username currently requires using a secure (https) URL (%s).' % url)
+                raise ValueError("Specifying username currently requires using"
+                                 " a secure (https) URL (%s)." % url)
             password_mgr = _urllib.request.HTTPPasswordMgrWithDefaultRealm()
             password_mgr.add_password(None, url, username, passwd)
             # Don't append, don't want to update caller's list with this!
-            handlers = [_urllib.request.HTTPBasicAuthHandler(password_mgr)] + handlers
+            handlers = ([_urllib.request.HTTPBasicAuthHandler(password_mgr)]
+                        + handlers)
         url_opener = _urllib.request.build_opener(*handlers)
 
         # Prep the request (add headers, cookies)
@@ -312,7 +314,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 headers['Cookie'] += ';'
             else:
                 headers['Cookie'] = ''
-            headers['Cookie'] += ';'.join(['%s=%s' % (k, v) for k, v in cookies.items()])
+            headers['Cookie'] += ';'.join(['%s=%s' % (k, v)
+                                           for k, v in cookies.items()])
         for header_name, header_val in headers.items():
             request.add_header(header_name, header_val)
 
@@ -334,7 +337,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 if (content_range is None or not content_range.startswith(
                         'bytes %s-' % local_file_size)):
                     raise IOError('Server does not support resuming')
-            except Exception as ex:
+            except Exception:
                 # A wide number of errors can be raised here. HTTPError,
                 # URLError... I prefer to catch them all and rerun without
                 # resuming.
@@ -362,15 +365,15 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             print('...done. (%i seconds, %i min)' % (dt, dt // 60))
     except _urllib.error.HTTPError as e:
         if verbose > 0:
-            print('Error while fetching file %s. Dataset fetching aborted.' %
-                   (file_name))
+            print("Error while fetching file %s. "
+                  "Dataset fetching aborted." % (file_name))
         if verbose > 1:
             print("HTTP Error: %s, %s" % (e, url))
         raise
     except _urllib.error.URLError as e:
         if verbose > 0:
-            print('Error while fetching file %s. Dataset fetching aborted.' %
-                   (file_name))
+            print("Error while fetching file %s. "
+                  "Dataset fetching aborted." % (file_name))
         if verbose > 1:
             print("URL Error: %s, %s" % (e, url))
         raise
@@ -384,7 +387,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     return full_name
 
 
-def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_archive=True):
+def fetch_files(data_dir, files, resume=True, force=False, verbose=1,
+                delete_archive=True):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
@@ -440,10 +444,10 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
     for file_, url, opts in files:
         # There are two working directories here:
         # - data_dir is the destination directory of the dataset
-        # - temp_dir is a temporary directory dedicated to this fetching call. All
-        #   files that must be downloaded will be in this directory. If a corrupted
-        #   file is found, or a file is missing, this working directory will be
-        #   deleted.
+        # - temp_dir is a temporary directory dedicated to this fetching call.
+        #   All files that must be downloaded will be in this directory. If a
+        #   corrupted file is found, or a file is missing, this working
+        #   directory will be deleted.
         files_pickle = cPickle.dumps(url)
         files_md5 = hashlib.md5(files_pickle).hexdigest()
         temp_dir = op.join(data_dir, files_md5)
@@ -474,27 +478,27 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
 
             # First, uncompress.
             if opts.get('uncompress'):
-                target_files = _uncompress_file(fetched_file, verbose=verbose, delete_archive=False)
+                target_files = _uncompress_file(fetched_file, verbose=verbose,
+                                                delete_archive=False)
             else:
                 target_files = [fetched_file]
 
             if opts.get('move'):
-                raise NotImplementedError('Move options has been removed. Sorry!')
+                raise NotImplementedError('Move options has been removed.')
 
                 # XXX: here, move is supposed to be a dir, it can be a name
-                move = op.join(temp_dir, opts['move'])
+                move_dir = op.join(temp_dir, opts['move'])
 
                 if len(target_files) > 1:
-                    target_files = [op.join(op.dirname(move),
-                                         op.basename(f))
+                    target_files = [op.join(op.dirname(move_dir),
+                                    op.basename(f))
                                     for f in target_files]
                     # Do the move
                 else:
                     if not op.exists(move_dir):
                         os.makedirs(move_dir)
-                    shutil.move(fetched_file, move)
-                    target_files = [move]
-                temp_target_file = move
+                    shutil.move(fetched_file, move_dir)
+                    target_files = [move_dir]
 
             # Let's examine our work
             if not op.exists(target_file):
@@ -504,17 +508,20 @@ def fetch_files(data_dir, files, resume=True, force=False, verbose=1, delete_arc
                         os.makedirs(target_dir)
                     shutil.move(fetched_file, target_file)
                 else:
-                    raise Exception("An error occurred while fetching %s; the expected target file cannot be found. (%s)\nDebug info: %s" % (
-                        file_, target_file,
-                        {'fetched_file': fetched_file, 'target_files': target_files}))
+                    raise Exception("An error occurred while fetching %s; "
+                                    "the expected target file cannot be found."
+                                    " (%s)\nDebug info: %s" % (
+                                        file_, target_file,
+                                        {'fetched_file': fetched_file,
+                                         'target_files': target_files}))
 
             if opts.get('uncompress') and delete_archive:
                 os.remove(fetched_file)
 
             # If needed, move files from temps directory to final directory.
             if op.exists(temp_dir):
-                #XXX We could only moved the files requested
-                #XXX Movetree can go wrong
+                # XXX We could only moved the files requested
+                # XXX Movetree can go wrong
                 movetree(temp_dir, data_dir)
                 shutil.rmtree(temp_dir)
 
@@ -547,7 +554,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
                 mode = stat.S_IMODE(st.st_mode)
                 os.lchmod(d, mode)
             except:
-              pass # lchmod not available
+                pass  # lchmod not available
         elif op.isdir(s):
             copytree(s, d, symlinks, ignore)
         else:
@@ -561,11 +568,13 @@ class HttpFetcher(Fetcher):
         self.username = username
         self.passwd = passwd
 
-    def fetch(self, files, force=False, resume=True, check=False, verbose=1, delete_archive=True):
+    def fetch(self, files, force=False, resume=True, check=False, verbose=1,
+              delete_archive=True):
         files = self.reformat_files(files)  # allows flexibility
         if self.username is not None:
             for tgt, src, opts in files:
                 opts['username'] = opts.get('username', self.username)
                 opts['passwd'] = opts.get('passwd', self.username)
 
-        return fetch_files(self.data_dir, files, resume=resume, force=force, verbose=verbose, delete_archive=delete_archive)
+        return fetch_files(self.data_dir, files, resume=resume, force=force,
+                           verbose=verbose, delete_archive=delete_archive)

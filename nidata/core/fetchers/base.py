@@ -178,7 +178,8 @@ class Fetcher(object):
     dependencies = []
 
     def __init__(self, data_dir=None, verbose=1):
-        self.data_dir = data_dir or os.environ.get('NIDATA_PATH') or 'nidata_data'
+        self.data_dir = data_dir or os.environ.get('NIDATA_PATH',
+                                                   'nidata_data')
         if verbose > 0 and not op.exists(self.data_dir):
             print("Files will be downloaded to %s" % self.data_dir)
 

@@ -3,7 +3,6 @@
 # Author: Alexandre Abrahame, Philippe Gervais
 # License: simplified BSD
 import contextlib
-import inspect
 import os
 import os.path as op
 import re
@@ -166,40 +165,6 @@ def write_tmp_imgs(*imgs, **kwargs):
             yield imgs[0]
         else:
             yield imgs
-
-
-def is_nose_running():
-    """Returns whether we are running the nose test loader
-    """
-    if 'nose' not in sys.modules:
-        return
-    try:
-        import nose
-    except ImportError:
-        return False
-    # Now check that we have the loader in the call stask
-    stack = inspect.stack()
-    from nose import loader
-    loader_file_name = loader.__file__
-    if loader_file_name.endswith('.pyc'):
-        loader_file_name = loader_file_name[:-1]
-    for _, file_name, _, _, _, _ in stack:
-        if file_name == loader_file_name:
-            return True
-    return False
-
-
-def skip_if_running_nose(msg=''):
-    """ Raise a SkipTest if we appear to be running the nose test loader.
-
-    Parameters
-    ==========
-    msg: string, optional
-        The message issued when SkipTest is raised
-    """
-    if is_nose_running():
-        import nose
-        raise nose.SkipTest(msg)
 
 
 # Backport: On some nose versions, assert_less_equal is not present

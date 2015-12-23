@@ -36,7 +36,8 @@ def load_niimg(niimg, dtype=None):
     -----------
 
     niimg: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See
+        http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Image to load.
 
     Returns:
@@ -126,7 +127,7 @@ def _repr_niimgs(niimgs):
         filename = niimgs.get_filename()
         if filename is not None:
             return "%s('%s')" % (niimgs.__class__.__name__,
-                                filename)
+                                 filename)
         else:
             return "%s(\nshape=%s,\naffine=%s\n)" % \
                    (niimgs.__class__.__name__,
@@ -194,7 +195,6 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
        If specified, images are resampled to this field of view
     """
     ref_fov = None
-    resample_to_first_img = False
     ndim_minus_one = ensure_ndim - 1 if ensure_ndim is not None else None
     if target_fov is not None and target_fov != "first":
         ref_fov = target_fov
@@ -206,7 +206,6 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                 ndim_minus_one = len(niimg.shape)
                 if ref_fov is None:
                     ref_fov = (niimg.get_affine(), niimg.shape[:3])
-                    resample_to_first_img = True
 
             if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
                 raise ValueError(
@@ -234,7 +233,8 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
     Parameters
     ----------
     niimg: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See
+        http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
@@ -270,7 +270,8 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
                 "manipulating_mr_images.html#niimg." % type(niimg))
         if return_iterator:
             return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim)
-        return concat_niimgs(niimg, ensure_ndim=ensure_ndim)
+        raise NotImplementedError('Must put back concat_niimgs :-/')
+        # return concat_niimgs(niimg, ensure_ndim=ensure_ndim)
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg)
@@ -303,7 +304,8 @@ def check_niimg_3d(niimg):
     Parameters
     ----------
     niimg: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See
+        http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
@@ -332,7 +334,8 @@ def check_niimg_4d(niimg, return_iterator=False):
     Parameters
     ----------
     niimg: 4D Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See
+        http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         If niimgs is an iterable, checks if data is really 4D. Then,
         considering that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and

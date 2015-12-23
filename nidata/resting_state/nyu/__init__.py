@@ -2,7 +2,6 @@
 # Author: Ben Cipollini
 # License: simplified BSD
 
-
 from ...core.datasets import NilearnDataset
 
 
