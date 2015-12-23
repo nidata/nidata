@@ -5,28 +5,19 @@ Utilities to download NeuroImaging datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
 import collections
 import os
 import os.path as op
-import tarfile
-import zipfile
 import sys
-import shutil
 import time
 import hashlib
-import fnmatch
-import warnings
-import re
-import base64
 
 import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
 from ..objdep import DependenciesMeta
-from .._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from ..datasets import get_dataset_dir
+from .._utils.compat import _basestring
 
 
 def format_time(t):

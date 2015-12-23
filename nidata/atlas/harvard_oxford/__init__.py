@@ -7,10 +7,8 @@ import os.path as op
 import numpy as np
 from scipy import ndimage
 
-from ...core.datasets import HttpDataset
-from ...core.fetchers import get_dataset_dir
-from ...core._utils import check_niimg
-from ...core._utils.niimg import new_img_like
+from ...core.datasets import HttpDataset, get_dataset_dir
+from ...core._utils.niimg import new_img_like, check_niimg
 
 
 class HarvardOxfordDataset(HttpDataset):
