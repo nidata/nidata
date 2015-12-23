@@ -118,6 +118,9 @@ class HcpDataset(Dataset):
         """Get the list of subject IDs. Depends on the # of subjects,
         which also corresponds to other things (license agreement,
         type of data available, etc)"""
+        fil = self.fetcher.fetch(self.prepend(['S500.txt']))[0]
+        with open(fil, 'r') as fp:
+            print(fp.read())
         return ['100307']  # 992774']
 
     def get_files(self, data_type, volume_type, subj_id):
