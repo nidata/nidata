@@ -2,7 +2,6 @@
 """
 
 import contextlib
-import collections
 import os
 import os.path as op
 import tarfile
@@ -12,17 +11,8 @@ import shutil
 import time
 import hashlib
 import fnmatch
-import warnings
-import re
-import base64
-from functools import partial
 
-import nibabel as nib
-import numpy as np
-from scipy import ndimage
-from sklearn.datasets.base import Bunch
-
-from .._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
+from .._utils.compat import cPickle, _urllib, md5_hash
 from .base import chunk_report, Fetcher
 
 
@@ -208,8 +198,8 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
                 tar.extractall(path=data_dir)
             processed = True
         if not processed:
-            raise IOError(
-                    "[Uncompress] unknown archive file format: %s" % file_)
+            raise IOError("[Uncompress] unknown archive file format: "
+                          "%s" % file_)
         if delete_archive:
             os.remove(file_)
         if verbose > 0:

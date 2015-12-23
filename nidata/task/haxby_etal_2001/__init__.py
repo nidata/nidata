@@ -5,7 +5,6 @@
 import os.path as op
 import warnings
 
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 from ...core.fetchers import readmd5_sum_file
@@ -23,7 +22,7 @@ class Haxby2001Dataset(HttpDataset):
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data: dict
         Dictionary-like object, interest attributes are:
         'func': string.  Path to nifti file with bold data.
         'session_target': string. Path to text file containing session and
@@ -53,7 +52,7 @@ class Haxby2001Dataset(HttpDataset):
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data: dict
         Dictionary-like object, the interest attributes are :
         'anat': string list. Paths to anatomic images.
         'func': string list. Paths to nifti file with bold data.
@@ -113,7 +112,7 @@ class Haxby2001Dataset(HttpDataset):
                                        verbose=verbose)
 
             # return the data
-            return Bunch(func=files[1], session_target=files[0], mask=files[2],
+            return dict(func=files[1], session_target=files[0], mask=files[2],
                          conditions_target=files[3])
 
         else:
@@ -161,7 +160,7 @@ class Haxby2001Dataset(HttpDataset):
                                           dictionary=True)
 
             # return the data
-            return Bunch(
+            return dict(
                 anat=files[7::n_files],
                 func=files[0::n_files],
                 session_target=files[1::n_files],

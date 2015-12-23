@@ -5,7 +5,6 @@
 import warnings
 
 import numpy as np
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -25,7 +24,7 @@ class AdhdRestDataset(HttpDataset):
         the data).
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data: dict
         Dictionary-like object, the interest attributes are :
          - 'func': Paths to functional resting-state images
          - 'phenotypic': Explanations of preprocessing steps
@@ -95,7 +94,7 @@ class AdhdRestDataset(HttpDataset):
             zip(confounds, archives, (opts,) * n_subjects),
             resume=resume, verbose=verbose)
 
-        return Bunch(func=functionals, confounds=confounds,
+        return dict(func=functionals, confounds=confounds,
                      phenotypic=phenotypic)
 
 

@@ -6,7 +6,6 @@ import os.path as op
 import warnings
 
 import numpy as np
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 from ...core._utils.compat import _basestring, _urllib
@@ -130,7 +129,7 @@ class BrainomicsDataset(HttpDataset):
 
     Returns
     -------
-    data: Bunch
+    data: dict
         Dictionary-like object, the interest attributes are :
         'cmaps': string list
             Paths to nifti contrast maps
@@ -344,7 +343,7 @@ class BrainomicsDataset(HttpDataset):
         if get_tmaps:
             tmaps = files[1::2]
             files = files[::2]
-        return Bunch(cmaps=files, tmaps=tmaps, masks=masks, anats=anats,
+        return dict(cmaps=files, tmaps=tmaps, masks=masks, anats=anats,
                      ext_vars=csv_data)
 
 
@@ -375,7 +374,7 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
 
     Returns
     -------
-    data: Bunch
+    data: dict
         Dictionary-like object, the interest attributes are :
         'cmaps': string list
             Paths to nifti contrast maps

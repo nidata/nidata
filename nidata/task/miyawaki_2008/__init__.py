@@ -4,7 +4,6 @@
 
 import os.path as op
 
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -14,7 +13,7 @@ class Miyawaki2008Dataset(HttpDataset):
 
     Returns
     -------
-    data: Bunch
+    data: dict
         Dictionary-like object, the interest attributes are :
         'func': string list
             Paths to nifti file with bold data
@@ -124,7 +123,7 @@ class Miyawaki2008Dataset(HttpDataset):
                                    verbose=verbose)
 
         # Return the data
-        return Bunch(
+        return dict(
             func=files[:32],
             label=files[32:64],
             mask=files[64],

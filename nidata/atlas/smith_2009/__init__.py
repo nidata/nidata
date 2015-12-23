@@ -2,7 +2,6 @@
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -21,7 +20,7 @@ class Smith2009Dataset(HttpDataset):
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data: dict
         dictionary-like object, contains:
         - 20-dimensional ICA, Resting-FMRI components:
             - all 20 components (rsn20)
@@ -73,7 +72,7 @@ class Smith2009Dataset(HttpDataset):
         keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
         params = dict(zip(keys, files_))
 
-        return Bunch(**params)
+        return dict(**params)
 
 
 def fetch_smith_2009(data_dir=None, url=None, resume=True, verbose=1):

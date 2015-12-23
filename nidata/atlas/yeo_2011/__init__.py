@@ -7,7 +7,6 @@ Utilities to download NeuroImaging-based atlases
 
 import os.path as op
 
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -33,7 +32,7 @@ class Yeo2011Dataset(HttpDataset):
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data: dict
         dictionary-like object, keys are:
 
         - "thin_7", "thick_7": 7-region parcellations,
@@ -84,7 +83,7 @@ class Yeo2011Dataset(HttpDataset):
                                        force=force, verbose=verbose)
 
         params = dict(list(zip(keys, sub_files)))
-        return Bunch(**params)
+        return dict(**params)
 
 
 def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):

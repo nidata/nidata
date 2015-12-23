@@ -6,7 +6,6 @@ import os.path as op
 import warnings
 
 import numpy as np
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -40,7 +39,7 @@ class OasisVbmDataset(HttpDataset):
 
     Returns
     -------
-    data: Bunch
+    data: dict
         Dictionary-like object, the interest attributes are :
         'gray_matter_maps': string list
             Paths to nifti gray matter density probability maps
@@ -216,7 +215,7 @@ class OasisVbmDataset(HttpDataset):
                                    for subject_id in csv_data['id']])
         csv_data = csv_data[subject_mask]
 
-        return Bunch(
+        return dict(
             gray_matter_maps=gm_maps,
             white_matter_maps=wm_maps,
             ext_vars=csv_data,

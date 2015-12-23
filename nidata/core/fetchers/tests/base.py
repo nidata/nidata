@@ -1,18 +1,7 @@
-import contextlib
 import functools
-import inspect
 import os.path as op
-import re
-import sys
-import tempfile
-import warnings
-import copy
 
 import numpy as np
-import scipy.signal
-from sklearn.utils import check_random_state
-import scipy.linalg
-import nibabel
 
 from ..http_fetcher import fetch_files
 from ..._utils.compat import _basestring, _urllib

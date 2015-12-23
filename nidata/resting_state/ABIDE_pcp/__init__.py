@@ -1,11 +1,9 @@
-# *- encoding: utf-8 -*-
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
 import re
 
 import numpy as np
-from sklearn.datasets.base import Bunch
 
 from ...core._utils.compat import BytesIO
 from ...core.datasets import HttpDataset
@@ -180,7 +178,7 @@ class AbidePcpDataset(HttpDataset):
             if ext == '.1D':
                 files = [np.loadtxt(f) for f in files]
             results[derivative] = files
-        return Bunch(**results)
+        return dict(**results)
 
 
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',

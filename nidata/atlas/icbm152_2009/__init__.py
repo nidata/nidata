@@ -4,7 +4,6 @@
 
 import os.path as op
 
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -22,7 +21,7 @@ class ICBM152Dataset(HttpDataset):
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data: dict
         dictionary-like object, interest keys are:
         "t1", "t2", "t2_relax", "pd": anatomical images obtained with the
         given modality (resp. T1, T2, T2 relaxometry and proton
@@ -81,7 +80,7 @@ class ICBM152Dataset(HttpDataset):
                                        force=force, verbose=verbose)
 
         params = dict(list(zip(keys, sub_files)))
-        return Bunch(**params)
+        return dict(**params)
 
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
