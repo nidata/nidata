@@ -84,7 +84,7 @@ class HcpDataset(Dataset):
         files = []
         for src_file in src_files:
             if isinstance(self.fetcher, HttpFetcher):
-                files.append((src_file, 'https://db.humanconnectome.org/data/archive/projects/HCP_500/subjects/' + src_file))
+                files.append((src_file, 'https://db.humanconnectome.org/data/archive/projects/HCP_900/subjects/' + src_file))
             elif isinstance(self.fetcher, AmazonS3Fetcher):
                 files.append((src_file, 'HCP/' + src_file))
         return files
