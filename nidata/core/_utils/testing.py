@@ -5,10 +5,19 @@
 import contextlib
 import inspect
 import os
+import os.path as op
 import re
+import shutil
 import sys
 import tempfile
+import time
 import warnings
+
+from nose.tools import assert_true
+from nose import SkipTest
+from unittest import TestCase
+
+from .threads import KThread
 
 
 try:
@@ -46,6 +55,47 @@ except ImportError:
             warnings.simplefilter("ignore", warning_class)
             output = func(*args, **kw)
         return output
+
+
+class DownloadTest(TestCase):
+    duration = 2
+    time_step = 0.1
+
+    def setUp(self):
+        self.tmp_dir = tempfile.mkdtemp()
+        self.data_dir = op.join(self.tmp_dir,
+                                op.basename(tempfile.mkstemp()[1]))
+
+    def tearDown(self):
+        if op.exists(self.data_dir):
+            shutil.rmtree(self.data_dir)
+
+    def test_me(self):
+        if getattr(self, 'dataset_class', None) is None:
+            raise SkipTest
+
+        def wrapper_fn():
+            try:
+                self.dataset_class(data_dir=self.data_dir).fetch(verbose=0)
+            except Exception as e:
+                self.exception = e
+                raise
+
+        def test_func(*args, **kwargs):
+            assert_true(op.exists(self.data_dir))
+
+        self.exception = None
+        thread = KThread(target=wrapper_fn, args=(), kwargs={})
+        thread.start()
+
+        wait_time = self.duration
+        while thread.is_alive() and wait_time > 0:  # busy waiting
+            time.sleep(min(wait_time, self.time_step))
+            wait_time -= self.time_step
+
+        if thread.is_alive():
+            thread.kill()
+        assert_true(self.exception is None, str(self.exception))
 
 
 @contextlib.contextmanager
