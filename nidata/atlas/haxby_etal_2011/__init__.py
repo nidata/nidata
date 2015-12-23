@@ -8,7 +8,6 @@ import sys
 
 import nibabel as nib
 import numpy as np
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -66,7 +65,7 @@ class HaxbyEtal2011Dataset(HttpDataset):
             csv_cols = np.vstack([['stim', 'chunk'], value_arr.T])
             np.savetxt(processed_files[-1], csv_cols, delimiter=',', fmt='%s')
 
-        return Bunch(
+        return dict(
             raw_data=raw_files[0],
             func=processed_files[:-1],
             stim=processed_files[-1])

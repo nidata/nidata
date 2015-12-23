@@ -6,15 +6,11 @@ Conversion utilities.
 import collections
 import copy
 import gc
-import warnings
 from distutils.version import LooseVersion
 
 import numpy as np
-import itertools
 import nibabel
-from sklearn.externals.joblib import Memory
 
-from .cache_mixin import cache
 from .compat import _basestring
 from .numpy_conversions import as_ndarray
 
@@ -178,9 +174,7 @@ def _index_img(img, index):
 
 
 def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
-                      target_fov=None,
-                      memory=Memory(cachedir=None),
-                      memory_level=0, verbose=0):
+                      target_fov=None, verbose=0):
     """Iterate over a list of niimgs and do sanity checks and resampling
 
     Parameters
@@ -215,25 +209,13 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                     resample_to_first_img = True
 
             if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
-                if target_fov is not None:
-                    from nilearn import image  # we avoid a circular import
-                    if resample_to_first_img:
-                        warnings.warn('Affine is different across subjects.'
-                                      ' Realignement on first subject '
-                                      'affine forced')
-                    niimg = cache(
-                        image.resample_img, memory, func_memory_level=2,
-                        memory_level=memory_level)(
-                            niimg, target_affine=ref_fov[0],
-                            target_shape=ref_fov[1])
-                else:
-                    raise ValueError(
-                        "Field of view of image #%d is different from "
-                        "reference FOV.\n"
-                        "Reference affine:\n%r\nImage affine:\n%r\n"
-                        "Reference shape:\n%r\nImage shape:\n%r\n"
-                        % (i, ref_fov[0], niimg.get_affine(), ref_fov[1],
-                           niimg.shape))
+                raise ValueError(
+                    "Field of view of image #%d is different from "
+                    "reference FOV.\n"
+                    "Reference affine:\n%r\nImage affine:\n%r\n"
+                    "Reference shape:\n%r\nImage shape:\n%r\n"
+                    % (i, ref_fov[0], niimg.get_affine(), ref_fov[1],
+                       niimg.shape))
             yield niimg
         except TypeError as exc:
             img_name = ''
@@ -375,94 +357,3 @@ def check_niimg_4d(niimg, return_iterator=False):
     Its application is idempotent.
     """
     return check_niimg(niimg, ensure_ndim=4, return_iterator=return_iterator)
-
-
-def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
-                  memory=Memory(cachedir=None), memory_level=0,
-                  auto_resample=False, verbose=0):
-    """Concatenate a list of 3D/4D niimgs of varying lengths.
-
-    The niimgs list can contain niftis/paths to images of varying dimensions
-    (i.e., 3D or 4D) as well as different 3D shapes and affines, as they
-    will be matched to the first image in the list if auto_resample=True.
-
-    Parameters
-    ----------
-    niimgs: iterable of Niimg-like objects
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        Niimgs to concatenate.
-
-    dtype: numpy dtype, optional
-        the dtype of the returned image
-
-    ensure_ndim: integer, optional
-        Indicate the dimensionality of the expected niimg. An
-        error is raised if the niimg is of another dimensionality.
-
-    auto_resample: boolean
-        Converts all images to the space of the first one.
-
-    verbose: int
-        Controls the amount of verbosity (0 means no messages).
-
-    memory : instance of joblib.Memory or string
-        Used to cache the resampling process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level : integer, optional
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
-    Returns
-    -------
-    concatenated: nibabel.Nifti1Image
-        A single image.
-    """
-
-    target_fov = 'first' if auto_resample else None
-
-    # We remove one to the dimensionality because of the list is one dimension.
-    ndim = None
-    if ensure_ndim is not None:
-        ndim = ensure_ndim - 1
-
-    # First niimg is extracted to get information and for new_img_like
-    first_niimg = None
-
-    iterator, literator = itertools.tee(iter(niimgs))
-    try:
-        first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
-    except StopIteration:
-        raise TypeError('Cannot concatenate empty objects')
-
-    # If no particular dimensionality is asked, we force consistency wrt the
-    # first image
-    if ndim is None:
-        ndim = len(first_niimg.shape)
-
-    lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
-    for niimg in literator:
-        # We check the dimensionality of the niimg
-        niimg = check_niimg(niimg, ensure_ndim=ndim)
-        lengths.append(niimg.shape[-1] if ndim == 4 else 1)
-
-    target_shape = first_niimg.shape[:3]
-    data = np.ndarray(target_shape + (sum(lengths), ),
-                      order="F", dtype=dtype)
-    cur_4d_index = 0
-    for index, (size, niimg) in enumerate(zip(lengths, _iter_check_niimg(
-            iterator, atleast_4d=True, target_fov=target_fov,
-            memory=memory, memory_level=memory_level))):
-
-        if verbose > 0:
-            if isinstance(niimg, _basestring):
-                nii_str = "image " + niimg
-            else:
-                nii_str = "image #" + str(index)
-            print("Concatenating {0}: {1}".format(index + 1, nii_str))
-
-        data[..., cur_4d_index:cur_4d_index + size] = niimg.get_data()
-        cur_4d_index += size
-
-    return new_img_like(first_niimg, data, first_niimg.get_affine())

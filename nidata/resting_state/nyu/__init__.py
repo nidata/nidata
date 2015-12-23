@@ -4,7 +4,6 @@
 
 import os.path as op
 
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -27,7 +26,7 @@ class NyuRestDataset(HttpDataset):
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data: dict
         Dictionary-like object, the interest attributes are :
         'func': string list. Paths to functional images.
         'anat_anon': string list. Paths to anatomic images.
@@ -192,7 +191,7 @@ class NyuRestDataset(HttpDataset):
         func = self.fetcher.fetch(func, resume=resume,
                                   force=force, verbose=verbose)
 
-        return Bunch(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
+        return dict(anat_anon=anat_anon, anat_skull=anat_skull, func=func,
                      session=session)
 
 

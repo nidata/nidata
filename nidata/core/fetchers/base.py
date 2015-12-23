@@ -14,7 +14,6 @@ import hashlib
 
 import numpy as np
 from scipy import ndimage
-from sklearn.datasets.base import Bunch
 
 from ..objdep import DependenciesMeta
 from .._utils.compat import _basestring

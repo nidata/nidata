@@ -4,7 +4,6 @@
 
 import os.path as op
 
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -24,7 +23,7 @@ class MSDLDataset(HttpDataset):
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data: dict
         Dictionary-like object, the interest attributes are :
         - 'labels': str. Path to csv file containing labels.
         - 'maps': str. path to nifti file containing regions definition.
@@ -54,7 +53,7 @@ class MSDLDataset(HttpDataset):
         files = [(op.join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
                  (op.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
         files = self.fetcher.fetch(files, force=not resume, verbose=verbose)
-        return Bunch(labels=files[0], maps=files[1])
+        return dict(labels=files[0], maps=files[1])
 
 
 def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):

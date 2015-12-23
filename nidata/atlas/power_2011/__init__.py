@@ -3,7 +3,6 @@
 # License: simplified BSD
 
 import numpy as np
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -12,7 +11,7 @@ class Power2011Dataset(HttpDataset):
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data: dict
         dictionary-like object, contains:
         - "rois": coordinates of 264 ROIs in MNI space
     References
@@ -27,7 +26,7 @@ class Power2011Dataset(HttpDataset):
                   {}),)
         files = self.fetcher.fetch(files=files, force=not resume,
                                    verbose=verbose)
-        return Bunch(rois=np.recfromcsv(files[0]))
+        return dict(rois=np.recfromcsv(files[0]))
 
 
 def fetch_power_2011(data_dir=None, resume=True, verbose=False):

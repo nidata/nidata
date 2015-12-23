@@ -2,7 +2,6 @@
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -28,7 +27,7 @@ class Craddock2012Dataset(HttpDataset):
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
+    data: dict
         dictionary-like object, keys are:
         scorr_mean, tcorr_mean,
         scorr_2level, tcorr_2level,
@@ -71,7 +70,7 @@ class Craddock2012Dataset(HttpDataset):
 
         params = dict(list(zip(keys, sub_files)))
 
-        return Bunch(**params)
+        return dict(**params)
 
 
 def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):

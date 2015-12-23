@@ -5,7 +5,6 @@
 import os.path as op
 
 import numpy as np
-from scipy import ndimage
 
 from ...core.datasets import HttpDataset, get_dataset_dir
 from ...core._utils.niimg import new_img_like, check_niimg
@@ -45,6 +44,7 @@ class HarvardOxfordDataset(HttpDataset):
     regions: nibabel.Nifti1Image
         regions definition, as a label image.
     """
+    dependencies = ['scipy']
     atlas_items = ("cort-maxprob-thr0-1mm", "cort-maxprob-thr0-2mm",
                    "cort-maxprob-thr25-1mm", "cort-maxprob-thr25-2mm",
                    "cort-maxprob-thr50-1mm", "cort-maxprob-thr50-2mm",
@@ -61,6 +61,7 @@ class HarvardOxfordDataset(HttpDataset):
 
     def fetch(self, atlas_name=None, symmetric_split=False,
               resume=True, force=False, verbose=1):
+        from scipy import ndimage
 
         if atlas_name is None:
             # Recursive call

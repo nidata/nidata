@@ -6,7 +6,6 @@ import glob
 import os.path as op
 from collections import defaultdict
 
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -97,4 +96,4 @@ class MyConnectome2015Dataset(HttpDataset):
                     out_dict[data_type].append(img_path)
 
         # return the data
-        return Bunch(**dict(out_dict))
+        return dict(**dict(out_dict))
