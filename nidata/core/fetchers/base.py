@@ -63,16 +63,6 @@ def readmd5_sum_file(path):
     return hashes
 
 
-def readlinkabs(link):
-    """
-    Return an absolute path for the destination
-    of a symlink
-    """
-    path = os.readlink(link)
-    if op.isabs(path):
-        return path
-    return op.join(op.dirname(link), path)
-
 def _filter_column(array, col, criteria):
     """ Return index array matching criteria
 
