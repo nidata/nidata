@@ -1,6 +1,3 @@
-# Taken from dipy, but not properly migrated
-raise NotImplementedError()
-
 from __future__ import division, print_function, absolute_import
 
 import os
@@ -22,8 +19,6 @@ from shutil import copyfileobj
 import numpy as np
 import nibabel as nib
 
-from dipy.core.gradients import gradient_table
-from dipy.io.gradients import read_bvals_bvecs
 
 class FetcherError(Exception):
     pass
@@ -33,6 +28,7 @@ def _log(msg):
     print(msg)
 
 dipy_home = pjoin(op.expanduser('~'), '.dipy')
+
 
 def fetch_data(files, folder):
     """Downloads files to folder and checks their md5 checksums
@@ -229,8 +225,10 @@ def read_isbi2013_2shell():
     check_md5(fbval, md5_dict['bval'])
     check_md5(fbvec, md5_dict['bvec'])
 
+    from dipy.io.gradients import read_bvals_bvecs
     bvals, bvecs = read_bvals_bvecs(fbval, fbvec)
 
+    from dipy.core.gradients import gradient_table
     gtab = gradient_table(bvals, bvecs)
     img = nib.load(fraw)
     return img, gtab
@@ -289,8 +287,10 @@ def read_sherbrooke_3shell():
     check_md5(fbval, md5_dict['bval'])
     check_md5(fbvec, md5_dict['bvec'])
 
+    from dipy.io.gradients import read_bvals_bvecs
     bvals, bvecs = read_bvals_bvecs(fbval, fbvec)
 
+    from dipy.core.gradients import gradient_table
     gtab = gradient_table(bvals, bvecs)
     img = nib.load(fraw)
     return img, gtab
@@ -376,8 +376,10 @@ def read_stanford_hardi():
     check_md5(fbval, md5_dict['bval'])
     check_md5(fbvec, md5_dict['bvec'])
 
+    from dipy.io.gradients import read_bvals_bvecs
     bvals, bvecs = read_bvals_bvecs(fbval, fbvec)
 
+    from dipy.core.gradients import gradient_table
     gtab = gradient_table(bvals, bvecs)
     img = nib.load(fraw)
     return img, gtab
@@ -487,12 +489,15 @@ def read_taiwan_ntu_dsi():
     check_md5(fbvec, md5_dict['bvec'])
     check_md5(pjoin(folder, 'DSI203_license.txt'), md5_dict['license'])
 
+    from dipy.io.gradients import read_bvals_bvecs
     bvals, bvecs = read_bvals_bvecs(fbval, fbvec)
     bvecs[1:] = bvecs[1:] / np.sqrt(np.sum(bvecs[1:] * bvecs[1:], axis=1))[:, None]
 
+    from dipy.core.gradients import gradient_table
     gtab = gradient_table(bvals, bvecs)
     img = nib.load(fraw)
     return img, gtab
+
 
 def fetch_syn_data():
     """ Download t1 and b0 volumes from the same session

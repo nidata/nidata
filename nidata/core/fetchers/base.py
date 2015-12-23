@@ -5,28 +5,19 @@ Utilities to download NeuroImaging datasets
 # Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import contextlib
 import collections
 import os
 import os.path as op
-import tarfile
-import zipfile
 import sys
-import shutil
 import time
 import hashlib
-import fnmatch
-import warnings
-import re
-import base64
 
 import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
 from ..objdep import DependenciesMeta
-from .._utils.compat import _basestring, BytesIO, cPickle, _urllib, md5_hash
-from ..datasets import get_dataset_dir
+from .._utils.compat import _basestring
 
 
 def format_time(t):
@@ -62,16 +53,6 @@ def readmd5_sum_file(path):
             hashes[name] = h
     return hashes
 
-
-def readlinkabs(link):
-    """
-    Return an absolute path for the destination
-    of a symlink
-    """
-    path = os.readlink(link)
-    if op.isabs(path):
-        return path
-    return op.join(op.dirname(link), path)
 
 def _filter_column(array, col, criteria):
     """ Return index array matching criteria

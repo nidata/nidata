@@ -5,7 +5,17 @@ import os
 import os.path as op
 
 from ..objdep import DependenciesMeta
-from ..fetchers.base import readlinkabs
+
+
+def readlinkabs(link):
+    """
+    Return an absolute path for the destination
+    of a symlink
+    """
+    path = os.readlink(link)
+    if op.isabs(path):
+        return path
+    return op.join(op.dirname(link), path)
 
 
 def get_dataset_descr(ds_path, ds_name):

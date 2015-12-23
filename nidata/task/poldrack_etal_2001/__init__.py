@@ -6,26 +6,17 @@ import glob
 import os.path as op
 import re
 
-import pandas as pd
 import numpy as np
-from matplotlib import pyplot as plt  # we need to call plt.show()
 from sklearn.datasets.base import Bunch
 
-import nibabel
-import nipy.modalities.fmri.design_matrix as dm
-from nilearn.image import index_img
-from nilearn.masking import compute_epi_mask
-from nipy.modalities.fmri.glm import FMRILinearModel
-from nipy.modalities.fmri.experimental_paradigm import EventRelatedParadigm
-
 from ...core.datasets import HttpDataset
-from openfmri2bids.converter import convert
 
 
 class OpenFMriDataset(HttpDataset):
     """
     TODO: OpenFMriDataset docstring.
     """
+    dependencies = ['pandas', 'nibabel', 'nilearn', 'nipy']
 
     @staticmethod
     def get_subj_from_path(pth):
@@ -65,6 +56,14 @@ class OpenFMriDataset(HttpDataset):
         """
         TODO: preprocess_files docstring.
         """
+        import pandas as pd
+        import nibabel
+        import nipy.modalities.fmri.design_matrix as dm
+        from nilearn.image import index_img
+        from nilearn.masking import compute_epi_mask
+        from nipy.modalities.fmri.glm import FMRILinearModel
+        from nipy.modalities.fmri.experimental_paradigm import (
+            EventRelatedParadigm)
 
         def get_beta_filepath(func_file, cond):
             return func_file.replace('_bold.nii.gz', '_beta-%s.nii.gz' % cond)
@@ -135,8 +134,11 @@ class PoldrackEtal2001Dataset(OpenFMriDataset):
     """
     TODO: PoldrackEtal2001Dataset docstring.
     """
+    dependencies = ['convert']
+
     def fetch(self, n_subjects=1, preprocess_data=True,
               url=None, resume=True, force=False, verbose=1):
+        from openfmri2bids.converter import convert
 
         # Prep the URLs
         if not op.exists(op.join(self.data_dir, 'ds052_BIDS')):
@@ -164,7 +166,6 @@ class PoldrackEtal2001Dataset(OpenFMriDataset):
         if preprocess_data:
             func_files = self.preprocess_files(func_files,
                                                anat_files=anat_files)
-            plt.show()
 
         # return the data
         return Bunch(func=func_files, anat=anat_files)

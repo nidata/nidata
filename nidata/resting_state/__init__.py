@@ -1,3 +1,5 @@
-from .ABIDE_pcp.datasets import AbidePcpDataset
-from .adhd.datasets import AdhdRestDataset
-from .nyu.datasets import NyuRestDataset
+from .ABIDE_pcp import AbidePcpDataset
+from .adhd import AdhdRestDataset
+from .nyu import NyuRestDataset
+
+__all__ = ['AbidePcpDataset', 'AdhdRestDataset', 'NyuRestDataset']
