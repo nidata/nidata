@@ -88,25 +88,6 @@ class HcpDataset(Dataset):
         files = []
         for src_file in src_files:
             if isinstance(self.fetcher, HttpFetcher):
-                files.append((src_file, 'https://db.humanconnectome.org/data/archive/projects/HCP_500/subjects/' + src_file))
-            elif isinstance(self.fetcher, AmazonS3Fetcher):
-                files.append((src_file, 'HCP/' + src_file))
-        return files
-
-    def prepend(self, src_files):
-        """Prepends the proper absolute url to a list of files, based on fetcher type.
-
-        Parameters
-        ----------
-        src_files: list of str
-            uncompleted urls without the prepended fetcher type
-
-        Returns
-        -------
-        list of fully qualified urls"""
-        files = []
-        for src_file in src_files:
-            if isinstance(self.fetcher, HttpFetcher):
                 files.append((src_file, 'https://db.humanconnectome.org/data/'
                                         'archive/projects/HCP_900/subjects/' +
                                         src_file))
@@ -114,14 +95,47 @@ class HcpDataset(Dataset):
                 files.append((src_file, 'HCP/' + src_file))
         return files
 
-    def get_subject_list(self, n_subjects=500):
+    def get_subject_list(self, n_subjects=None):
         """Get the list of subject IDs. Depends on the # of subjects,
         which also corresponds to other things (license agreement,
         type of data available, etc)"""
-        fil = self.fetcher.fetch(self.prepend(['S500.txt']))[0]
+        subjectfile = 'S900.txt'
+        while True:
+            try:
+                fil = self.fetcher.fetch(self.prepend([subjectfile]))[0]
+                break
+            except:
+                print("Error while fetching file S900.txt. "
+                      "Using file S500.txt instead.")
+                subjectfile = 'S500.txt'
+                try:
+                    fil = self.fetcher.fetch(self.prepend([subjectfile]))[0]
+                    break
+                except:
+                    print("Error while fetching file S500.txt. "
+                          "Using file UR100.txt instead.")
+                    subjectfile = 'UR100.txt'
+                    try:
+                        fil = self.fetcher.fetch(
+                            self.prepend([subjectfile]))[0]
+                        break
+                    except:
+                        print("Error while fetching file UR100.txt. "
+                              "Dataset fetching aborted.")
+
+        if subjectfile == 'S900.txt' and n_subjects > 900:
+            raise IndexError('Subjects number requested too high. Please '
+                             'enter a number less than or equal to 900.')
+        elif subjectfile == 'S500.txt' and n_subjects > 500:
+            raise IndexError('Subjects number requested too high. Please '
+                             'enter a number less than or equal to 500.')
+        elif subjectfile == 'UR100.txt' and n_subjects > 100:
+            raise IndexError('Subjects number requested too high. Please '
+                             'enter a number less than or equal to 100.')
         with open(fil, 'r') as fp:
-            print(fp.read())
-        return ['100307']  # 992774']
+            data = fp.read()
+            subject_ids = data.split('\n')
+            return [subject_ids[i] for i in range(0, n_subjects)]
 
     def get_files(self, data_type, volume_type, subj_id):
         if self.fetcher_type == 'aws':
@@ -191,7 +205,6 @@ class HcpDataset(Dataset):
         else:
             raise NotImplementedError("Cannot (yet!) fetch '%s' files" % (
                 volume_type))
-
         return files
 
     def fetch(self, n_subjects=1, data_types=None, volume_types=None,
