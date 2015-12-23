@@ -3,7 +3,7 @@ sudo: false
 
 python:
   - "2.7"
-  - "3.4"
+  - "3.5"
 
 notifications:
   email: false
@@ -24,7 +24,7 @@ install: # Install packages
   - python setup.py install
 
 script: # Run test
-  - nosetests --with-coverage nidata.resting_state
+  - nosetests --with-coverage nidata
 
 after_success: # Calculate coverage
   - coveralls --config_file .coveragerc
