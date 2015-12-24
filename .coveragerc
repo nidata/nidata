@@ -1,0 +1,10 @@
+[run]
+branch = True
+source = nidata
+include = */nidata/*
+omit =
+    download_all.py
+    nidata/*/*/example*.py
+    nidata/*/*/tests.py
+    nidata/core/_utils/niimg.py
+    nidata/core/_utils/numpy_conversions.py

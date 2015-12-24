@@ -1,6 +1,6 @@
 from . import OasisVbmDataset
-from ...core._utils.testing import DownloadTest
+from ...core._utils.testing import TestCaseWrapper
 
 
-class OasisVbmTest(DownloadTest):
+class OasisVbmTest(TestCaseWrapper.DownloadTest):
     dataset_class = OasisVbmDataset

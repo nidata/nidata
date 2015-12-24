@@ -1,34 +1,17 @@
 # *- encoding: utf-8 -*-
-# Author: Alexandre Abraham, Philippe Gervais
+# Author: Ben Cipollini
 # License: simplified BSD
 
-import numpy as np
-
-from ...core.datasets import HttpDataset
+from ...core.datasets import NilearnDataset
 
 
-class Power2011Dataset(HttpDataset):
-    """Download and load the Power et al. brain atlas composed of 264 ROIs.
-    Returns
-    -------
-    data: dict
-        dictionary-like object, contains:
-        - "rois": coordinates of 264 ROIs in MNI space
-    References
-    ----------
-    Power, Jonathan D., et al. "Functional network organization of the human
-    brain." Neuron 72.4 (2011): 665-678.
-    """
-    def fetch(self, resume=True, verbose=1):
-        files = (('power_2011.csv',
-                  ('https://raw.githubusercontent.com/nilearn/nilearn/master/'
-                   'nilearn/data/power_2011.csv'),
-                  {}),)
-        files = self.fetcher.fetch(files=files, force=not resume,
-                                   verbose=verbose)
-        return dict(rois=np.recfromcsv(files[0]))
+class Power2011Dataset(NilearnDataset):
+    fetcher_function = 'nilearn.datasets.fetch_atlas_power_2011'
+
+    def fetch(self, verbose=0):
+        return self.fetcher.fetch()  # doesn't take any params
 
 
-def fetch_power_2011(data_dir=None, resume=True, verbose=False):
+def fetch_power_2011(data_dir=None, url=None, resume=True, verbose=1):
     return Power2011Dataset(data_dir=data_dir) \
-        .fetch(resume=resume, verbose=verbose)
+        .fetch(url=url, resume=resume, verbose=verbose)

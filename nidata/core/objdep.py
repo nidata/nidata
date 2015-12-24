@@ -19,29 +19,37 @@ def install_dependency(module):
         sys.argv = old_arg
 
 
+def get_missing_dependencies(dependencies):
+    """
+    TODO: get_missing_dependencies docstring
+    """
+    missing_dependencies = []
+    for dep in dependencies:
+        try:
+            __import__(dep)
+        except ImportError as ie:
+            print('Import error: %s' % str(ie))
+            missing_dependencies.append(dep)
+    return missing_dependencies
+
+
 class DependenciesMeta(type):
     """
     TODO: DependenciesMeta docstring.
     """
     def __new__(cls, name, parents, props):
-        def get_missing_dependencies(cls):
+        def get_cls_missing_dependencies(cls):
             """
             TODO: get_missing_dependencies docstring
             """
-            missing_dependencies = []
-            for dep in getattr(cls, 'dependencies', []):
-                try:
-                    __import__(dep)
-                except ImportError as ie:
-                    print('Import error: %s' % str(ie))
-                    missing_dependencies.append(dep)
-            return missing_dependencies
+            return get_missing_dependencies(
+                getattr(cls, 'dependencies', []))
 
         def install_missing_dependencies(cls):
             """
             TODO: install_missing_dependencies docstring
             """
-            for dep in get_missing_dependencies(cls):
+            for dep in get_cls_missing_dependencies(cls):
                 print("Installing missing dependencies '%s', for %s" % (
                     dep, str(cls)))
                 if not install_dependency(dep):

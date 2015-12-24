@@ -18,7 +18,7 @@ def test_cb(cur_bytes, total_bytes, t0=None, **kwargs):
 
 
 class AmazonS3Fetcher(Fetcher):
-    dependencies = ['boto']
+    dependencies = ['boto'] + Fetcher.dependencies
 
     def __init__(self, data_dir=None, access_key=None, secret_access_key=None, profile_name=None):
         if not (profile_name or (access_key and secret_access_key)):

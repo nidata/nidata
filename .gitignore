@@ -2,5 +2,9 @@
 *.pyc
 .DS_Store
 *.ipynb*
+nidata.egg-info/
+dist/
+build/
+nilearn_cache/
+.coverage
 
-nilearn_cache

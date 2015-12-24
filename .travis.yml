@@ -17,9 +17,10 @@ before_install:
   - conda update --yes conda
 
 install: # Install packages
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy nose
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy nose setuptools h5py scipy scikit-learn
   # Coverage packages are on my binstar channel
   - "pip install python-coveralls coverage nose-cov"
+  - "pip install requests nilearn"  # so we can test HCP and Haxby datasets.
   - "pip install profilehooks"
   - python setup.py install
 

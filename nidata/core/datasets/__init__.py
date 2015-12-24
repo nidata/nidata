@@ -131,11 +131,50 @@ class Dataset(object):
                                              ds_name=self.name)
 
         self.data_dir = get_dataset_dir(self.name, data_dir=data_dir)
+        self.fetcher = getattr(self, 'fetcher', None)  # set to *something*.
 
-        self.fetcher = getattr(self, 'fetcher', None)
+    def clean_data_directory(self):
+        """ Function that guarantees a data directory."""
 
-    def fetch(self, n_subjects=1, force=False, check=False, verbose=1):
-        raise NotImplementedError()
+        if os.path.exists(self.data_dir):
+            os.remove(self.data_dir)
+        os.makedirs(self.data_dir)
+
+    def fetch(self, force=False, verbose=1, *args, **kwargs):
+        if force:
+            self.clean_data_directory()
+        return self.fetcher.fetch(verbose=verbose, *args, **kwargs)
+
+
+class FetcherFunctionMeta(DependenciesMeta):
+    """ Define fetcher_function; it will reset class docstring."""
+
+    def __new__(cls, name, parents, props):
+        new_cls = DependenciesMeta.__new__(cls=cls, name=name, parents=parents,
+                                           props=props)
+        if hasattr(new_cls, 'fetcher_function'):
+            # Create a fetcher just to parse off the docs.
+            from ..fetchers import FetcherFunctionFetcher
+            fetcher = FetcherFunctionFetcher(new_cls.fetcher_function)
+            new_cls.__doc__ = fetcher.__doc__
+        return new_cls
+
+
+class FetcherFunctionDataset(Dataset):
+    __metaclass__ = FetcherFunctionMeta
+
+    def __init__(self, data_dir=None):
+        super(FetcherFunctionDataset, self).__init__(data_dir=data_dir)
+        from ..fetchers import FetcherFunctionFetcher
+        self.fetcher = FetcherFunctionFetcher(self.fetcher_function)
+
+
+class NilearnDataset(FetcherFunctionDataset):
+    dependencies = ['nilearn'] + FetcherFunctionDataset.dependencies
+
+
+class NistatsDataset(FetcherFunctionDataset):
+    dependencies = ['nistats'] + FetcherFunctionDataset.dependencies
 
 
 class HttpDataset(Dataset):

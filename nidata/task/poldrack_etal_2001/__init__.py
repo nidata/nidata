@@ -16,7 +16,8 @@ class OpenFMriDataset(HttpDataset):
     """
     TODO: OpenFMriDataset docstring.
     """
-    dependencies = ['pandas', 'nibabel', 'nilearn', 'nipy']
+    dependencies = (['pandas', 'nibabel', 'nilearn', 'nipy'] +
+                    HttpDataset.dependencies)
 
     @staticmethod
     def get_subj_from_path(pth):
@@ -134,7 +135,7 @@ class PoldrackEtal2001Dataset(OpenFMriDataset):
     """
     TODO: PoldrackEtal2001Dataset docstring.
     """
-    dependencies = ['convert']
+    dependencies = ['openfmri2bids'] + OpenFMriDataset.dependencies
 
     def fetch(self, n_subjects=1, preprocess_data=True,
               url=None, resume=True, force=False, verbose=1):

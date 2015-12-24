@@ -73,7 +73,7 @@ def remove_nonfinite_features(dataset):
     """
 
     return dataset[:, np.all(np.isfinite(dataset.samples),axis=0)]
-    
+
 
 
 @datasetmethod
@@ -339,7 +339,7 @@ def summary(dataset, stats=True, lstats='auto', sstats='auto', idhash=False,
             s += dataset.summary_targets(
                 targets_attr=targets_attr, chunks_attr=chunks_attr,
                 maxc=maxc, maxt=maxt)
-        except KeyError, e:
+        except KeyError as  e:
             s += 'No per %s/%s due to %r' % (targets_attr, chunks_attr, e)
 
     if sstats and not targets_attr is None:
