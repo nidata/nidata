@@ -22,7 +22,7 @@ CLASSIFIERS = ["Development Status :: 3 - Alpha",
                "Topic :: Scientific/Engineering"]
 
 # Description should be a one-liner:
-description = "shablona: a template for small scientific Python projects"
+description = "nidata: curated access to neuroimaging data"
 # Long description will go up on the pypi page
 long_description = """
 
@@ -67,4 +67,4 @@ PACKAGES = ['nidata',
             'nidata.resting_state',
             'nidata.task']
 PACKAGE_DATA = {}
-REQUIRES = ["numpy"]
+REQUIRES = ["numpy", "nibabel"]

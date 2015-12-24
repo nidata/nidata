@@ -1,11 +1,12 @@
 import os.path as op
-from distutils.core import setup
+from setuptools import setup
 
-# Get version and release info, which is all stored in shablona/version.py
+# Get version and release info, which is all stored in nidata/version.py
 ver_file = op.join('nidata', 'version.py')
 with open(ver_file) as f:
     exec(f.read())
 
+print(REQUIRES)
 opts = dict(name=NAME,
             maintainer=MAINTAINER,
             maintainer_email=MAINTAINER_EMAIL,
@@ -21,7 +22,7 @@ opts = dict(name=NAME,
             version=VERSION,
             packages=PACKAGES,
             package_data=PACKAGE_DATA,
-            requires=REQUIRES)
+            install_requires=REQUIRES)
 
 
 if __name__ == '__main__':
