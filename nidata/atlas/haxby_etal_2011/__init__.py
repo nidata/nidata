@@ -16,7 +16,7 @@ class HaxbyEtal2011Dataset(HttpDataset):
     """
     TODO: Haxby needs a docstring
     """
-    dependencies = ['h5py']  # ['pymvpa2']
+    dependencies = ['h5py'] + HttpDataset.dependencies
     MAX_SUBJECTS = 10
 
     def fetch(self, n_subjects=10, resume=True, force=False, check=True,

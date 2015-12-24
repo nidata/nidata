@@ -170,11 +170,11 @@ class FetcherFunctionDataset(Dataset):
 
 
 class NilearnDataset(FetcherFunctionDataset):
-    dependencies = ['nilearn']
+    dependencies = ['nilearn'] + FetcherFunctionDataset.dependencies
 
 
 class NistatsDataset(FetcherFunctionDataset):
-    dependencies = ['nistats']
+    dependencies = ['nistats'] + FetcherFunctionDataset.dependencies
 
 
 class HttpDataset(Dataset):

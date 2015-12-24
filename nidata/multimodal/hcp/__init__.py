@@ -11,7 +11,7 @@ from ...core.fetchers import AmazonS3Fetcher, HttpFetcher
 class HcpHttpFetcher(HttpFetcher):
     """TODO: HcpHttpFetcher docstring"""
 
-    dependencies = ['requests']
+    dependencies = ['requests'] + HttpFetcher.dependencies
 
     def __init__(self, data_dir=None, username=None, passwd=None):
         username = username or os.environ.get("NIDATA_USERNAME")
