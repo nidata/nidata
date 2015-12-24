@@ -28,7 +28,7 @@ else:
     import urlparse
     import types
 
-    _basestring = basestring
+    _basestring = eval('basestring')  # pyflakes hack
     cPickle = cPickle
     StringIO = BytesIO = StringIO.StringIO
 
