@@ -16,8 +16,7 @@ The goal of this tool is to offer a simple interface for downloading, storing, a
 ### Data types
 
 The types of data we wish to expose include:
-* MRI / fMRI / rsMRI / dMRI
-* EEG / ERP / MEG / ECoG
+* MRI / tMRI / rsMRI / dMRI
 
 
 ### Known data sources
@@ -30,11 +29,10 @@ http://nidata.github.io/
 
 ### Dependencies
 
-`nidata` is tested in Python 2.6, 2.7, and 3.4. The only package-level dependency is pip.
+`nidata` is tested in Python 2.7, and 3.5. The only package-level dependencies are `pip`, `numpy`, and [nibabel](https://github.com/nibabel/nibabel/) .
 
 Individual datasets may have package dependencies for downloads or examples. If so, `nidata` attempts to install them via pip. These packages include:
 * [nilearn](https://github.com/nilearn/nilearn/) - Machine learning for neuroimaging, contains generic download tools and logic for accessing fMRI datasets
-* [nibabel](https://github.com/nibabel/nibabel/) - Tools for accessing many formats of MRI data
 
 
 ### Installation
