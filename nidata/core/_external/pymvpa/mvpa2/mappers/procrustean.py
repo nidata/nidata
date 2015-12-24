@@ -117,7 +117,7 @@ class ProcrusteanMapper(ProjectionMapper):
 
         # XXX check for being invariant?
         #     needs to be tuned up properly and not raise but handle
-        for i in xrange(2):
+        for i in range(2):
             if np.all(ssqs[i] <= np.abs((np.finfo(datas[i].dtype).eps
                                        * sn * means[i] )**2)):
                 raise ValueError, "For now do not handle invariant in time datasets"

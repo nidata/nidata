@@ -46,7 +46,7 @@ class Repeater(Node):
     def generate(self, ds):
         """Generate the desired number of repetitions."""
         space = self.get_space()
-        for i in xrange(self.count):
+        for i in range(self.count):
             out = ds.copy(deep=False)
             out.a[space] = i
             yield out
@@ -209,7 +209,7 @@ class Sifter(Node):
                         return
                 else:
                     raise ValueError("Unknown key %s in definition of %s"
-                                     % (crit_k, self)) 
+                                     % (crit_k, self))
                     # print attrname, attr.value, uvalues, uvalues_selected, mask
 
         yield ds

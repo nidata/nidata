@@ -67,4 +67,4 @@ PACKAGES = ['nidata',
             'nidata.resting_state',
             'nidata.task']
 PACKAGE_DATA = {}
-REQUIRES = ["numpy", "nibabel"]
+REQUIRES = ["numpy", "nibabel", "six"]

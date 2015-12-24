@@ -8,7 +8,7 @@
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 """Classes to control and store state information.
 
-It was devised to provide conditional storage 
+It was devised to provide conditional storage
 """
 
 _DEV_DOC = """
@@ -40,6 +40,7 @@ __docformat__ = 'restructuredtext'
 from mvpa2.base.types import is_sequence_type
 import mvpa2.support.copy as copy
 from textwrap import TextWrapper
+from six import with_metaclass
 
 # Although not used here -- included into interface
 from mvpa2.misc.exceptions import UnknownStateError
@@ -128,7 +129,7 @@ class Collection(BaseCollection):
         else:
             res = ""
         res += "{"
-        for i in xrange(min(num, maxnumber)):
+        for i in range(min(num, maxnumber)):
             if i > 0:
                 res += " "
             res += "%s" % str(self.values()[i])
@@ -761,8 +762,7 @@ class AttributesCollector(type):
             cls.__doc__ = enhanced_doc_string(cls, *bases)
 
 
-
-class ClassWithCollections(object):
+class ClassWithCollections(with_metaclass(AttributesCollector, object)):
     """Base class for objects which contain any known collection
 
     Classes inherited from this class gain ability to access

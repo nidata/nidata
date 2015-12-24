@@ -146,7 +146,7 @@ class SurfaceQueryEngine(QueryEngineInterface):
         # for different features, hence use a list.
         # initialize each vertex with an empty list
         self._vertex2feature_map = v2f = dict((vertex_id, list())
-                                            for vertex_id in xrange(nvertices))
+                                            for vertex_id in range(nvertices))
 
         for feature_id, vertex_id in enumerate(vertex_ids):
             v2f[vertex_id].append(feature_id)

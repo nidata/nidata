@@ -501,11 +501,11 @@ class VolSurfMapping(VolSurf):
         v2ns = dict()
 
         # by default, no voxels associated with each node
-        for j in xrange(nv):
+        for j in range(nv):
             n2vs[j] = None
 
         # different 'layers' (depths) in the grey matter
-        for i in xrange(nsteps):
+        for i in range(nsteps):
             whiteweight = start_fr + step * float(i)  # ensure float
             pialweight = 1 - whiteweight
 

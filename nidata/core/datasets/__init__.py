@@ -4,6 +4,8 @@ import inspect
 import os
 import os.path as op
 
+from six import with_metaclass
+
 from ..objdep import DependenciesMeta
 
 
@@ -118,8 +120,7 @@ def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
                   'directories, but:' + ''.join(errors))
 
 
-class Dataset(object):
-    __metaclass__ = DependenciesMeta
+class Dataset(with_metaclass(DependenciesMeta, object)):
     dependencies = []
 
     def __init__(self, data_dir=None):
@@ -160,8 +161,7 @@ class FetcherFunctionMeta(DependenciesMeta):
         return new_cls
 
 
-class FetcherFunctionDataset(Dataset):
-    __metaclass__ = FetcherFunctionMeta
+class FetcherFunctionDataset(with_metaclass(FetcherFunctionMeta, Dataset)):
 
     def __init__(self, data_dir=None):
         super(FetcherFunctionDataset, self).__init__(data_dir=data_dir)

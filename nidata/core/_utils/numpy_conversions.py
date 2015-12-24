@@ -17,9 +17,9 @@ def _asarray(arr, dtype=None, order=None):
             ret = np.asarray(arr, dtype=dtype)
     else:
         if (((arr.itemsize == 1 and dtype == np.bool) or
-            (arr.dtype == np.bool and np.dtype(dtype).itemsize == 1))
-            and (order == "F" and arr.flags["F_CONTIGUOUS"]
-                 or order == "C" and arr.flags["C_CONTIGUOUS"])):
+            (arr.dtype == np.bool and np.dtype(dtype).itemsize == 1)) and
+            (order == "F" and arr.flags["F_CONTIGUOUS"] or
+                order == "C" and arr.flags["C_CONTIGUOUS"])):
             ret = arr.view(dtype=dtype)
         else:
             ret = np.asarray(arr, dtype=dtype, order=order)
@@ -43,11 +43,12 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
 
     Caveat: this function does not copy during bool to/from 1-byte dtype
     conversions. This can lead to some surprising results in some rare cases.
+
     Example:
 
         a = numpy.asarray([0, 1, 2], dtype=numpy.int8)
-        b = as_ndarray(a, dtype=bool)  # array([False, True, True], dtype=bool)
-        c = as_ndarray(b, dtype=numpy.int8)  # array([0, 1, 2], dtype=numpy.int8)
+        b = as_ndarray(a, dtype=bool)  # arr([False, True, True], dtype=bool)
+        c = as_ndarray(b, dtype=numpy.int8)  # arr([0, 1, 2], dtype=numpy.int8)
 
     The usually expected result for the last line would be array([0, 1, 1])
     because True evaluates to 1. Since there is no copy made here, the original

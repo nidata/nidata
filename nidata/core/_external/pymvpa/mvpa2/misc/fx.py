@@ -222,7 +222,7 @@ def fit2histogram(X, fx, params, nbins=20, x_range=None):
     """
     if x_range is None:
         # use global min max to ensure consistent bins across observations
-        xrange = (X.min(), X.max())
+        range = (X.min(), X.max())
 
     nobsrv = len(X)
     # histograms per observation

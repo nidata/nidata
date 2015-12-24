@@ -143,7 +143,7 @@ def find_events(**kwargs):
     old_combo = None
     duration = 1
     # over all samples
-    for r in xrange(len(kwargs.values()[0])):
+    for r in range(len(kwargs.values()[0])):
         # current attribute combination
         combo = dict([(k, v[r]) for k, v in kwargs.iteritems()])
 
@@ -554,7 +554,7 @@ def fit_event_hrf_model(
                 names.append(attr)
             else:
                 #  add one per each column of the regressor
-                for i in xrange(regr.shape[1]):
+                for i in range(regr.shape[1]):
                     names.append("%s.%d" % (attr, i))
             regrs.append(regr)
         regrs = np.hstack(regrs)

@@ -14,9 +14,9 @@ import sys
 import time
 
 import numpy as np
+from six import string_types, with_metaclass
 
 from ..objdep import DependenciesMeta
-from .._utils.compat import _basestring
 
 
 def format_time(t):
@@ -77,7 +77,7 @@ def _filter_column(array, col, criteria):
     except:
         raise KeyError('Filtering criterion %s does not exist' % col)
 
-    if (not isinstance(criteria, _basestring) and
+    if (not isinstance(criteria, string_types) and
         not isinstance(criteria, bytes) and
         not isinstance(criteria, tuple) and
             isinstance(criteria, collections.Iterable)):
@@ -173,12 +173,12 @@ def chunk_report(bytes_so_far, total_size, initial_size, t0):
                format_time(time_remaining)))
 
 
-class Fetcher(object):
-    __metaclass__ = DependenciesMeta
+class Fetcher(with_metaclass(DependenciesMeta, object)):
     dependencies = []
 
     def __init__(self, data_dir=None, verbose=1):
-        self.data_dir = data_dir or os.environ.get('NIDATA_PATH') or 'nidata_data'
+        self.data_dir = data_dir or os.environ.get('NIDATA_PATH',
+                                                   'nidata_data')
         if verbose > 0 and not op.exists(self.data_dir):
             print("Files will be downloaded to %s" % self.data_dir)
 
@@ -190,7 +190,7 @@ class Fetcher(object):
         common_path = None  # src base
         out_files = []
         for fil in files:
-            if isinstance(fil, _basestring):
+            if isinstance(fil, string_types):
                 if len(files) == 1:
                     common_prefix = op.dirname(fil) + '/'
                 elif common_path is None:

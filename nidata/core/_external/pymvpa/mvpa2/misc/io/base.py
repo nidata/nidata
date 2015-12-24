@@ -227,14 +227,14 @@ class ColumnData(dict):
             elif isinstance(header, list):
                 hdr = header
             else:
-                hdr = [ str(i) for i in xrange(len(file_.readline().split(sep))) ]
+                hdr = [ str(i) for i in range(len(file_.readline().split(sep))) ]
                 # reset file to not miss the first line
                 file_.seek(0)
                 [ file_.readline() for x in range(skiplines) ]
 
 
             # string in lists: one per column
-            tbl = [ [] for i in xrange(len(hdr)) ]
+            tbl = [ [] for i in range(len(hdr)) ]
 
             # store whether dtype should be determined automagically
             auto_dtype = dtype is None
@@ -269,7 +269,7 @@ class ColumnData(dict):
             if auto_dtype:
                 attempt_convert_dtypes = (int, float)
 
-                for i in xrange(len(tbl)):
+                for i in range(len(tbl)):
                     values = tbl[i]
 
                     for attempt_convert_dtype in attempt_convert_dtypes:
@@ -374,7 +374,7 @@ class ColumnData(dict):
                 file_.write(sep.join(col_hdr) + '\n')
 
             # for all rows
-            for r in xrange(self.nrows):
+            for r in range(self.nrows):
                 # get attributes for all keys
                 l = [str(self[k][r]) for k in col_hdr]
                 # write to file with proper separator
@@ -554,7 +554,7 @@ def design2labels(columndata, baseline_label=0,
     # we decide to process columndata with non-numeric entries etc
     keys = columndata.keys()
     labels = []
-    for row in xrange(columndata.nrows):
+    for row in range(columndata.nrows):
         entries = [ columndata[key][row] for key in keys ]
         # which entries get selected
         selected = [ x for x in zip(keys, entries) if func(x[1]) ]

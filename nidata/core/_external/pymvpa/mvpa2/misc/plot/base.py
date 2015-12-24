@@ -567,7 +567,7 @@ def inverse_cmap(cmap_name):
     except:
         raise ValueError, "Cannot obtain data for the colormap %s" % cmap_name
     new_data = dict( [(k, [(v[i][0], v[-(i+1)][1], v[-(i+1)][2])
-                           for i in xrange(len(v))])
+                           for i in range(len(v))])
                       for k,v in cmap_data.iteritems()] )
     return mpl.colors.LinearSegmentedColormap('%s_rev' % cmap_name,
                                               new_data, _cm.LUTSIZE)
@@ -593,7 +593,7 @@ def plot_dataset_chunks(ds, clf_labels=None):
         chunk_text = str(chunk)
         ids = ds.where(chunks=chunk)
         ds_chunk = ds[ids]
-        for i in xrange(ds_chunk.nsamples):
+        for i in range(ds_chunk.nsamples):
             s = ds_chunk.samples[i]
             l = ds_chunk.targets[i]
             format = ''

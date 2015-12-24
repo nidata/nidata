@@ -17,7 +17,8 @@ before_install:
   - conda update --yes conda
 
 install: # Install packages
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy nose setuptools h5py scipy scikit-learn
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy h5py scipy scikit-learn
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION nose setuptools pep8 pyflakes
   # Coverage packages are on my binstar channel
   - "pip install python-coveralls coverage nose-cov"
   - "pip install requests nilearn"  # so we can test HCP and Haxby datasets.
@@ -25,6 +26,8 @@ install: # Install packages
   - python setup.py install
 
 script: # Run test
+  - pep8 nidata --exclude numpy_conversions,_external,example*,diffusion
+  - pyflakes `find nidata -name \*.py | egrep -v nidata/core/_external | egrep -v example | egrep -v diffusion | egrep -v numpy_conversions`
   - nosetests --with-coverage nidata
 
 after_success: # Calculate coverage

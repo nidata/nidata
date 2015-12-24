@@ -81,7 +81,7 @@ class FslEV3(ColumnData):
                    duration=self['durations'][i],
                    features=[self['intensities'][i]],
                    **kwargs)
-             for i in xrange(self.nevs)]
+             for i in range(self.nevs)]
 
 
     onsets = property(fget=lambda self: self['onsets'])
@@ -234,7 +234,7 @@ class FslGLMDesign(object):
             col_offset = max(self.ppheights)
 
             # for all columns
-            for i in xrange(self.mat.shape[1]):
+            for i in range(self.mat.shape[1]):
                 axcenter = i * col_offset
                 pl.plot(self.mat[:, i] + axcenter, yax, **kwargs)
                 axcenters.append(axcenter)

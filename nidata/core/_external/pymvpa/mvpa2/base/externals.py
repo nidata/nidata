@@ -121,7 +121,7 @@ def __assign_mdp_version():
 def __assign_nibabel_version():
     try:
         import nibabel
-    except Exception, e:
+    except Exception as e:
         # FloatingError is defined in the same module which precludes
         # its specific except
         e_str = str(e)
@@ -156,14 +156,14 @@ def __check_pywt(features=None):
     try:
         for node in wp.get_level(2): wp2[node.path] = node.data
     except:
-        raise ImportError, \
-               "Failed to reconstruct WP by specifying data in the layer"
+        raise ImportError(
+               "Failed to reconstruct WP by specifying data in the layer")
 
     if 'wp reconstruct fixed' in features:
         rec = wp2.reconstruct()
         if np.linalg.norm(rec[:len(data)] - data) > 1e-3:
-            raise ImportError, \
-                  "Failed to reconstruct WP correctly"
+            raise ImportError(
+                  "Failed to reconstruct WP correctly")
     return True
 
 
@@ -174,8 +174,8 @@ def __check_libsvm_verbosity_control():
     try:
         _svmc.svm_set_verbosity(0)
     except:
-        raise ImportError, "Provided version of libsvm has no way to control " \
-              "its level of verbosity"
+        raise ImportError("Provided version of libsvm has no way to control " \
+              "its level of verbosity")
 
 def __assign_shogun_version():
     """Assign shogun versions
@@ -209,8 +209,8 @@ def __check_shogun(bottom_version, custom_versions=[]):
     if (ver in custom_versions) or (ver >= bottom_version):
         return True
     else:
-        raise ImportError, 'Version %s is smaller than needed %s' % \
-              (ver, bottom_version)
+        raise ImportError('Version %s is smaller than needed %s' % \
+              (ver, bottom_version))
 
 def __check_nipy_neurospin():
     from nipy.neurospin.utils import emp_nul
@@ -268,7 +268,7 @@ def __check_weave():
                                verbose=0,
                                extra_compile_args=cargs,
                                compiler = 'gcc')
-    except Exception, e:
+    except Exception as e:
         fmsg = "Failed to build simple weave sample." \
                " Exception was %s" % str(e)
 
@@ -277,7 +277,7 @@ def __check_weave():
     # build_tools.restore_sys_argv()
     sys.argv = oargv
     if fmsg is not None:
-        raise ImportError, fmsg
+        raise ImportError(fmsg)
     else:
         return "Everything is cool"
 
@@ -288,8 +288,8 @@ def __check_atlas_family(family):
     names, pathpattern = KNOWN_ATLAS_FAMILIES[family]
     filename = pathpattern % {'name':names[0]}
     if not op.exists(filename):
-        raise ImportError, "Cannot find file %s for atlas family %s" \
-              % (filename, family)
+        raise ImportError("Cannot find file %s for atlas family %s" \
+              % (filename, family))
     pass
 
 
@@ -307,10 +307,10 @@ def __check_stablerdist():
         distributions = scipy.stats.distributions
         if 'rdist_gen' in dir(distributions) \
             and ('_cdf' in distributions.rdist_gen.__dict__.keys()):
-            raise ImportError, \
-                  "scipy.stats carries misbehaving rdist distribution"
+            raise ImportError(
+                  "scipy.stats carries misbehaving rdist distribution")
     except ZeroDivisionError:
-        raise RuntimeError, "RDist in scipy is still unstable on the boundaries"
+        raise RuntimeError("RDist in scipy is still unstable on the boundaries")
 
 
 def __check_rv_discrete_ppf():
@@ -321,7 +321,7 @@ def __check_rv_discrete_ppf():
         bdist = scipy.stats.binom(100, 0.5)
         bdist.ppf(0.9)
     except TypeError:
-        raise RuntimeError, "pmf is broken in discrete dists of scipy.stats"
+        raise RuntimeError("pmf is broken in discrete dists of scipy.stats")
 
 def __check_rv_continuous_reduce_func():
     """Unfortunately scipy 0.10.1 pukes when fitting with two params fixed
@@ -336,7 +336,7 @@ def __check_in_ipython():
     # figure out if ran within IPython
     if '__IPYTHON__' in globals()['__builtins__']:
         return
-    raise RuntimeError, "Not running in IPython session"
+    raise RuntimeError("Not running in IPython session")
 
 def __assign_ipython_version():
     ipy_version = None
@@ -410,7 +410,7 @@ def __check_pylab_plottable():
         pl.plot([1,2], [1,2])
         pl.close(fig)
     except:
-        raise RuntimeError, "Cannot plot in pylab"
+        raise RuntimeError("Cannot plot in pylab")
     return True
 
 
@@ -434,12 +434,12 @@ def __check_reportlab():
     versions['reportlab'] = SmartVersion(rl.Version)
 
 def __check(name, a='__version__'):
-    exec "import %s" % name
+    exec("import %s" % name)
     try:
-        exec "v = %s.%s" % (name, a)
+        exec("v = %s.%s" % (name, a))
         # it might be lxml.etree, so take only first module
         versions[name.split('.')[0]] = SmartVersion(v)
-    except Exception, e:
+    except Exception as e:
         # we can't assign version but it is there
         if __debug__:
             debug('EXT', 'Failed to acquire a version of %(name)s: %(e)s'
@@ -481,7 +481,7 @@ def _R_library(libname):
             % libname))[0]:
             raise ImportError("It seems that R cannot load library %r"
                               % libname)
-    except Exception, e:
+    except Exception as e:
         raise ImportError("Failed to load R library %r due to %s"
                           % (libname, e))
 
@@ -637,7 +637,7 @@ def exists(dep, force=False, raise_=False, issueWarning=None,
         # check whether an exception should be raised, even though the external
         # was already tested previously
         if not cfg.getboolean('externals', cfgid) and raise_:
-            raise exception, "Required external '%s' was not found" % dep
+            raise Exception("Required external '%s' was not found" % dep)
         return cfg.getboolean('externals', cfgid)
 
 
@@ -647,7 +647,7 @@ def exists(dep, force=False, raise_=False, issueWarning=None,
     result = False
 
     if dep not in _KNOWN:
-        raise ValueError, "%r is not a known dependency key." % (dep,)
+        raise ValueError("%r is not a known dependency key." % (dep,))
     else:
         # try and load the specific dependency
         if __debug__:
@@ -662,11 +662,11 @@ def exists(dep, force=False, raise_=False, issueWarning=None,
 
             estr = ''
             try:
-                exec _KNOWN[dep]
+                exec(_KNOWN[dep])
                 result = True
-            except tuple(_caught_exceptions), e:
+            except tuple(_caught_exceptions) as e:
                 estr = ". Caught exception was: " + str(e)
-            except Exception, e:
+            except Exception as e:
                 # Add known ones by their names so we don't need to
                 # actually import anything manually to get those classes
                 if e.__class__.__name__ in ['RPy_Exception', 'RRuntimeError',
@@ -685,7 +685,7 @@ def exists(dep, force=False, raise_=False, issueWarning=None,
 
     if not result:
         if raise_:
-            raise exception, "Required external '%s' was not found" % dep
+            raise Exception("Required external '%s' was not found" % dep)
         if issueWarning is not None \
                and cfg.getboolean('externals', 'issue warning', True):
             if issueWarning is True:

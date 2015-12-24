@@ -105,7 +105,7 @@ def _get_indexes(shape, dim):
     curindexes[dim] = Ellipsis#slice(None)       # all elements for dimension dim
     while True:
         yield tuple(curindexes)
-        for i in xrange(n):
+        for i in range(n):
             if i == dim and dim == n-1:
                 return                  # we reached it -- thus time to go
             if curindexes[i] == shape[i] - 1:
@@ -197,7 +197,7 @@ class WaveletPacketMapper(_WaveletMapper):
                 levels_lengths = [None] * WP.maxlevel
 
             levels_datas = []
-            for level in xrange(WP.maxlevel):
+            for level in range(WP.maxlevel):
                 level_nodes = WP.get_level(level+1)
                 level_datas = [node.data for node in level_nodes]
 
@@ -360,7 +360,7 @@ class WaveletTransformationMapper(_WaveletMapper):
             if __debug__:
                 debug('MAP_', " %s" % (indexes,), lf=False, cr=True)
             wd_sample = wd[indexes]
-            wd_coeffs = [wd_sample[wd_offsets[i]:wd_offsets[i+1]] for i in xrange(nlevels)]
+            wd_coeffs = [wd_sample[wd_offsets[i]:wd_offsets[i+1]] for i in range(nlevels)]
             # need to compose original list
             time_points = pywt.waverec(
                 wd_coeffs, wavelet=self._wavelet, mode=self._mode)
