@@ -480,7 +480,7 @@ class SequenceStats(dict):
         res = dict(utargets=utargets)
         # Estimate counter-balance
         cbcounts = np.zeros((order, ntargets, ntargets), dtype=int)
-        for cb in xrange(order):
+        for cb in range(order):
             for i, j in zip(seqm[:-(cb+1)], seqm[cb+1:]):
                 cbcounts[cb, i, j] += 1
         res['cbcounts'] = cbcounts
@@ -492,7 +492,7 @@ class SequenceStats(dict):
         # Autocorrelation
         corr = []
         # for all possible shifts:
-        for shift in xrange(1, nsamples):
+        for shift in range(1, nsamples):
             shifted = seqm[shift:] + seqm[:shift]
             # ??? User pearsonsr with p may be?
             corr += [np.corrcoef(seqm, shifted)[0, 1]]
@@ -503,13 +503,13 @@ class SequenceStats(dict):
 
         # Assign textual summary
         # XXX move into a helper function and do on demand
-        t = [ [""] * (1 + self.order*(ntargets+1)) for i in xrange(ntargets+1) ]
+        t = [ [""] * (1 + self.order*(ntargets+1)) for i in range(ntargets+1) ]
         t[0][0] = "Targets/Order"
         for i, l  in enumerate(utargets):
             t[i+1][0] = '%s:' % l
-        for cb in xrange(order):
+        for cb in range(order):
             t[0][1+cb*(ntargets+1)] = "O%d" % (cb+1)
-            for i  in xrange(ntargets+1):
+            for i  in range(ntargets+1):
                 t[i][(cb+1)*(ntargets+1)] = " | "
             m = cbcounts[cb]
             # ??? there should be better way to get indexes

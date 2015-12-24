@@ -8,7 +8,7 @@
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ##
 """Classes to control and store state information.
 
-It was devised to provide conditional storage 
+It was devised to provide conditional storage
 """
 
 _DEV_DOC = """
@@ -128,7 +128,7 @@ class Collection(BaseCollection):
         else:
             res = ""
         res += "{"
-        for i in xrange(min(num, maxnumber)):
+        for i in range(min(num, maxnumber)):
             if i > 0:
                 res += " "
             res += "%s" % str(self.values()[i])

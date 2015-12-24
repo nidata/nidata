@@ -383,7 +383,7 @@ class ProductFlattenMapper(FlattenMapper):
             assert(n == len(values))
 
             unq_vs = []
-            for i in xrange(n):
+            for i in range(n):
                 v = vs[i, ...]
                 unq_v = np.unique(v)
                 assert(unq_v.size == 1)

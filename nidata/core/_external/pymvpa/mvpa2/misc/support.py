@@ -20,6 +20,7 @@ import sys
 
 # for SmartVersion
 from distutils.version import Version
+from six import string_types
 
 import numpy as np
 #import numpy.random as npr
@@ -68,15 +69,15 @@ def transform_with_boxcar(data, startpoints, boxlength, offset=0, fx=np.mean):
     :rtype: array (len(startpoints) x data.shape[1:])
     """
     if boxlength < 1:
-        raise ValueError, "Boxlength lower than 1 makes no sense."
+        raise ValueError("Boxlength lower than 1 makes no sense.")
 
     # check for illegal boxes
     for sp in startpoints:
         if ( sp + offset + boxlength - 1 > len(data)-1 ) \
            or ( sp + offset < 0 ):
-            raise ValueError, \
+            raise ValueError(
                   'Illegal box: start: %i, offset: %i, length: %i' \
-                  % (sp, offset, boxlength)
+                  % (sp, offset, boxlength))
 
     # build a list of list where each sublist contains the indexes of to be
     # averaged data elements
@@ -111,7 +112,7 @@ def xunique_combinations(L, n):
     if n == 0:
         yield []
     else:
-        for i in xrange(len(L)-n+1):
+        for i in range(len(L)-n+1):
             for cc in xunique_combinations(L[i+1:], n-1):
                 yield [L[i]]+cc
 
@@ -138,7 +139,7 @@ def __xrandom_unique_combinations(L, n, k=None):
     if k is not None:
         # Just a helper for convenient limiting
         g = xrandom_unique_combinations(L, n)
-        for i in xrange(k):
+        for i in range(k):
             yield next(g)
     elif n == 0:
         yield []
@@ -161,7 +162,7 @@ def ncombinations(n, k):
     if 0 <= k <= n:
         ntok = 1
         ktok = 1
-        for t in xrange(1, min(k, n - k) + 1):
+        for t in range(1, min(k, n - k) + 1):
             ntok *= n
             ktok *= t
             n -= 1
@@ -293,7 +294,7 @@ def is_in_volume(coord, shape):
     No more generalization (arbitrary minimal coord) is done to save
     on performance
     """
-    for i in xrange(len(coord)):
+    for i in range(len(coord)):
         if coord[i] < 0 or coord[i] >= shape[i]:
             return False
     return True
@@ -323,13 +324,14 @@ def version_to_tuple(v):
     Tuple of integers constructed by splitting at '.' or interleaves
     of numerics and alpha numbers
     """
-    if isinstance(v, basestring):
-        v = map(str, v.split('.'))
+    v = v.decode()
+    if isinstance(v, string_types):
+        v = [str(i) for i in v.split('.')]
     elif isinstance(v, tuple) or isinstance(v, list):
         # assure tuple
         pass
     else:
-        raise ValueError, "Do not know how to treat version '%s'" % str(v)
+        raise ValueError("Do not know how to treat version '%s'" % str(v))
 
     # Try to convert items into ints
     vres = []
@@ -377,8 +379,8 @@ class SmartVersion(Version):
 
     def parse(self, vstring):
         # Unicode gives grief on older releases and anyway arguably comparable
-        if isinstance(vstring, unicode):
-            vstring = str(vstring)
+        if not isinstance(vstring, bytes):
+            vstring = vstring.encode('utf-8')
         self.vstring = vstring
         self.version = version_to_tuple(vstring)
 
@@ -392,7 +394,7 @@ class SmartVersion(Version):
             return ""
 
     def __cmp__(self, other):
-        if isinstance(other, (str, unicode, tuple, list)):
+        if isinstance(other, (str, string_types, tuple, list)):
             other = SmartVersion(other)
         elif isinstance(other, SmartVersion):
             pass
@@ -417,7 +419,7 @@ class SmartVersion(Version):
         i = 0
         s, o = self.version, other.version
         regex_prerelease = re.compile('~|-?dev|-?rc|-?svn|-?pre|-?beta|-?alpha', re.I)
-        for i in xrange(max(len(s), len(o))):
+        for i in range(max(len(s), len(o))):
             if i < len(s): si = s[i]
             else: si = None
             if i < len(o): oi = o[i]
@@ -438,8 +440,8 @@ class SmartVersion(Version):
                             # otherwise the other one wins
                             return -mult
                     else:
-                        raise RuntimeError, "Should not have got here with %s" \
-                              % y
+                        raise RuntimeError("Should not have got here with %s" \
+                              % y)
                 elif isinstance(x, int):
                     if not isinstance(y, int):
                         return mult
@@ -477,14 +479,14 @@ def get_break_points(items, contiguous=True):
     """List of items which was already seen"""
     result = []
     """Resultant list"""
-    for index in xrange(len(items)):
+    for index in range(len(items)):
         item = items[index]
         if item in known:
             if index > 0:
                 if prev != item:            # breakpoint
                     if contiguous:
-                        raise ValueError, \
-                        "Item %s was already seen before" % str(item)
+                        raise ValueError(
+                        "Item %s was already seen before" % str(item))
                     else:
                         result.append(index)
         else:
@@ -512,7 +514,7 @@ def rfe_history_to_maps(history):
     nfeatures, steps = len(history), max(history) - min(history) + 1
     history_maps = np.zeros((steps, nfeatures))
 
-    for step in xrange(steps):
+    for step in range(steps):
         history_maps[step, history >= step] = 1
 
     return history_maps
@@ -598,7 +600,7 @@ class Event(dict):
         # basic checks
         for k in Event._MUSTHAVE:
             if not self.has_key(k):
-                raise ValueError, "Event must have '%s' defined." % k
+                raise ValueError("Event must have '%s' defined." % k)
 
 
     ##REF: Name was automagically refactored

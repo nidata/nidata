@@ -50,14 +50,14 @@ class SimpleSOMMapper(Mapper):
             Kohonen layer.
         distance_metric: callable or None
             Kernel distance metric between elements in Kohonen layer. If None
-            then Euclidean distance is used. Otherwise it should be a 
+            then Euclidean distance is used. Otherwise it should be a
             callable that accepts two input arguments x and y and returns
             the distance d through d=distance_metric(x,y)
         initialization_func: callable or None
-            Initialization function to set self._K, that should take one 
+            Initialization function to set self._K, that should take one
             argument with training samples and return an numpy array. If None,
-            then values in the returned array are taken from a standard normal 
-            distribution.  
+            then values in the returned array are taken from a standard normal
+            distribution.
         """
         # init base class
         Mapper.__init__(self)
@@ -123,11 +123,11 @@ class SimpleSOMMapper(Mapper):
         ----------
         samples : array-like
             Used for unsupervised training of the SOM.
-          
+
         Notes
         -----
-        It is assumed that prior to calling this method the _pretrain method 
-        was called with the same argument.  
+        It is assumed that prior to calling this method the _pretrain method
+        was called with the same argument.
         """
 
         # ensure that dqd was set properly
@@ -140,7 +140,7 @@ class SimpleSOMMapper(Mapper):
         unit_deltas = np.zeros(self._K.shape, dtype='float')
 
         # for all iterations
-        for it in xrange(1, self.niter + 1):
+        for it in range(1, self.niter + 1):
             # compute the neighborhood impact kernel for this iteration
             # has to be recomputed since kernel shrinks over time
             k = self._compute_influence_kernel(it, dqd)

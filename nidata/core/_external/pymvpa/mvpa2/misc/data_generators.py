@@ -34,7 +34,7 @@ def multiple_chunks(func, n_chunks, *args, **kwargs):
     ds : `mvpa2.datasets.base.Dataset`
     """
     dss = []
-    for chunk in xrange(n_chunks):
+    for chunk in range(n_chunks):
         ds_ = func(*args, **kwargs)
         # might not have chunks at all
         if not 'chunks' in ds_.sa:
@@ -113,7 +113,7 @@ def normal_feature_dataset(perlabel=50, nlabels=2, nfeatures=4, nchunks=5,
                 "Provide as many nonbogus features as many labels you have")
         means = np.zeros((len(nonbogus_features), nfeatures))
         # pure multivariate -- single bit per feature
-        for i in xrange(len(nonbogus_features)):
+        for i in range(len(nonbogus_features)):
             means[i, nonbogus_features[i]] = 1.0
     if not means is None and snr != 0:
         # add mean
@@ -223,7 +223,7 @@ def wr1996(size=200):
     x *= np.array(intervals[:, 1] - intervals[:, 0])
     x += np.array(intervals[:, 0])
     if __debug__:
-        for i in xrange(2):
+        for i in range(2):
             debug('DG', '%d columnt Min: %g Max: %g' %
                   (i, x[:, i].min(), x[:, i].max()))
     y = r[0] * np.cos(x[:, 0] + r[1] * np.cos(x.sum(1))) + \
@@ -264,7 +264,7 @@ def chirp_linear(n_instances, n_features=4, n_nonbogus_features=2,
     y = np.sin((10 * np.pi * x ** 2))
 
     data = np.random.normal(size=(n_instances, n_features)) * data_noise
-    for i in xrange(n_nonbogus_features):
+    for i in range(n_nonbogus_features):
         data[:, i] += y[:]
 
     labels = y + np.random.normal(size=(n_instances,)) * noise

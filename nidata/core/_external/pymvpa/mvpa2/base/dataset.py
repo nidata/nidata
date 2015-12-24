@@ -294,7 +294,7 @@ class AttrDataset(object):
                     raise RuntimeError, \
                           "Attribute %r already known to %s" % (attr, self.sa)
             ids = np.array(['%s-%i' % (thisid, i)
-                                for i in xrange(self.samples.shape[0])])
+                                for i in range(self.samples.shape[0])])
             if self.sa.has_key(attr):
                 self.sa[attr].value = ids
             else:
@@ -307,7 +307,7 @@ class AttrDataset(object):
                     raise RuntimeError, \
                           "Attribute %r already known to %s" % (attr, self.fa)
             ids = np.array(['%s-%i' % (thisid, i)
-                                for i in xrange(self.samples.shape[1])])
+                                for i in range(self.samples.shape[1])])
             if self.fa.has_key(attr):
                 self.fa[attr].value = ids
             else:

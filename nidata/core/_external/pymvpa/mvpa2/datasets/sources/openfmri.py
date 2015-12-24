@@ -293,7 +293,7 @@ class OpenFMRIDataset(object):
         data = [None] * nruns
 
         # over all possible run ids
-        for run in xrange(nruns):
+        for run in range(nruns):
             # for all actual subjects
             for subj in sorted(tbri.keys()):
                 if subj in exclude_subjs:
@@ -403,7 +403,7 @@ class OpenFMRIDataset(object):
             if len(attrs.shape) == 1:
                 ds.sa[sa] = attrs
             else:
-                for col in xrange(attrs.shape[1]):
+                for col in range(attrs.shape[1]):
                     ds.sa['%s_%i' % (sa, col)] = attrs[:, col]
         return ds
 

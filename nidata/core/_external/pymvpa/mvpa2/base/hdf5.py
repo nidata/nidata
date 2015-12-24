@@ -311,8 +311,9 @@ def _import_from_thin_air(mod_name, importee, cls_name=None):
 
 def _recon_customobj_defaultrecon(hdf, memo):
     """Reconstruct a custom object from HDF using the default recontructor"""
-    cls_name = hdf.attrs['class']
-    mod_name = hdf.attrs['module']
+    _to_uni = lambda s: s.decode() if isinstance(s, bytes) else s
+    cls_name = _to_uni(hdf.attrs['class'])
+    mod_name = _to_uni(hdf.attrs['module'])
     if __debug__:
         debug('HDF5', "Load class instance '%s.%s' instance [%s]"
                       % (mod_name, cls_name, hdf.name))
@@ -469,7 +470,7 @@ def _hdf_list_to_obj(hdf, memo, target_container=None):
                       objref)
             memo[objref] = target_container
     # for all expected items
-    for i in xrange(length):
+    for i in range(length):
         if __debug__:
             debug('HDF5', "Item %i" % i)
         str_i = str(i)

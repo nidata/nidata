@@ -16,6 +16,8 @@ from verbosity import verbose, debug; debug.active = [1,2,3]; debug(1, "blah")
 __docformat__ = 'restructuredtext'
 
 from sys import stdout, stderr
+from six import string_types
+
 # GOALS
 #  any logger should be able
 #   to log into a file or stdout/stderr
@@ -56,7 +58,7 @@ class Logger(object):
         handlers_ = []
         self._close_opened_handlers()
         for handler in handlers:
-            if isinstance(handler, basestring):
+            if isinstance(handler, string_types):
                 try:
                     handler = {'stdout' : stdout,
                                'stderr' : stderr}[handler.lower()]
@@ -65,9 +67,9 @@ class Logger(object):
                         handler = open(handler, 'w')
                         self.__close_handlers.append(handler)
                     except:
-                        raise RuntimeError, \
+                        raise RuntimeError(
                               "Cannot open file %s for writing by the logger" \
-                              % handler
+                              % handler)
             handlers_.append(handler)
         self.__handlers = handlers_
 
@@ -127,7 +129,7 @@ class Logger(object):
             try:
                 handler.write(msg)
             except:
-                print "Failed writing on handler %s" % handler
+                print("Failed writing on handler %s" % handler)
                 raise
             try:
                 handler.flush()
@@ -174,9 +176,9 @@ class LevelLogger(Logger):
                 pass
         ilevel = int(level)
         if ilevel < 0:
-            raise ValueError, \
+            raise ValueError(
                   "Negative verbosity levels (got %d) are not supported" \
-                  % ilevel
+                  % ilevel)
         self.__level = ilevel
 
 
@@ -269,7 +271,7 @@ class SetLogger(Logger):
         for item in list(set(active)):
             if item == '':
                 continue
-            if isinstance(item, basestring):
+            if isinstance(item, string_types):
                 if item in ['?', 'list', 'help']:
                     self.print_registered(detailed=(item != '?'))
                     raise SystemExit(0)
@@ -282,33 +284,33 @@ class SetLogger(Logger):
                 try:
                     regexp = re.compile(regexp_str)
                 except:
-                    raise ValueError, \
-                          "Unable to create regular expression out of  %s" % item
+                    raise ValueError(
+                          "Unable to create regular expression out of  %s" % item)
                 matching_keys = filter(regexp.match, registered_keys)
                 toactivate = matching_keys
                 if len(toactivate) == 0:
                     ids = self.registered.keys()
                     ids.sort()
-                    raise ValueError, \
+                    raise ValueError(
                           "Unknown debug ID '%s' was asked to become active," \
                           " or regular expression '%s' did not get any match" \
                           " among known ids: %s" \
-                          % (item, regexp_str, ids)
+                          % (item, regexp_str, ids))
             else:
                 toactivate = [item]
 
             # Lets check if asked items are known
             for item_ in toactivate:
                 if not (item_ in registered_keys):
-                    raise ValueError, \
+                    raise ValueError(
                           "Unknown debug ID %s was asked to become active" \
-                          % item_
+                          % item_)
             self.__active += toactivate
 
         self.__active = list(set(self.__active)) # select just unique ones
         self.__maxstrlength = max([len(str(x)) for x in self.__active] + [0])
         if len(self.__active):
-            verbose(2, "Enabling debug handlers: %s" % `self.__active`)
+            verbose(2, "Enabling debug handlers: %s" % repr(self.__active))
 
 
     ##REF: Name was automagically refactored
@@ -336,9 +338,9 @@ class SetLogger(Logger):
         """
 
         if setid in self.__registered:
-            raise ValueError, \
+            raise ValueError(
                   "Setid %s is already known with description '%s'" % \
-                  (`setid`, self.__registered[setid])
+                  (repr(setid), self.__registered[setid]))
         self.__registered[setid] = description
 
 
@@ -352,17 +354,17 @@ class SetLogger(Logger):
 
 
     def print_registered(self, detailed=True):
-        print "Registered debug entries: ",
+        print("Registered debug entries: ")
         kd = self.registered
         rks = sorted(kd.keys())
         maxl = max([len(k) for k in rks])
         if not detailed:
             # short list
-            print ', '.join(rks)
+            print(', '.join(rks))
         else:
             print
             for k in rks:
-                print '%%%ds  %%s' % maxl % (k, kd[k])
+                print('%%%ds  %%s' % maxl % (k, kd[k]))
 
 
     printsetid = property(fget=lambda self: self.__printsetid, \
@@ -471,7 +473,7 @@ if __debug__:
             rss_max = max(rss, rss_max)
             vms_max = max(vms, vms_max)
             yield "max RSS/VMS: %d/%d kB" % (rss_max, vms_max)
-    get_vmem_max_str = _get_vmem_max_str_gen().next
+    get_vmem_max_str = next(_get_vmem_max_str_gen())
 
     def mbasename(s):
         """Custom function to include directory name if filename is too common
@@ -603,23 +605,23 @@ if __debug__:
             correspond to known metrics
             """
 
-            if isinstance(func, basestring):
+            if isinstance(func, string_types):
                 if func in ['all', 'ALL']:
                     func = self._known_metrics.keys()
 
-            if isinstance(func, basestring):
+            if isinstance(func, string_types):
                 if func in DebugLogger._known_metrics:
                     func = DebugLogger._known_metrics[func]
                 else:
                     if func in ['?', 'list', 'help']:
-                        print 'Known debug metrics: ', \
-                              ', '.join(DebugLogger._known_metrics.keys())
+                        print('Known debug metrics: ', \
+                              ', '.join(DebugLogger._known_metrics.keys()))
                         raise SystemExit(0)
                     else:
-                        raise ValueError, \
+                        raise ValueError(
                               "Unknown name %s for metric in DebugLogger" % \
                               func + " Known metrics are " + \
-                              `DebugLogger._known_metrics.keys()`
+                              repr(DebugLogger._known_metrics.keys()))
             elif isinstance(func, list):
                 self.__metrics = []     # reset
                 for item in func:
@@ -638,7 +640,7 @@ if __debug__:
         def __call__(self, setid, msg, *args, **kwargs):
 
             if setid not in self.registered:
-                raise ValueError, "Not registered debug ID %s" % setid
+                raise ValueError("Not registered debug ID %s" % setid)
 
             if not setid in self.active:
                 # don't even compute the metrics, since they might
@@ -704,4 +706,4 @@ if not __debug__:
             pass
 
         def print_registered(self, detailed=True):
-            print "BlackHoleLogger: nothing registered "
+            print("BlackHoleLogger: nothing registered ")

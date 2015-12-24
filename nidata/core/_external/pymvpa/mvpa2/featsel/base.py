@@ -630,7 +630,7 @@ class SplitSamplesProbabilityMapper(SliceMapper):
             f = self._probability_combiner
 
             n = stacked.shape[-1] # number of features
-            common_all = np.asarray([f(stacked[:, i]) for i in xrange(n)])
+            common_all = np.asarray([f(stacked[:, i]) for i in range(n)])
 
             # combine the scores
             common_feature_ids = selector(common_all)

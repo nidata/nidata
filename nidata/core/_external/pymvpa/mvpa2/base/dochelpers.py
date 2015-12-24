@@ -17,7 +17,7 @@ types = __import__('types')
 # for table2string
 import numpy as np
 from math import ceil
-from StringIO import StringIO
+from six import StringIO
 from mvpa2 import cfg
 
 from mvpa2.base.externals import versions, exists
@@ -53,7 +53,7 @@ elif __rst_conventions == 'numpy':
         """Provide section heading"""
         return "%s\n%s" % (section_name, '-'*len(section_name))
 else:
-    raise ValueError, "Unknown convention %s for RST" % __rst_conventions
+    raise ValueError("Unknown convention %s for RST" % __rst_conventions)
 
 
 def _rst(s, snotrst=''):
@@ -215,28 +215,28 @@ def enhanced_doc_string(item, *args, **kwargs):
     # Handling of arguments
     if len(kwargs):
         if set(kwargs.keys()).issubset(set(['force_extend'])):
-            raise ValueError, "Got unknown keyword arguments (smth among %s)" \
-                  " in enhanced_doc_string." % kwargs
+            raise ValueError("Got unknown keyword arguments (smth among %s)" \
+                  " in enhanced_doc_string." % kwargs)
     force_extend = kwargs.get('force_extend', False)
     skip_params = kwargs.get('skip_params', [])
 
     # XXX make it work also not only with classes but with methods as well
     if isinstance(item, basestring):
         if len(args)<1 or not isinstance(args[0], dict):
-            raise ValueError, \
-                  "Please provide locals for enhanced_doc_string of %s" % item
+            raise ValueError(
+                  "Please provide locals for enhanced_doc_string of %s" % item)
         name = item
         lcl = args[0]
         args = args[1:]
     elif hasattr(item, "im_class"):
         # bound method
-        raise NotImplementedError, \
-              "enhanced_doc_string is not yet implemented for methods"
+        raise NotImplementedError(
+              "enhanced_doc_string is not yet implemented for methods")
     elif hasattr(item, "__name__"):
         name = item.__name__
         lcl = item.__dict__
     else:
-        raise ValueError, "Don't know how to extend docstring for %s" % item
+        raise ValueError("Don't know how to extend docstring for %s" % item)
 
     # check whether docstring magic is requested or not
     if not cfg.getboolean('doc', 'pimp docstrings', True):
@@ -419,7 +419,7 @@ def table2string(table, out=None):
                 align = item[1]
                 item = item[2:]
                 if not align in ['l', 'r', 'c', 'w']:
-                    raise ValueError, 'Unknown alignment %s. Known are l,r,c' % align
+                    raise ValueError('Unknown alignment %s. Known are l,r,c' % align)
             else:
                 align = 'c'
 
@@ -433,7 +433,7 @@ def table2string(table, out=None):
             elif align == 'r':
                 NspacesL, NspacesR = NspacesL + NspacesR, 0
             else:
-                raise RuntimeError, 'Should not get here with align=%s' % align
+                raise RuntimeError('Should not get here with align=%s' % align)
 
             string_ += "%%%ds%%s%%%ds " \
                        % (NspacesL, NspacesR) % ('', item, '')

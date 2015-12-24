@@ -304,7 +304,7 @@ def plot_lightbox(background=None, background_mask=None, cmap_bg='gray',
             while ncolumns*nrows - (nslices + nadd) < 0:
                 ncolumns += 1
 
-            locs = ['' for i in xrange(ncolumns*nrows)]
+            locs = ['' for i in range(ncolumns*nrows)]
 
             # Fill in predefined locations
             for v,vl in ((add_hist, 'hist'),

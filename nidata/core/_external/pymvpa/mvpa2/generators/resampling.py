@@ -193,7 +193,7 @@ class Balancer(Node):
         attr, collection = ds.get_attr(self._attr)
         self._limit_filter = get_limit_filter(self._limit, collection)
         # permute as often as requested
-        for i in xrange(self.count):
+        for i in range(self.count):
             yield self(ds)
 
         # reset filter to do the right thing upon next call to object

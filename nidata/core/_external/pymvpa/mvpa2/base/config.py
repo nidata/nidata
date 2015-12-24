@@ -10,7 +10,10 @@
 
 __docformat__ = 'restructuredtext'
 
-from ConfigParser import SafeConfigParser
+try:
+    from ConfigParser import SafeConfigParser
+except:
+    from configparser import SafeConfigParser
 import os
 import os.path as op
 
@@ -85,9 +88,9 @@ class ConfigManager(SafeConfigParser):
             self.__cfg_filenames = []
 
         # set critical defaults
-        for sec, vars in ConfigManager._DEFAULTS.iteritems():
+        for sec, vars in ConfigManager._DEFAULTS.items():
             self.add_section(sec)
-            for key, value in vars.iteritems():
+            for key, value in vars.items():
                 self.set(sec, key, value)
 
         # now get the setting

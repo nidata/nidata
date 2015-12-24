@@ -176,7 +176,7 @@ class OverAxis(object):
                   "than dimensionality of the data of shape %s" % (axis, shape)
 
         # WRONG! ;-)
-        #for ind in xrange(shape[axis]):
+        #for ind in range(shape[axis]):
         #    results.append(transformer(x.take([ind], axis=axis),
         #                              *args, **kwargs))
 

@@ -21,6 +21,7 @@ __docformat__ = 'restructuredtext'
 
 
 import sys, os
+from six import with_metaclass
 from mvpa2.base.config import ConfigManager
 from mvpa2.base.verbosity import LevelLogger, OnceLogger
 
@@ -40,11 +41,10 @@ class _SingletonType(type):
             mcs._instances[sid] = instance
         return mcs._instances[sid]
 
-class __Singleton:
+class __Singleton(with_metaclass(_SingletonType, object)):
     """To ensure single instance of a class instantiation (object)
 
     """
-
     __metaclass__ = _SingletonType
     def __init__(self, *args):
         pass
@@ -52,7 +52,6 @@ class __Singleton:
     def __call__(self):
         raise NotImplementedError
 
-#
 # As the very first step: Setup configuration registry instance and
 # read all configuration settings from files and env variables
 #
@@ -390,7 +389,7 @@ if __debug__:
 else: # if not __debug__
 
     # this debugger function does absolutely nothing.
-    # It avoids the need of using 'if __debug__' for debug(...) calls.    
+    # It avoids the need of using 'if __debug__' for debug(...) calls.
 
     from mvpa2.base.verbosity import BlackHoleLogger
 

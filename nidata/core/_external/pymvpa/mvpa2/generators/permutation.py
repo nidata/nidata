@@ -125,7 +125,7 @@ class AttributePermutator(Node):
         if self.chunk_attr is not None:
             permute_kwargs['chunks'] = ds.sa[self.chunk_attr].value
 
-        for i in xrange(10):  # for the case of assure_permute
+        for i in range(10):  # for the case of assure_permute
             # shallow copy of the dataset for output
             out = ds.copy(deep=False)
 
@@ -253,7 +253,7 @@ class AttributePermutator(Node):
         # figure out permutation setup once for all runs
         self._pcfg = self._get_pcfg(ds)
         # permute as often as requested
-        for i in xrange(self.count):
+        for i in range(self.count):
             ## if __debug__:
             ##     debug('APERM', "%s generating %i-th permutation", (self, i))
             yield self(ds)

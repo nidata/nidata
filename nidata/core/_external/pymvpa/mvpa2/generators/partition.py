@@ -204,7 +204,7 @@ class Partitioner(Node):
                     # accommodate the `count` number
                     step = float(n_cfgs) / count
                     assert(step >= 1.0)
-                    indexes = [int(round(step * i)) for i in xrange(count)]
+                    indexes = [int(round(step * i)) for i in range(count)]
                 elif strategy == 'random':
                     indexes = np.random.permutation(range(n_cfgs))[:count]
                     # doesn't matter much but lets keep them in the original
