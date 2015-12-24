@@ -1,5 +1,7 @@
 ## nidata - neuroimaging dataset download and formatting
 
+[![Build Status](https://travis-ci.org/nidata/nidata.svg?branch=master)](https://travis-ci.org/nidata/nidata)
+[![Coverage Status](https://coveralls.io/repos/nidata/nidata/badge.svg?branch=master&service=github)](https://coveralls.io/github/nidata/nidata?branch=master)
 [![Join the chat at https://gitter.im/nidata/nidata](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/nidata/nidata?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
