@@ -15,6 +15,7 @@ from ...core.datasets import HttpDataset
 class HaxbyEtal2011Dataset(HttpDataset):
     """
     TODO: Haxby needs a docstring
+    note: initial decoding only works in python 2.
     """
     dependencies = ['h5py'] + HttpDataset.dependencies
     MAX_SUBJECTS = 10
@@ -40,6 +41,9 @@ class HaxbyEtal2011Dataset(HttpDataset):
 
         if force or np.any([not op.exists(f) for f in processed_files]):
             # Import local version of pymvpa
+            if sys.version_info[0] > 2:
+                raise NotImplementedError("pymvpa only works in Python 2,"
+                                          "to convert this file.")
             cur_dir = op.dirname(op.abspath(__file__))
             mvpa2_path = op.abspath(op.join(cur_dir, '..', '..', 'core',
                                             '_external', 'pymvpa'))
@@ -57,7 +61,7 @@ class HaxbyEtal2011Dataset(HttpDataset):
                 func_affine = ds_all[si].a['imgaffine'].value
                 func_hdr = ds_all[si].a['imghdr'].value
                 img = nib.Nifti1Image(func_data, affine=func_affine,
-                                      header=func_hdr)
+                                      extra=func_hdr)
                 nib.save(img, func_filename)
 
             # Construct and save the stimuli
