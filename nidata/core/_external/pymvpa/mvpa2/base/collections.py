@@ -289,7 +289,7 @@ class ArrayCollectable(SequenceCollectable):
             if is_sequence_type(val):
                 try:
                     val = np.asanyarray(val)
-                except ValueError, e:
+                except ValueError as  e:
                     if "setting an array element with a sequence" in str(e):
                         val = np.asanyarray(val, dtype=object)
                     else:

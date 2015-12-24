@@ -57,7 +57,7 @@ def __check_numpy_correct_unique():
     import numpy as np
     try:
         _ = np.unique(np.array([1, None, "str"]))
-    except TypeError, e:
+    except TypeError as  e:
         raise RuntimeError("numpy.unique thrown %s" % e)
 
 def __assign_scipy_version():
@@ -239,7 +239,7 @@ def __check_weave():
     """
     try:
         from scipy import weave
-    except OSError, e:
+    except OSError as  e:
         raise ImportError(
             "Weave cannot be used due to failure to import because of %s"
             % e)
@@ -329,7 +329,7 @@ def __check_rv_continuous_reduce_func():
     import scipy.stats as ss
     try:
         ss.t.fit(np.arange(6), floc=0.0, fscale=1.)
-    except IndexError, e:
+    except IndexError as  e:
         raise RuntimeError("rv_continuous.fit can't candle 2 fixed params")
 
 def __check_in_ipython():
@@ -505,7 +505,7 @@ def __check_liblapack_so():
     from ctypes import cdll
     try:
         lapacklib = cdll.LoadLibrary('liblapack.so')
-    except OSError, e:
+    except OSError as  e:
         # reraise with exception type we catch/handle while testing externals
         raise RuntimeError("Failed to import liblapack.so: %s" % e)
 
