@@ -14,8 +14,12 @@ class HcpHttpFetcher(HttpFetcher):
     dependencies = ['requests'] + HttpFetcher.dependencies
 
     def __init__(self, data_dir=None, username=None, passwd=None):
-        username = username or os.environ.get("NIDATA_USERNAME")
-        passwd = passwd or os.environ.get("NIDATA_PASSWD")
+        username = username or os.environ.get("NIDATA_HCP_USERNAME")
+        passwd = passwd or os.environ.get("NIDATA_HCP_PASSWD")
+        if username is None or passwd is None:
+            raise ValueError("Must define NIDATA_HCP_USERNAME and "
+                             "NIDATA_HCP_PASSWD environment variables, or "
+                             "pass username and passwd arguments.")
 
         super(HcpHttpFetcher, self).__init__(data_dir=data_dir,
                                              username=username,
