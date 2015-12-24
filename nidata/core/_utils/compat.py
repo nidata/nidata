@@ -10,7 +10,6 @@ if sys.version_info[0] == 3:
     import io
     import urllib
 
-    _basestring = str
     cPickle = pickle
     StringIO = io.StringIO
     BytesIO = io.BytesIO
@@ -28,7 +27,6 @@ else:
     import urlparse
     import types
 
-    _basestring = eval('basestring')  # pyflakes hack
     cPickle = cPickle
     StringIO = BytesIO = StringIO.StringIO
 

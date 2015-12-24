@@ -10,8 +10,8 @@ from distutils.version import LooseVersion
 
 import numpy as np
 import nibabel
+from six import string_types
 
-from .compat import _basestring
 from .numpy_conversions import as_ndarray
 
 
@@ -45,7 +45,7 @@ def load_niimg(niimg, dtype=None):
     img: image
         A loaded image object.
     """
-    if isinstance(niimg, _basestring):
+    if isinstance(niimg, string_types):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
     elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
@@ -118,7 +118,7 @@ def copy_img(img):
 def _repr_niimgs(niimgs):
     """ Pretty printing of niimg or niimgs.
     """
-    if isinstance(niimgs, _basestring):
+    if isinstance(niimgs, string_types):
         return niimgs
     if isinstance(niimgs, collections.Iterable):
         return '[%s]' % ', '.join(_repr_niimgs(niimg) for niimg in niimgs)
@@ -218,7 +218,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             yield niimg
         except TypeError as exc:
             img_name = ''
-            if isinstance(niimg, _basestring):
+            if isinstance(niimg, string_types):
                 img_name = " (%s) " % niimg
 
             exc.args = (('Error encountered while loading image #%d%s'
@@ -262,7 +262,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False,
     Its application is idempotent.
     """
     # in case of an iterable
-    if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
+    if hasattr(niimg, "__iter__") and not isinstance(niimg, string_types):
         if ensure_ndim == 3:
             raise TypeError(
                 "Data must be a 3D Niimg-like object but you provided a %s."
