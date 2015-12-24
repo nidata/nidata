@@ -182,9 +182,9 @@ class ConfigManager(SafeConfigParser):
             return SafeConfigParser.get(self, section, option, **kwargs)
         except ValueError as  e:
             # provide somewhat descriptive error
-            raise ValueError, \
-                  "Failed to obtain value from configuration for %s.%s. " \
-                  "Original exception was: %s" % (section, option, e)
+            raise ValueError(
+                  "Failed to obtain value from configuration for %s.%s. "
+                  "Original exception was: %s" % (section, option, e))
 
 
     def getboolean(self, section, option, default=None):
@@ -204,7 +204,7 @@ class ConfigManager(SafeConfigParser):
                 else:
                     boolean_states = self.BOOLEAN_STATES
                 if default.lower() not in boolean_states:
-                    raise ValueError, 'Not a boolean: %s' % default
+                    raise ValueError('Not a boolean: %s' % default)
                 return boolean_states[default.lower()]
 
         return SafeConfigParser.getboolean(self, section, option)
@@ -226,6 +226,6 @@ class ConfigManager(SafeConfigParser):
             return SafeConfigParser._get(self, section, dtype, option)
         except ValueError as  e:
             # provide somewhat descriptive error
-            raise ValueError, \
-                  "Failed to obtain value from configuration for %s.%s. " \
-                  "Original exception was: %s" % (section, option, e)
+            raise ValueError(
+                  "Failed to obtain value from configuration for %s.%s. "
+                  "Original exception was: %s" % (section, option, e))
