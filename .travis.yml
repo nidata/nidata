@@ -18,9 +18,8 @@ before_install:
 
 install: # Install packages
   - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy h5py scipy scikit-learn
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION nose setuptools pep8 pyflakes
-  # Coverage packages are on my binstar channel
-  - "pip install python-coveralls coverage nose-cov"
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION nose setuptools pep8 pyflakes coverage
+  - "pip install python-coveralls nose-cov"
   - "pip install requests nilearn"  # so we can test HCP and Haxby datasets.
   - "pip install profilehooks"
   - python setup.py install
@@ -28,7 +27,7 @@ install: # Install packages
 script: # Run test
   - pep8 nidata --exclude numpy_conversions,_external,example*,diffusion
   - pyflakes `find nidata -name \*.py | egrep -v nidata/core/_external | egrep -v example | egrep -v diffusion | egrep -v numpy_conversions`
-  - nosetests --with-coverage nidata
+  - nosetests --with-coverage --cover-package nidata
 
 after_success: # Calculate coverage
-  - coveralls --config_file .coveragerc
+  - coveralls

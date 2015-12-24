@@ -4,6 +4,8 @@ source = nidata
 include = */nidata/*
 omit =
     download_all.py
+    nidata/version.py
+    nidata/diffusion/*.py
     nidata/*/*/example*.py
     nidata/*/*/tests.py
     nidata/core/_utils/niimg.py
