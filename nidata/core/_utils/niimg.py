@@ -50,8 +50,8 @@ def load_niimg(niimg, dtype=None):
         niimg = nibabel.load(niimg)
     elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
         raise TypeError("Data given cannot be loaded because it is"
-                        " not compatible with nibabel format:\n"
-                        + short_repr(niimg))
+                        " not compatible with nibabel format:\n" +
+                        short_repr(niimg))
     return niimg
 
 
@@ -163,8 +163,8 @@ def _check_same_fov(img1, img2):
     """
     img1 = check_niimg(img1)
     img2 = check_niimg(img2)
-    return (img1.shape[:3] == img2.shape[:3]
-            and np.allclose(img1.get_affine(), img2.get_affine()))
+    return (img1.shape[:3] == img2.shape[:3] and
+            np.allclose(img1.get_affine(), img2.get_affine()))
 
 
 def _index_img(img, index):

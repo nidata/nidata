@@ -302,8 +302,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             password_mgr = _urllib.request.HTTPPasswordMgrWithDefaultRealm()
             password_mgr.add_password(None, url, username, passwd)
             # Don't append, don't want to update caller's list with this!
-            handlers = ([_urllib.request.HTTPBasicAuthHandler(password_mgr)]
-                        + handlers)
+            handlers = ([_urllib.request.HTTPBasicAuthHandler(password_mgr)] +
+                        handlers)
         url_opener = _urllib.request.build_opener(*handlers)
 
         # Prep the request (add headers, cookies)
