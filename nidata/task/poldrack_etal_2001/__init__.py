@@ -5,6 +5,7 @@
 import glob
 import os.path as op
 import re
+from collections import OrderedDict
 
 import numpy as np
 
@@ -134,7 +135,9 @@ class PoldrackEtal2001Dataset(OpenFMriDataset):
     """
     TODO: PoldrackEtal2001Dataset docstring.
     """
-    dependencies = ['openfmri2bids'] + OpenFMriDataset.dependencies
+    dependencies = OrderedDict(
+        [(mod, mod) for mod in OpenFMriDataset.dependencies],
+        openfmri2bids='git+https://github.com/INCF/openfmri2bids.git')
 
     def fetch(self, n_subjects=1, preprocess_data=True,
               url=None, resume=True, force=False, verbose=1):
