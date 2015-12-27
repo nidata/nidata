@@ -12,9 +12,8 @@ import tempfile
 import time
 import warnings
 
-from nose.tools import assert_true
 from nose import SkipTest
-from unittest import TestCase
+from nose.tools import assert_true
 
 from .threads import KThread
 from ..objdep import get_missing_dependencies
@@ -57,54 +56,53 @@ except ImportError:
         return output
 
 
-class TestCaseWrapper:
-    class DownloadTest(TestCase):
-        duration = 2
-        time_step = 0.1
+class DownloadTestMixin(object):
+    duration = 2
+    time_step = 0.1
 
-        def setUp(self):
-            self.tmp_dir = tempfile.mkdtemp()
-            self.data_dir = op.join(self.tmp_dir,
-                                    op.basename(tempfile.mkstemp()[1]))
-            missing_dependencies = get_missing_dependencies(
-                self.dataset_class.dependencies)
-            if len(missing_dependencies) > 0:
-                raise SkipTest
+    def setUp(self):
+        self.tmp_dir = tempfile.mkdtemp()
+        self.data_dir = op.join(self.tmp_dir,
+                                op.basename(tempfile.mkstemp()[1]))
+        missing_dependencies = get_missing_dependencies(
+            self.dataset_class.dependencies)
+        if len(missing_dependencies) > 0:
+            raise SkipTest
 
-        def tearDown(self):
-            if op.exists(self.data_dir):
-                shutil.rmtree(self.data_dir)
+    def tearDown(self):
+        if op.exists(self.data_dir):
+            shutil.rmtree(self.data_dir)
 
-        def fetch(self, *args, **kwargs):
-            dset = self.dataset_class(data_dir=self.data_dir)
-            return dset.fetch(*args, **kwargs)
+    def fetch(self, *args, **kwargs):
+        dset = self.dataset_class(data_dir=self.data_dir)
+        return dset.fetch(*args, **kwargs)
 
-        def test_me(self):
-            if getattr(self, 'dataset_class', None) is None:
-                raise SkipTest
+    def test_me(self):
+        if getattr(self, 'dataset_class', None) is None:
+            raise SkipTest
 
-            def wrapper_fn():
-                try:
-                    self.fetch(verbose=0)
-                except Exception as e:
-                    self.exception = e
-                    raise
+        def wrapper_fn():
+            try:
+                self.fetch(verbose=0)
+            except Exception as e:
+                self.exception = e
+                raise
 
-            def test_func(*args, **kwargs):
-                assert_true(op.exists(self.data_dir))
+        def test_func(*args, **kwargs):
+            assert_true(op.exists(self.data_dir))
 
-            self.exception = None
-            thread = KThread(target=wrapper_fn, args=(), kwargs={})
-            thread.start()
+        self.exception = None
+        thread = KThread(target=wrapper_fn, args=(), kwargs={})
+        thread.start()
 
-            wait_time = self.duration
-            while thread.is_alive() and wait_time > 0:  # busy waiting
-                time.sleep(min(wait_time, self.time_step))
-                wait_time -= self.time_step
+        wait_time = self.duration
+        while thread.is_alive() and wait_time > 0:  # busy waiting
+            time.sleep(min(wait_time, self.time_step))
+            wait_time -= self.time_step
 
-            if thread.is_alive():
-                thread.kill()
-            assert_true(self.exception is None, str(self.exception))
+        if thread.is_alive():
+            thread.kill()
+        assert_true(self.exception is None, str(self.exception))
 
 
 @contextlib.contextmanager

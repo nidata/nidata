@@ -1,6 +1,7 @@
 from . import OasisVbmDataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin
 
 
-class OasisVbmTest(TestCaseWrapper.DownloadTest):
+class OasisVbmTest(DownloadTestMixin, TestCase):
     dataset_class = OasisVbmDataset

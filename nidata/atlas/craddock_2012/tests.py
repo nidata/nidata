@@ -1,6 +1,7 @@
 from . import Craddock2012Dataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin
 
 
-class Craddock2012VbmTest(TestCaseWrapper.DownloadTest):
+class Craddock2012VbmTest(DownloadTestMixin, TestCase):
     dataset_class = Craddock2012Dataset

@@ -1,6 +1,7 @@
 from . import NyuRestDataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin
 
 
-class NyuRestTest(TestCaseWrapper.DownloadTest):
+class NyuRestTest(DownloadTestMixin, TestCase):
     dataset_class = NyuRestDataset

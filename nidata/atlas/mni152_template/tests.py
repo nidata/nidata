@@ -1,6 +1,7 @@
 from . import MNI152Dataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin
 
 
-class MNI152Test(TestCaseWrapper.DownloadTest):
+class MNI152Test(DownloadTestMixin, TestCase):
     dataset_class = MNI152Dataset

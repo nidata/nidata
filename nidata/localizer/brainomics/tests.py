@@ -1,8 +1,9 @@
 from . import BrainomicsDataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin
 
 
-class BrainomicsTest(TestCaseWrapper.DownloadTest):
+class BrainomicsTest(DownloadTestMixin, TestCase):
     dataset_class = BrainomicsDataset
 
     def fetch(self, *args, **kwargs):

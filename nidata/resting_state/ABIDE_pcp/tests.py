@@ -1,6 +1,7 @@
 from . import AbidePcpDataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin
 
 
-class AbidePcpTest(TestCaseWrapper.DownloadTest):
+class AbidePcpTest(DownloadTestMixin, TestCase):
     dataset_class = AbidePcpDataset

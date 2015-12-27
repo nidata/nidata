@@ -1,6 +1,7 @@
 from . import Haxby2001Dataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin
 
 
-class Haxby2001Test(TestCaseWrapper.DownloadTest):
+class Haxby2001Test(DownloadTestMixin, TestCase):
     dataset_class = Haxby2001Dataset

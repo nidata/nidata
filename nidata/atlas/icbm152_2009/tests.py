@@ -1,6 +1,7 @@
 from . import ICBM152Dataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin
 
 
-class ICBM152Test(TestCaseWrapper.DownloadTest):
+class ICBM152Test(DownloadTestMixin, TestCase):
     dataset_class = ICBM152Dataset

@@ -4,12 +4,13 @@ import unittest
 from nose.tools import assert_raises
 
 from . import HcpDataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin
 
 
 @unittest.skipIf(os.environ.get('NIDATA_HCP_USERNAME') is None,
                  "Authentication required.")
-class HcpTest(TestCaseWrapper.DownloadTest):
+class HcpTest(DownloadTestMixin, TestCase):
     dataset_class = HcpDataset
 
 

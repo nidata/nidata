@@ -1,8 +1,9 @@
 from . import HarvardOxfordDataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin
 
 
-class HarvardOxfordTest(TestCaseWrapper.DownloadTest):
+class HarvardOxfordTest(DownloadTestMixin, TestCase):
     dataset_class = HarvardOxfordDataset
 
     def fetch(self, *args, **kwargs):

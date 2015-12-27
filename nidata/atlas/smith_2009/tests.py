@@ -1,6 +1,7 @@
 from . import Smith2009Dataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin
 
 
-class Smith2009Test(TestCaseWrapper.DownloadTest):
+class Smith2009Test(DownloadTestMixin, TestCase):
     dataset_class = Smith2009Dataset

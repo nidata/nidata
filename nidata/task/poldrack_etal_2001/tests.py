@@ -1,6 +1,7 @@
 from . import PoldrackEtal2001Dataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin
 
 
-class PoldrackEtal2001Test(TestCaseWrapper.DownloadTest):
+class PoldrackEtal2001Test(DownloadTestMixin, TestCase):
     dataset_class = PoldrackEtal2001Dataset
