@@ -15,8 +15,8 @@ class OpenFMriDataset(HttpDataset):
     """
     TODO: OpenFMriDataset docstring.
     """
-    dependencies = (['pandas', 'nibabel', 'nilearn', 'nipy'] +
-                    HttpDataset.dependencies)
+    dependencies = (['numpy', 'scipy', 'sklearn', 'pandas', 'nibabel',
+                    'nilearn', 'nipy'] + HttpDataset.dependencies)
 
     @staticmethod
     def get_subj_from_path(pth):

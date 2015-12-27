@@ -17,7 +17,7 @@ class HaxbyEtal2011Dataset(HttpDataset):
     TODO: Haxby needs a docstring
     note: initial decoding only works in python 2.
     """
-    dependencies = ['h5py'] + HttpDataset.dependencies
+    dependencies = ['h5py', 'numpy'] + HttpDataset.dependencies
     MAX_SUBJECTS = 10
 
     def fetch(self, n_subjects=10, resume=True, force=False, check=True,

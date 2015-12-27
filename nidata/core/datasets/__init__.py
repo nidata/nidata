@@ -174,7 +174,8 @@ class FetcherFunctionDataset(with_metaclass(FetcherFunctionMeta, Dataset)):
 
 
 class NilearnDataset(FetcherFunctionDataset):
-    dependencies = ['nilearn'] + FetcherFunctionDataset.dependencies
+    dependencies = (['numpy', 'scipy', 'sklearn', 'nilearn'] +
+                    FetcherFunctionDataset.dependencies)
 
 
 class NistatsDataset(FetcherFunctionDataset):

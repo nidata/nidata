@@ -3,17 +3,20 @@
 # Author: Alexandre Abrahame, Philippe Gervais
 # License: simplified BSD
 import contextlib
+import copy
+import importlib
 import os
 import os.path as op
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
 import warnings
 
 from nose import SkipTest
-from nose.tools import assert_true
+from nose.tools import assert_equal, assert_true
 
 from .threads import KThread
 from ..objdep import get_missing_dependencies
@@ -103,6 +106,88 @@ class DownloadTestMixin(object):
         if thread.is_alive():
             thread.kill()
         assert_true(self.exception is None, str(self.exception))
+
+
+def create_virtualenv(venv_name, dir_path=None):
+    dir_path = dir_path or tempfile.mkdtemp()
+    old_args = sys.argv
+    try:
+        from virtualenv import main
+        sys.argv = ['virtualenv', op.join(dir_path, venv_name)]
+        main()
+    finally:
+        sys.argv = old_args
+    print("Created virtualenv %s at %s" % (venv_name, dir_path))
+    return dir_path
+
+
+def activate_virtualenv(venv_name, dir_path):
+    activate_path = op.join(dir_path, venv_name, 'bin', 'activate_this.py')
+    with open(activate_path, 'r') as fp:
+        exec(fp.read(), dict(__file__=activate_path))
+    print("Activated virtualenv %s at %s" % (venv_name, dir_path))
+
+
+class TestInVirtualEnvMixin(object):
+
+    def setUp(self):
+        # Store old variables
+        self.environ = copy.deepcopy(os.environ)
+        self.path = copy.deepcopy(sys.path)
+        self.prefix = sys.prefix
+        self.real_prefix = getattr(sys, 'real_prefix', None)
+
+        # Numpy and scipy are too difficult to install,
+        #  so if they're in the old environment, link them
+        #  to the new.
+        add_paths = []
+        for module_name in ['numpy', 'scipy']:
+            try:
+                mod = importlib.import_module(module_name)
+                add_paths.append(op.dirname(op.dirname(mod.__file__)))
+                print('Will add %s to path.' % module_name)
+            except ImportError:
+                pass
+
+        # Create & activate virtual environment
+        self.venv_name = self.__class__.__name__
+        self.venv_path = create_virtualenv(self.venv_name)
+        activate_virtualenv(self.venv_name, dir_path=self.venv_path)
+
+        # Add paths
+        sys.path = sys.path + add_paths
+
+    def tearDown(self):
+        # Remove the files
+        if op.exists(self.venv_path):
+            shutil.rmtree(self.venv_path)
+
+        # Reset key variables.
+        for key in self.environ:
+            os.environ[key] = self.environ[key]
+        sys.prefix = self.prefix
+        if self.real_prefix:
+            sys.real_prefix = self.real_prefix
+        elif getattr(sys, 'real_prefix', None) is not None:
+            del sys.real_prefix
+        sys.path = self.path
+
+
+class InstallTestMixin(TestInVirtualEnvMixin):
+    def test_install(self):
+        # Make sure the environment is clean.
+        data = subprocess.Popen(
+            ['pip', 'list'], stdout=subprocess.PIPE).communicate()[0].decode()
+        for dep in self.dataset_class.dependencies:
+            assert_true(dep not in data,
+                        "Dependency '%s' is already installed." % dep)
+
+        print("Installing %s" % self.dataset_class.__name__)
+        print(self.dataset_class())  # will trigger install
+
+        missing_dependencies = get_missing_dependencies(
+            self.dataset_class.dependencies)
+        assert_equal(0, len(missing_dependencies))
 
 
 @contextlib.contextmanager
