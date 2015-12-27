@@ -156,8 +156,12 @@ class FetcherFunctionMeta(DependenciesMeta):
         if hasattr(new_cls, 'fetcher_function'):
             # Create a fetcher just to parse off the docs.
             from ..fetchers import FetcherFunctionFetcher
-            fetcher = FetcherFunctionFetcher(new_cls.fetcher_function)
-            new_cls.__doc__ = fetcher.__doc__
+            try:
+                fetcher = FetcherFunctionFetcher(new_cls.fetcher_function)
+            except:
+                pass  # won't be able to have docs for that function...
+            else:
+                new_cls.__doc__ = fetcher.__doc__
         return new_cls
 
 

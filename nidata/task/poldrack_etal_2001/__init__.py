@@ -7,7 +7,6 @@ import os.path as op
 import re
 
 import numpy as np
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -169,4 +168,4 @@ class PoldrackEtal2001Dataset(OpenFMriDataset):
                                                anat_files=anat_files)
 
         # return the data
-        return Bunch(func=func_files, anat=anat_files)
+        return dict(func=func_files, anat=anat_files)
