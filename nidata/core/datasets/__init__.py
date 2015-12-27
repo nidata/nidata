@@ -3,6 +3,7 @@
 import inspect
 import os
 import os.path as op
+import warnings
 
 from six import with_metaclass
 
@@ -18,18 +19,6 @@ def readlinkabs(link):
     if op.isabs(path):
         return path
     return op.join(op.dirname(link), path)
-
-
-def get_dataset_descr(ds_path, ds_name):
-    rst_path = op.join(ds_path, ds_name + '.rst')
-    try:
-        with open(rst_path) as rst_file:
-            descr = rst_file.read()
-    except IOError:
-        print("Warning: Could not find dataset description (%s)." % rst_path)
-        descr = ''
-
-    return descr
 
 
 def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
@@ -123,14 +112,28 @@ def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
 class Dataset(ClassWithDependencies):
     dependencies = []
 
+    @classmethod
+    def get_dataset_descr_path(cls):
+        class_path = op.dirname(inspect.getfile(cls))
+        name = op.dirname(class_path)
+
+        return op.join(class_path, name + '.rst')
+
+    @classmethod
+    def get_dataset_descr(cls):
+        rst_path = cls.get_dataset_descr_path()
+        try:
+            with open(rst_path) as fp:
+                return fp.read()
+        except IOError:
+            warnings.warn("Could not find dataset description: %s" % rst_path)
+            return ''
+
     def __init__(self, data_dir=None):
         class_path = op.dirname(inspect.getfile(self.__class__))
-
         self.name = op.basename(class_path)
         self.modality = op.basename(op.dirname(class_path))  # assume
-        self.description = get_dataset_descr(ds_path=class_path,
-                                             ds_name=self.name)
-
+        self.description = self.get_dataset_descr()
         self.data_dir = get_dataset_dir(self.name, data_dir=data_dir)
         self.fetcher = getattr(self, 'fetcher', None)  # set to *something*.
 
@@ -177,6 +180,13 @@ class FetcherFunctionDataset(with_metaclass(FetcherFunctionMeta, Dataset)):
 class NilearnDataset(FetcherFunctionDataset):
     dependencies = (['numpy', 'scipy', 'sklearn', 'nilearn'] +
                     FetcherFunctionDataset.dependencies)
+
+    @classmethod
+    def get_dataset_descr_path(cls):
+        import nilearn.datasets.description as descr
+        class_path = op.dirname(inspect.getfile(cls))
+        name = getattr(cls, 'nilearn_name', op.basename(class_path))
+        return op.join(op.dirname(descr.__file__), '%s.rst' % name)
 
 
 class NistatsDataset(FetcherFunctionDataset):
