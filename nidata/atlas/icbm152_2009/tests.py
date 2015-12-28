@@ -1,7 +1,11 @@
-from . import ICBM152Dataset
 from unittest import TestCase
-from nidata.core._utils.testing import DownloadTestMixin
+from nidata.atlas import ICBM152Dataset
+from nidata.core._utils.testing import DownloadTestMixin, InstallTestMixin
 
 
-class ICBM152Test(DownloadTestMixin, TestCase):
+class ICBM152DownloadTest(DownloadTestMixin, TestCase):
+    dataset_class = ICBM152Dataset
+
+
+class ICBM152InstallTest(InstallTestMixin, TestCase):
     dataset_class = ICBM152Dataset

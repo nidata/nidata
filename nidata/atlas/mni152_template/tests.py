@@ -1,7 +1,11 @@
-from . import MNI152Dataset
 from unittest import TestCase
-from nidata.core._utils.testing import DownloadTestMixin
+from nidata.atlas import MNI152Dataset
+from nidata.core._utils.testing import DownloadTestMixin, InstallTestMixin
 
 
-class MNI152Test(DownloadTestMixin, TestCase):
+class MNI152DownloadTest(DownloadTestMixin, TestCase):
+    dataset_class = MNI152Dataset
+
+
+class MNI152InstallTest(InstallTestMixin, TestCase):
     dataset_class = MNI152Dataset

@@ -1,11 +1,15 @@
-from . import BrainomicsDataset
 from unittest import TestCase
-from nidata.core._utils.testing import DownloadTestMixin
+from nidata.localizer import BrainomicsDataset
+from nidata.core._utils.testing import DownloadTestMixin, InstallTestMixin
 
 
-class BrainomicsTest(DownloadTestMixin, TestCase):
+class BrainomicsDownloadTest(DownloadTestMixin, TestCase):
     dataset_class = BrainomicsDataset
 
-    def fetch(self, *args, **kwargs):
-        super(BrainomicsTest, self).fetch(contrasts=['checkerboard'],
-                                          *args, **kwargs)
+    def fetch(self, contrasts=('checkerboard',), *args, **kwargs):
+        super(BrainomicsDownloadTest, self).fetch(
+            contrasts=contrasts, *args, **kwargs)
+
+
+class BrainomicsTest(InstallTestMixin, TestCase):
+    dataset_class = BrainomicsDataset

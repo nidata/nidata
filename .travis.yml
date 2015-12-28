@@ -8,14 +8,15 @@ python:
 addons:
   apt:
     packages:
-    - libblas-dev
-    - liblapack-dev
-    - gfortran
+    - libblas-dev  # scipy
+    - liblapack-dev  # scipy
+    - gfortran  # scipy
+    - libhdf5-dev  # hdf5
 
 cache:
   - apt
   - directories:
-    - $HOME/.cache/pip
+    - $HOME/.cache/pip  # makes things go fast 2nd time around!
 
 notifications:
   email: false

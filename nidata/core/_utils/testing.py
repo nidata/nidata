@@ -176,11 +176,13 @@ class TestInVirtualEnvMixin(object):
 class InstallTestMixin(TestInVirtualEnvMixin):
     def test_install(self):
         # Make sure the environment is clean.
-        data = subprocess.Popen(
+        out = subprocess.Popen(
             ['pip', 'list'], stdout=subprocess.PIPE).communicate()[0].decode()
+        installed_mods = [lin.split(' ')[0] for lin in out.split('\n')]
         for dep in self.dataset_class.dependencies:
-            assert_true(dep not in data,
-                        "Dependency '%s' is already installed." % dep)
+            assert_true(dep not in installed_mods,
+                        "Dependency '%s' is already installed.\n%s" % (
+                            dep, installed_mods))
 
         print("Installing %s" % self.dataset_class.__name__)
         print(self.dataset_class())  # will trigger install
