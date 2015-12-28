@@ -10,8 +10,7 @@ class OasisVbmDataset(NilearnDataset):
 
     def fetch(self, n_subjects=None, dartel_version=True,
               url=None, resume=True, force=False, verbose=1):
-        super(OasisVbmDataset, self).fetch(data_dir=self.data_dir,
-                                           n_subjects=n_subjects,
+        super(OasisVbmDataset, self).fetch(n_subjects=n_subjects,
                                            dartel_version=dartel_version,
                                            url=url, resume=resume,
                                            verbose=verbose)
