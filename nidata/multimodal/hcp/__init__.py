@@ -99,43 +99,42 @@ class HcpDataset(Dataset):
         """Get the list of subject IDs. Depends on the # of subjects,
         which also corresponds to other things (license agreement,
         type of data available, etc)"""
-        subjectfile = 'S900.txt'
-        while True:
-            try:
-                fil = self.fetcher.fetch(self.prepend([subjectfile]))[0]
-                break
-            except:
-                print("Error while fetching file S900.txt. "
-                      "Using file S500.txt instead.")
-                subjectfile = 'S500.txt'
-                try:
-                    fil = self.fetcher.fetch(self.prepend([subjectfile]))[0]
-                    break
-                except:
-                    print("Error while fetching file S500.txt. "
-                          "Using file UR100.txt instead.")
-                    subjectfile = 'UR100.txt'
-                    try:
-                        fil = self.fetcher.fetch(
-                            self.prepend([subjectfile]))[0]
-                        break
-                    except:
-                        print("Error while fetching file UR100.txt. "
-                              "Dataset fetching aborted.")
 
-        if subjectfile == 'S900.txt' and n_subjects > 900:
-            raise IndexError('Subjects number requested too high. Please '
-                             'enter a number less than or equal to 900.')
-        elif subjectfile == 'S500.txt' and n_subjects > 500:
-            raise IndexError('Subjects number requested too high. Please '
-                             'enter a number less than or equal to 500.')
-        elif subjectfile == 'UR100.txt' and n_subjects > 100:
-            raise IndexError('Subjects number requested too high. Please '
-                             'enter a number less than or equal to 100.')
-        with open(fil, 'r') as fp:
-            data = fp.read()
-            subject_ids = data.split('\n')
-            return [subject_ids[i] for i in range(0, n_subjects)]
+        subj_file_info = (('S900.txt', 900),
+                          ('S500.txt', 500),
+                          ('U100.txt', 100))
+
+        fil = None
+        errs = dict()
+        # Loop until we retreive a file that's good.
+        for fname, nsubj in subj_file_info:
+            try:
+                fil = self.fetcher.fetch(
+                    files=self.prepend([fname]), verbose=0)[0]
+                with open(fil, 'r') as fp:
+                    data = fp.read()
+
+                # Make sure it's a good file.
+                subject_ids = data.split("\n")
+                if subject_ids != nsubj:
+                    os.remove(fil)  # corrupt
+                    raise ValueError("Removed corrupt file %s" % fil)
+                else:
+                    break
+            except Exception as e:
+                errs[fname] = e
+                continue
+
+        # Completed the loop. Make sure we succeeded,
+        # and that what's requested is possible.
+        if fil is None:
+            raise Exception("Failed to fetch subject list from any file. "
+                            "Error details: %s" % errs)
+        if n_subjects > nsubj:
+            raise IndexError("Subjects number requested is too high. Please "
+                             "enter a number <= %d." % nsubj)
+
+        return subject_ids[:n_subjects]
 
     def get_files(self, data_type, volume_type, subj_id):
         if self.fetcher_type == 'aws':
