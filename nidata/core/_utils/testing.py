@@ -87,16 +87,17 @@ class DownloadTestMixin(object):
         self.tmp_dir = tempfile.mkdtemp()
         self.data_dir = op.join(self.tmp_dir,
                                 op.basename(tempfile.mkstemp()[1]))
-        missing_dependencies = self.dataset_class.get_missing_dependencies()
-        if len(missing_dependencies) > 0:
-            raise SkipTest('Missing dependencies: %s' % (
-                ','.join(self.dataset_class.dependencies)))
 
     def tearDown(self):
         if op.exists(self.data_dir):
             shutil.rmtree(self.data_dir)
 
     def fetch(self, *args, **kwargs):
+        missing_dependencies = self.dataset_class.get_missing_dependencies()
+        if len(missing_dependencies) > 0:
+            raise SkipTest('Missing dependencies: %s' % (
+                ','.join(self.dataset_class.dependencies)))
+
         dset = self.dataset_class(data_dir=self.data_dir)
 
         # Replace the fetcher (or fetch function itself)
@@ -214,6 +215,25 @@ class InstallTestMixin(TestInVirtualEnvMixin):
         # Now, instantiate the object
         self.dataset_class()
 
+        # check dependencies now!
+        assert_equal(0, len(self.dataset_class.get_missing_dependencies()),
+                     ','.join(self.dataset_class.get_missing_dependencies()))
+
+
+class InstallThenDownloadTestMixin(InstallTestMixin, DownloadTestMixin):
+    def setUp(self):
+        InstallTestMixin.setUp(self)
+
+        # Instantiate the object to trigger the install.
+        self.dataset_class()
+
+        DownloadTestMixin.setUp(self)
+
+    def tearDown(self):
+        DownloadTestMixin.tearDown(self)
+        InstallTestMixin.tearDown(self)
+
+    def test_install(self):
         # check dependencies now!
         assert_equal(0, len(self.dataset_class.get_missing_dependencies()),
                      ','.join(self.dataset_class.get_missing_dependencies()))

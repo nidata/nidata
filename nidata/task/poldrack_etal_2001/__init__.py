@@ -137,9 +137,10 @@ class PoldrackEtal2001Dataset(OpenFMriDataset):
     """
     dependencies = OrderedDict(
         [(mod, mod) for mod in OpenFMriDataset.dependencies],
+        sphinx='sphinx',
         openfmri2bids='git+https://github.com/INCF/openfmri2bids.git')
 
-    def fetch(self, n_subjects=1, preprocess_data=True,
+    def fetch(self, n_subjects=1, preprocess_data=True, convert=True,
               url=None, resume=True, force=False, verbose=1):
         from openfmri2bids.converter import convert
 
@@ -152,9 +153,10 @@ class PoldrackEtal2001Dataset(OpenFMriDataset):
                                        verbose=verbose)
 
             # Move around the files to BIDS format.
-            convert(source_dir=op.join(self.data_dir, 'ds052'),
-                    dest_dir=op.join(self.data_dir, 'ds052_BIDS'),
-                    nii_handling='link')
+            if convert:
+                convert(source_dir=op.join(self.data_dir, 'ds052'),
+                        dest_dir=op.join(self.data_dir, 'ds052_BIDS'),
+                        nii_handling='link')
 
         # Loop over subjects to extract files.
         anat_files = []
