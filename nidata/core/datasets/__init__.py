@@ -6,7 +6,7 @@ import os.path as op
 
 from six import with_metaclass
 
-from ..objdep import DependenciesMeta
+from ..objdep import ClassWithDependencies, DependenciesMeta
 
 
 def readlinkabs(link):
@@ -120,7 +120,7 @@ def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
                   'directories, but:' + ''.join(errors))
 
 
-class Dataset(with_metaclass(DependenciesMeta, object)):
+class Dataset(ClassWithDependencies):
     dependencies = []
 
     def __init__(self, data_dir=None):
@@ -170,7 +170,8 @@ class FetcherFunctionDataset(with_metaclass(FetcherFunctionMeta, Dataset)):
     def __init__(self, data_dir=None):
         super(FetcherFunctionDataset, self).__init__(data_dir=data_dir)
         from ..fetchers import FetcherFunctionFetcher
-        self.fetcher = FetcherFunctionFetcher(self.fetcher_function)
+        self.fetcher = FetcherFunctionFetcher(self.fetcher_function,
+                                              dependencies=self.dependencies)
 
 
 class NilearnDataset(FetcherFunctionDataset):

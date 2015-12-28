@@ -3,6 +3,8 @@ Functions for dynamically managing dependencies.
 """
 import sys
 
+from six import with_metaclass
+
 
 def install_dependency(module):
     """
@@ -38,31 +40,12 @@ class DependenciesMeta(type):
     TODO: DependenciesMeta docstring.
     """
     def __new__(cls, name, parents, props):
-        def get_cls_missing_dependencies(cls):
-            """
-            TODO: get_missing_dependencies docstring
-            """
-            return get_missing_dependencies(
-                getattr(cls, 'dependencies', []))
-
-        def install_missing_dependencies(cls):
-            """
-            TODO: install_missing_dependencies docstring
-            """
-            for dep in get_cls_missing_dependencies(cls):
-                print("Installing missing dependencies '%s', for %s" % (
-                    dep, str(cls)))
-                if not install_dependency(dep):
-                    raise Exception("Failed to install dependency '%s'; "
-                                    "you will need to install it manually "
-                                    "and re-run your code." % dep)
-
         def _init__wrapper(init_fn):
             """
             TODO: _init__wrapper docstring
             """
             def wrapper_fn(self, *args, **kwargs):
-                install_missing_dependencies(self.__class__)
+                self.__class__.install_missing_dependencies()
                 return init_fn(self, *args, **kwargs)
             return wrapper_fn
 
@@ -78,3 +61,28 @@ class DependenciesMeta(type):
             .__new__(cls, name, parents, props)
         new_cls.__init__ = _init__wrapper(new_cls.__init__)
         return new_cls
+
+
+class ClassWithDependencies(with_metaclass(DependenciesMeta, object)):
+    @classmethod
+    def get_missing_dependencies(cls):
+        """
+        TODO: get_missing_dependencies docstring
+        """
+        return get_missing_dependencies(
+            getattr(cls, 'dependencies', ()))
+
+    @classmethod
+    def install_missing_dependencies(cls, dependencies=None):
+        """
+        TODO: install_missing_dependencies docstring
+        """
+        if dependencies is None:
+            dependencies = cls.get_missing_dependencies()
+        for dep in dependencies:
+            print("Installing missing dependencies '%s', for %s" % (
+                dep, str(cls)))
+            if not install_dependency(dep):
+                raise Exception("Failed to install dependency '%s'; "
+                                "you will need to install it manually "
+                                "and re-run your code." % dep)
