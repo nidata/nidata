@@ -7,6 +7,7 @@ from ...core.datasets import NilearnDataset
 
 class NyuRestDataset(NilearnDataset):
     fetcher_function = 'nilearn.datasets.fetch_nyu_rest'
+    nilearn_name = 'nyu_rest'
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,

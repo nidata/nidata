@@ -7,6 +7,7 @@ from ...core.datasets import NilearnDataset
 
 class BrainomicsDataset(NilearnDataset):
     fetcher_function = 'nilearn.datasets.fetch_localizer_contrasts'
+    nilearn_name = 'brainomics_localizer'
 
 
 def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,

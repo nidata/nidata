@@ -115,8 +115,7 @@ class Dataset(ClassWithDependencies):
     @classmethod
     def get_dataset_descr_path(cls):
         class_path = op.dirname(inspect.getfile(cls))
-        name = op.dirname(class_path)
-
+        name = op.basename(class_path)
         return op.join(class_path, name + '.rst')
 
     @classmethod
@@ -130,12 +129,17 @@ class Dataset(ClassWithDependencies):
             return ''
 
     def __init__(self, data_dir=None):
+        super(Dataset, self).__init__()
         class_path = op.dirname(inspect.getfile(self.__class__))
         self.name = op.basename(class_path)
         self.modality = op.basename(op.dirname(class_path))  # assume
         self.description = self.get_dataset_descr()
         self.data_dir = get_dataset_dir(self.name, data_dir=data_dir)
         self.fetcher = getattr(self, 'fetcher', None)  # set to *something*.
+
+        # Feeling lazy... handle this here, for now.
+        if self.__class__.__doc__ is None:
+            self.__class__.__doc__ = self.description
 
     def clean_data_directory(self):
         """ Function that guarantees a data directory."""
@@ -186,7 +190,9 @@ class NilearnDataset(FetcherFunctionDataset):
         import nilearn.datasets.description as descr
         class_path = op.dirname(inspect.getfile(cls))
         name = getattr(cls, 'nilearn_name', op.basename(class_path))
-        return op.join(op.dirname(descr.__file__), '%s.rst' % name)
+        descr_path = op.dirname(descr.__file__)
+        cls.rst_path = op.join(descr_path, '%s.rst' % name)
+        return cls.rst_path
 
 
 class NistatsDataset(FetcherFunctionDataset):
