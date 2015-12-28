@@ -27,7 +27,8 @@ install: # Install packages
   - echo $PATH
   - echo $PYTHONPATH
   - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy h5py scipy virtualenv
-  - pip install nose setuptools pep8 pyflakes coverage python-coveralls nose-cov
+  - pip install nose setuptools pep8 pyflakes
+  - pip install coverage==3.7.1 python-coveralls nose-cov
   - pip install profilehooks
   - python setup.py install
 
@@ -38,3 +39,4 @@ script: # Run test
 
 after_success: # Calculate coverage
   - coveralls
+
