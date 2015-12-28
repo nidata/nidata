@@ -10,3 +10,4 @@ omit =
     nidata/*/*/tests.py
     nidata/core/_utils/niimg.py
     nidata/core/_utils/numpy_conversions.py
+    nidata/core/fetchers/http_fetcher.py

@@ -1,5 +1,7 @@
 """
 """
+
+import importlib
 import inspect
 import os
 import os.path as op
@@ -158,27 +160,48 @@ class FetcherFunctionMeta(DependenciesMeta):
     """ Define fetcher_function; it will reset class docstring."""
 
     def __new__(cls, name, parents, props):
-        new_cls = DependenciesMeta.__new__(cls=cls, name=name, parents=parents,
-                                           props=props)
+        def _init__wrapper(init_fn):
+            # TODO: Docstring
+            def wrapper_fn(self, *args, **kwargs):
+                rv = init_fn(self, *args, **kwargs)  # install
+                mod_path = '.'.join(self.fetcher_function.split('.')[:-1])
+                func_name = self.fetcher_function.split('.')[-1]
+                mod = importlib.import_module(mod_path)
+                if not hasattr(mod, func_name):
+                    raise AttributeError("Module does not contain requested "
+                                         "function %s; only contains %s. "
+                                         "Downloaded from %s into to %s" % (
+                                             self.fetcher_function, dir(mod),
+                                             self.dependencies, mod.__file__))
+                func = getattr(mod, func_name)
+                self.__class__._func = func
+                return rv
+            return wrapper_fn
+
+        new_cls = super(FetcherFunctionMeta, cls) \
+            .__new__(cls=cls, name=name, parents=parents, props=props)
+
         if hasattr(new_cls, 'fetcher_function'):
-            # Create a fetcher just to parse off the docs.
-            from ..fetchers import FetcherFunctionFetcher
+            # Need to find the fetcher function
+            mod_path = '.'.join(new_cls.fetcher_function.split('.')[:-1])
+            func_name = new_cls.fetcher_function.split('.')[-1]
+
             try:
-                fetcher = FetcherFunctionFetcher(new_cls.fetcher_function)
+                mod = importlib.import_module(mod_path)
+                func = getattr(mod, func_name)
             except:
-                pass  # won't be able to have docs for that function...
+                # Module not installed; paste it on lazily
+                new_cls.__init__ = _init__wrapper(new_cls.__init__)
             else:
-                new_cls.__doc__ = fetcher.__doc__
+                # Module installed; we can paste it on now.
+                new_cls._func = func
+
         return new_cls
 
 
 class FetcherFunctionDataset(with_metaclass(FetcherFunctionMeta, Dataset)):
-
-    def __init__(self, data_dir=None):
-        super(FetcherFunctionDataset, self).__init__(data_dir=data_dir)
-        from ..fetchers import FetcherFunctionFetcher
-        self.fetcher = FetcherFunctionFetcher(self.fetcher_function,
-                                              dependencies=self.dependencies)
+    def fetch(self, *args, **kwargs):
+        return self._func(*args, **kwargs)
 
 
 class NilearnDataset(FetcherFunctionDataset):

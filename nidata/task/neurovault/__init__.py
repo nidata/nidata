@@ -13,7 +13,7 @@ class NeuroVaultDataset(NilearnDataset):
     dependencies = OrderedDict(
         [(mod, mod) for mod in NilearnDataset.dependencies],
         nilearn=('git+git://github.com/bcipolli/'
-                 'nilearn@neurovault-downloader#egg=nilearn'))
+                 'nilearn@neurovault-downloader#egg=nilearn'))  # override
     fetcher_function = 'nilearn.datasets.fetch_neurovault'
 
 

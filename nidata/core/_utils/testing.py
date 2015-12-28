@@ -19,7 +19,6 @@ from nose.tools import assert_equal, assert_true
 
 from ..datasets import Dataset
 from ..fetchers import Fetcher
-from ..objdep import get_missing_dependencies
 
 try:
     from nose.tools import assert_raises_regex
@@ -99,18 +98,28 @@ class DownloadTestMixin(object):
 
     def fetch(self, *args, **kwargs):
         dset = self.dataset_class(data_dir=self.data_dir)
+
+        # Replace the fetcher (or fetch function itself)
+        # to avoid actually getting files.
         if dset.fetcher is None:
-            # Replace dset.fetch
             instancemethod = dset.fetch.__class__
-            new_fetch = instancemethod(_DummyDataset.fetch.__func__,
-                                       dset, dset.__class__)
-            dset.fetch = new_fetch
+            func = _DummyDataset.fetch
+            if sys.version_info[0] > 2:
+                dset.fetch = instancemethod(func, dset)
+            else:
+                func = func.__func__
+                dset.fetch = instancemethod(func, dset, dset.__class)
         else:
-            # Replace dset.fetcher.fetch
             instancemethod = dset.fetcher.fetch.__class__
-            new_fetch = instancemethod(_DummyFetcher.fetch.__func__,
-                                       dset.fetcher, dset.fetcher.__class__)
-            dset.fetcher.fetch = new_fetch
+            func = _DummyFetcher.fetch
+            if sys.version_info[0] > 2:
+                dset.fetcher.fetch = instancemethod(
+                    func, dset.fetcher)
+            else:
+                func = func.__func__
+                dset.fetcher.fetch = instancemethod(
+                    func, dset.fetcher, dset.fetcher.__class__)
+
         return dset.fetch(*args, **kwargs)
 
     def test_fetch_defaults(self):
@@ -144,6 +153,7 @@ class TestInVirtualEnvMixin(object):
         # Store old variables
         self.environ = copy.deepcopy(os.environ)
         self.path = copy.deepcopy(sys.path)
+        self.module_keys = copy.copy(list(sys.modules.keys()))
         self.prefix = sys.prefix
         self.real_prefix = getattr(sys, 'real_prefix', None)
 
@@ -151,7 +161,7 @@ class TestInVirtualEnvMixin(object):
         #  so if they're in the old environment, link them
         #  to the new.
         add_paths = []
-        for module_name in ['numpy']:
+        for module_name in ['numpy', 'scipy', 'h5py']:
             try:
                 mod = importlib.import_module(module_name)
                 add_paths.append(op.dirname(op.dirname(mod.__file__)))
@@ -183,6 +193,9 @@ class TestInVirtualEnvMixin(object):
         elif getattr(sys, 'real_prefix', None) is not None:
             del sys.real_prefix
         sys.path = self.path
+        for key in copy.copy(list(sys.modules.keys())):
+            if key not in self.module_keys:
+                del sys.modules[key]
 
 
 class InstallTestMixin(TestInVirtualEnvMixin):
@@ -192,16 +205,18 @@ class InstallTestMixin(TestInVirtualEnvMixin):
             ['pip', 'list'], stdout=subprocess.PIPE).communicate()[0].decode()
         installed_mods = [lin.split(' ')[0] for lin in out.split('\n')]
         for dep in self.dataset_class.dependencies:
+            if dep in ['numpy', 'scipy', 'h5py']:
+                continue
             assert_true(dep not in installed_mods,
                         "Dependency '%s' is already installed.\n%s" % (
                             dep, installed_mods))
 
-        print("Installing %s" % self.dataset_class.__name__)
-        print(self.dataset_class())  # will trigger install
+        # Now, instantiate the object
+        self.dataset_class()
 
-        missing_dependencies = get_missing_dependencies(
-            self.dataset_class.dependencies)
-        assert_equal(0, len(missing_dependencies))
+        # check dependencies now!
+        assert_equal(0, len(self.dataset_class.get_missing_dependencies()),
+                     ','.join(self.dataset_class.get_missing_dependencies()))
 
 
 @contextlib.contextmanager

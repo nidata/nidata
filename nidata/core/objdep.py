@@ -18,6 +18,7 @@ def install_dependency(module_name, install_info=None, verify=False):
 
     # Install it.
     try:
+        print("Installing %s from %s..." % (module_name, install_info))
         rv = pip.main(['install', install_info])
         if rv != 0:
             warnings.warn('Pip returned %d' % rv)
@@ -62,14 +63,6 @@ class DependenciesMeta(type):
             def wrapper_fn(self, *args, **kwargs):
                 self.__class__.install_missing_dependencies()
                 return init_fn(self, *args, **kwargs)
-            return wrapper_fn
-
-        def super_init(cls):
-            """
-            TODO: super_init docstring
-            """
-            def wrapper_fn(self, *args, **kwargs):
-                return super(cls, self).__init__(*args, **kwargs)
             return wrapper_fn
 
         new_cls = super(DependenciesMeta, cls) \

@@ -5,15 +5,6 @@ python:
   - "2.7"
   - "3.5"
 
-addons:
-  apt:
-    packages:
-    - libblas-dev  # scipy
-    - liblapack-dev  # scipy
-    - gfortran  # scipy
-    - libhdf5-dev  # hdf5
-    - libhdf5-serial-dev  # hdf5
-
 cache:
   - apt
   - directories:
@@ -23,12 +14,20 @@ notifications:
   email: false
 
 before_install:
-  - pip install -U pip
+  # Setup anaconda
+  - pip install -U --upgrade pip
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=$PATH:$HOME/miniconda2/bin
+  - export PYTHONPATH=$HOME/miniconda2/lib/python$TRAVIS_PYTHON_VERSION/site-packages/
+  - conda update --yes conda
 
 install: # Install packages
-  - pip install numpy virtualenv
-  - pip install nose setuptools pep8 pyflakes coverage
-  - pip install python-coveralls nose-cov
+  - echo $PATH
+  - echo $PYTHONPATH
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy h5py scipy virtualenv
+  - pip install nose setuptools pep8 pyflakes coverage python-coveralls nose-cov
   - pip install profilehooks
   - python setup.py install
 
