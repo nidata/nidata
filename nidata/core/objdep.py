@@ -19,7 +19,7 @@ def install_dependency(module_name, install_info=None, verify=False):
     # Install it.
     try:
         print("Installing %s from %s..." % (module_name, install_info))
-        rv = pip.main(['install', install_info])
+        rv = pip.main(['install', '-q', install_info])
         if rv != 0:
             warnings.warn('Pip returned %d' % rv)
     except Exception as ex:

@@ -109,7 +109,7 @@ class DownloadTestMixin(object):
                 dset.fetch = instancemethod(func, dset)
             else:
                 func = func.__func__
-                dset.fetch = instancemethod(func, dset, dset.__class)
+                dset.fetch = instancemethod(func, dset, dset.__class__)
         else:
             instancemethod = dset.fetcher.fetch.__class__
             func = _DummyFetcher.fetch
