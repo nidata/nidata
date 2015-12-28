@@ -115,8 +115,10 @@ class HcpDataset(Dataset):
                     data = fp.read()
 
                 # Make sure it's a good file.
-                subject_ids = data.split("\n")
-                if subject_ids != nsubj:
+                subject_ids = data.split('\n')
+                subject_ids = filter(lambda sid: sid != '',
+                                     [sid.strip() for sid in subject_ids])
+                if subject_ids < nsubj:
                     os.remove(fil)  # corrupt
                     raise ValueError("Removed corrupt file %s" % fil)
                 else:
@@ -137,6 +139,8 @@ class HcpDataset(Dataset):
         return subject_ids[:n_subjects]
 
     def get_files(self, data_type, volume_type, subj_id):
+        assert subj_id is not None and subj_id != ''
+
         if self.fetcher_type == 'aws':
             # S3 bucket specific layout
             subj_path = '{subj_id}'
