@@ -7,7 +7,6 @@ Utilities to download NeuroImaging datasets
 
 import collections
 import hashlib
-import importlib
 import os
 import os.path as op
 import sys
@@ -212,23 +211,3 @@ class Fetcher(ClassWithDependencies):
 
     def fetch(self, files, force=False, check=False, verbose=1):
         raise NotImplementedError()
-
-
-class FetcherFunctionFetcher(Fetcher):
-
-    def __init__(self, fetcher_function, dependencies=(), data_dir=None,
-                 verbose=1):
-        super(FetcherFunctionFetcher, self).__init__(
-            data_dir=data_dir, verbose=verbose)
-
-        self.install_missing_dependencies(dependencies)
-
-        mod_path = '.'.join(fetcher_function.split('.')[:-1])
-        mod = importlib.import_module(mod_path)
-        func_name = fetcher_function.split('.')[-1]
-        func = getattr(mod, func_name)
-        self.__doc__ = func.__doc__
-        self._func = func
-
-    def fetch(self, *args, **kwargs):
-        return self._func(*args, **kwargs)
