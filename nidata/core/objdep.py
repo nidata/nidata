@@ -2,33 +2,33 @@
 Functions for dynamically managing dependencies.
 """
 
-import sys
+import importlib
+import subprocess
+import warnings
 
 import pip
 from six import with_metaclass
 
 
-def install_dependency(module_name, install_info=None, verify=True):
+def install_dependency(module_name, install_info=None, verify=False):
     """
     TODO: install_dependency docstring.
     """
     install_info = install_info or module_name
 
     # Install it.
-    old_arg, sys.argv = sys.argv, ['pip', 'install', install_info]
     try:
-        if not pip.main() == 0:
-            return False
+        rv = pip.main(['install', install_info])
+        if rv != 0:
+            warnings.warn('Pip returned %d' % rv)
     except Exception as ex:
         print("Exception while installing %s: %s" % (module_name, ex))
         return False
-    finally:
-        sys.argv = old_arg
 
     # Verify it
     if verify:
         try:
-            __import__(module_name)
+            importlib.import_module(module_name)
         except ImportError as ie:
             print('Failed to import %s: %s' % (module_name, ie))
             return False
@@ -43,7 +43,7 @@ def get_missing_dependencies(dependencies):
     missing_dependencies = []
     for dep in dependencies:
         try:
-            __import__(dep)
+            importlib.import_module(dep)
         except ImportError:  # as ie:
             # print('Import error: %s' % str(ie))
             missing_dependencies.append(dep)
@@ -106,6 +106,9 @@ class ClassWithDependencies(with_metaclass(DependenciesMeta, object)):
                 install_info = cls.dependencies[dep]
 
             if not install_dependency(dep, install_info=install_info):
+                out = subprocess.Popen(
+                    ['pip', 'list'],
+                    stdout=subprocess.PIPE).communicate()[0].decode()
                 raise Exception("Failed to install dependency '%s'; "
                                 "you will need to install it manually "
-                                "and re-run your code." % dep)
+                                "and re-run your code.\n%s" % (dep, out))

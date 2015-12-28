@@ -12,6 +12,7 @@ addons:
     - liblapack-dev  # scipy
     - gfortran  # scipy
     - libhdf5-dev  # hdf5
+    - libhdf5-serial-dev  # hdf5
 
 cache:
   - apt
@@ -25,7 +26,7 @@ before_install:
   - pip install -U pip
 
 install: # Install packages
-  - pip install numpy scipy virtualenv
+  - pip install numpy virtualenv
   - pip install nose setuptools pep8 pyflakes coverage
   - pip install python-coveralls nose-cov
   - pip install profilehooks

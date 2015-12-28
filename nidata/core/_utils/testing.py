@@ -71,6 +71,9 @@ class DownloadTestMixin(object):
             self.dataset_class.dependencies)
         if len(missing_dependencies) > 0:
             raise SkipTest
+        else:
+            raise SkipTest('%s %s' % (self.dataset_class.__name__,
+                           ','.join(self.dataset_class.dependencies)))
 
     def tearDown(self):
         if op.exists(self.data_dir):
@@ -141,13 +144,15 @@ class TestInVirtualEnvMixin(object):
         #  so if they're in the old environment, link them
         #  to the new.
         add_paths = []
-        for module_name in ['numpy', 'scipy']:
+        for module_name in ['numpy']:
             try:
                 mod = importlib.import_module(module_name)
                 add_paths.append(op.dirname(op.dirname(mod.__file__)))
                 print('Will add %s to path.' % module_name)
-            except ImportError:
-                pass
+            except ImportError as ie:
+                warnings.warn("%s is not installed, your test %s"
+                              " may fail. (%s)" % (
+                                  module_name, self.__class__.__name__, ie))
 
         # Create & activate virtual environment
         self.venv_name = self.__class__.__name__
