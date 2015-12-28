@@ -1,6 +1,11 @@
-from . import AdhdRestDataset
-from ...core._utils.testing import TestCaseWrapper
+from nidata.resting_state import AdhdRestDataset
+from unittest import TestCase
+from nidata.core._utils.testing import DownloadTestMixin, InstallTestMixin
 
 
-class AdhdRestTest(TestCaseWrapper.DownloadTest):
+class AdhdRestDownloadTest(DownloadTestMixin, TestCase):
+    dataset_class = AdhdRestDataset
+
+
+class AdhdRestInstallTest(InstallTestMixin, TestCase):
     dataset_class = AdhdRestDataset

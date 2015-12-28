@@ -5,9 +5,9 @@
 import glob
 import os.path as op
 import re
+from collections import OrderedDict
 
 import numpy as np
-from sklearn.datasets.base import Bunch
 
 from ...core.datasets import HttpDataset
 
@@ -16,8 +16,8 @@ class OpenFMriDataset(HttpDataset):
     """
     TODO: OpenFMriDataset docstring.
     """
-    dependencies = (['pandas', 'nibabel', 'nilearn', 'nipy'] +
-                    HttpDataset.dependencies)
+    dependencies = (['numpy', 'scipy', 'sklearn', 'pandas', 'nibabel',
+                    'nipy', 'nilearn'] + HttpDataset.dependencies)
 
     @staticmethod
     def get_subj_from_path(pth):
@@ -135,7 +135,9 @@ class PoldrackEtal2001Dataset(OpenFMriDataset):
     """
     TODO: PoldrackEtal2001Dataset docstring.
     """
-    dependencies = ['openfmri2bids'] + OpenFMriDataset.dependencies
+    dependencies = OrderedDict(
+        [(mod, mod) for mod in OpenFMriDataset.dependencies],
+        openfmri2bids='git+https://github.com/INCF/openfmri2bids.git')
 
     def fetch(self, n_subjects=1, preprocess_data=True,
               url=None, resume=True, force=False, verbose=1):
@@ -169,4 +171,4 @@ class PoldrackEtal2001Dataset(OpenFMriDataset):
                                                anat_files=anat_files)
 
         # return the data
-        return Bunch(func=func_files, anat=anat_files)
+        return dict(func=func_files, anat=anat_files)

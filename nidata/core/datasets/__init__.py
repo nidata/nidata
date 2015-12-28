@@ -6,7 +6,7 @@ import os.path as op
 
 from six import with_metaclass
 
-from ..objdep import DependenciesMeta
+from ..objdep import ClassWithDependencies, DependenciesMeta
 
 
 def readlinkabs(link):
@@ -120,7 +120,7 @@ def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
                   'directories, but:' + ''.join(errors))
 
 
-class Dataset(with_metaclass(DependenciesMeta, object)):
+class Dataset(ClassWithDependencies):
     dependencies = []
 
     def __init__(self, data_dir=None):
@@ -156,8 +156,12 @@ class FetcherFunctionMeta(DependenciesMeta):
         if hasattr(new_cls, 'fetcher_function'):
             # Create a fetcher just to parse off the docs.
             from ..fetchers import FetcherFunctionFetcher
-            fetcher = FetcherFunctionFetcher(new_cls.fetcher_function)
-            new_cls.__doc__ = fetcher.__doc__
+            try:
+                fetcher = FetcherFunctionFetcher(new_cls.fetcher_function)
+            except:
+                pass  # won't be able to have docs for that function...
+            else:
+                new_cls.__doc__ = fetcher.__doc__
         return new_cls
 
 
@@ -166,11 +170,13 @@ class FetcherFunctionDataset(with_metaclass(FetcherFunctionMeta, Dataset)):
     def __init__(self, data_dir=None):
         super(FetcherFunctionDataset, self).__init__(data_dir=data_dir)
         from ..fetchers import FetcherFunctionFetcher
-        self.fetcher = FetcherFunctionFetcher(self.fetcher_function)
+        self.fetcher = FetcherFunctionFetcher(self.fetcher_function,
+                                              dependencies=self.dependencies)
 
 
 class NilearnDataset(FetcherFunctionDataset):
-    dependencies = ['nilearn'] + FetcherFunctionDataset.dependencies
+    dependencies = (['numpy', 'scipy', 'sklearn', 'nilearn'] +
+                    FetcherFunctionDataset.dependencies)
 
 
 class NistatsDataset(FetcherFunctionDataset):

@@ -3,18 +3,20 @@
 # Author: Alexandre Abrahame, Philippe Gervais
 # License: simplified BSD
 import contextlib
+import copy
+import importlib
 import os
 import os.path as op
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
 import warnings
 
-from nose.tools import assert_true
 from nose import SkipTest
-from unittest import TestCase
+from nose.tools import assert_equal, assert_true
 
 from .threads import KThread
 from ..objdep import get_missing_dependencies
@@ -57,54 +59,142 @@ except ImportError:
         return output
 
 
-class TestCaseWrapper:
-    class DownloadTest(TestCase):
-        duration = 2
-        time_step = 0.1
+class DownloadTestMixin(object):
+    duration = 2
+    time_step = 0.1
 
-        def setUp(self):
-            self.tmp_dir = tempfile.mkdtemp()
-            self.data_dir = op.join(self.tmp_dir,
-                                    op.basename(tempfile.mkstemp()[1]))
-            missing_dependencies = get_missing_dependencies(
-                self.dataset_class.dependencies)
-            if len(missing_dependencies) > 0:
-                raise SkipTest
+    def setUp(self):
+        self.tmp_dir = tempfile.mkdtemp()
+        self.data_dir = op.join(self.tmp_dir,
+                                op.basename(tempfile.mkstemp()[1]))
+        missing_dependencies = get_missing_dependencies(
+            self.dataset_class.dependencies)
+        if len(missing_dependencies) > 0:
+            raise SkipTest
+        else:
+            raise SkipTest('%s %s' % (self.dataset_class.__name__,
+                           ','.join(self.dataset_class.dependencies)))
 
-        def tearDown(self):
-            if op.exists(self.data_dir):
-                shutil.rmtree(self.data_dir)
+    def tearDown(self):
+        if op.exists(self.data_dir):
+            shutil.rmtree(self.data_dir)
 
-        def fetch(self, *args, **kwargs):
-            dset = self.dataset_class(data_dir=self.data_dir)
-            return dset.fetch(*args, **kwargs)
+    def fetch(self, *args, **kwargs):
+        dset = self.dataset_class(data_dir=self.data_dir)
+        return dset.fetch(*args, **kwargs)
 
-        def test_me(self):
-            if getattr(self, 'dataset_class', None) is None:
-                raise SkipTest
+    def test_me(self):
+        if getattr(self, 'dataset_class', None) is None:
+            raise SkipTest
 
-            def wrapper_fn():
-                try:
-                    self.fetch(verbose=0)
-                except Exception as e:
-                    self.exception = e
-                    raise
+        def wrapper_fn():
+            try:
+                self.fetch(verbose=0)
+            except Exception as e:
+                self.exception = e
+                raise
 
-            def test_func(*args, **kwargs):
-                assert_true(op.exists(self.data_dir))
+        def test_func(*args, **kwargs):
+            assert_true(op.exists(self.data_dir))
 
-            self.exception = None
-            thread = KThread(target=wrapper_fn, args=(), kwargs={})
-            thread.start()
+        self.exception = None
+        thread = KThread(target=wrapper_fn, args=(), kwargs={})
+        thread.start()
 
-            wait_time = self.duration
-            while thread.is_alive() and wait_time > 0:  # busy waiting
-                time.sleep(min(wait_time, self.time_step))
-                wait_time -= self.time_step
+        wait_time = self.duration
+        while thread.is_alive() and wait_time > 0:  # busy waiting
+            time.sleep(min(wait_time, self.time_step))
+            wait_time -= self.time_step
 
-            if thread.is_alive():
-                thread.kill()
-            assert_true(self.exception is None, str(self.exception))
+        if thread.is_alive():
+            thread.kill()
+        assert_true(self.exception is None, str(self.exception))
+
+
+def create_virtualenv(venv_name, dir_path=None):
+    dir_path = dir_path or tempfile.mkdtemp()
+    old_args = sys.argv
+    try:
+        from virtualenv import main
+        sys.argv = ['virtualenv', op.join(dir_path, venv_name)]
+        main()
+    finally:
+        sys.argv = old_args
+    print("Created virtualenv %s at %s" % (venv_name, dir_path))
+    return dir_path
+
+
+def activate_virtualenv(venv_name, dir_path):
+    activate_path = op.join(dir_path, venv_name, 'bin', 'activate_this.py')
+    with open(activate_path, 'r') as fp:
+        exec(fp.read(), dict(__file__=activate_path))
+    print("Activated virtualenv %s at %s" % (venv_name, dir_path))
+
+
+class TestInVirtualEnvMixin(object):
+
+    def setUp(self):
+        # Store old variables
+        self.environ = copy.deepcopy(os.environ)
+        self.path = copy.deepcopy(sys.path)
+        self.prefix = sys.prefix
+        self.real_prefix = getattr(sys, 'real_prefix', None)
+
+        # Numpy and scipy are too difficult to install,
+        #  so if they're in the old environment, link them
+        #  to the new.
+        add_paths = []
+        for module_name in ['numpy']:
+            try:
+                mod = importlib.import_module(module_name)
+                add_paths.append(op.dirname(op.dirname(mod.__file__)))
+                print('Will add %s to path.' % module_name)
+            except ImportError as ie:
+                warnings.warn("%s is not installed, your test %s"
+                              " may fail. (%s)" % (
+                                  module_name, self.__class__.__name__, ie))
+
+        # Create & activate virtual environment
+        self.venv_name = self.__class__.__name__
+        self.venv_path = create_virtualenv(self.venv_name)
+        activate_virtualenv(self.venv_name, dir_path=self.venv_path)
+
+        # Add paths
+        sys.path = sys.path + add_paths
+
+    def tearDown(self):
+        # Remove the files
+        if op.exists(self.venv_path):
+            shutil.rmtree(self.venv_path)
+
+        # Reset key variables.
+        for key in self.environ:
+            os.environ[key] = self.environ[key]
+        sys.prefix = self.prefix
+        if self.real_prefix:
+            sys.real_prefix = self.real_prefix
+        elif getattr(sys, 'real_prefix', None) is not None:
+            del sys.real_prefix
+        sys.path = self.path
+
+
+class InstallTestMixin(TestInVirtualEnvMixin):
+    def test_install(self):
+        # Make sure the environment is clean.
+        out = subprocess.Popen(
+            ['pip', 'list'], stdout=subprocess.PIPE).communicate()[0].decode()
+        installed_mods = [lin.split(' ')[0] for lin in out.split('\n')]
+        for dep in self.dataset_class.dependencies:
+            assert_true(dep not in installed_mods,
+                        "Dependency '%s' is already installed.\n%s" % (
+                            dep, installed_mods))
+
+        print("Installing %s" % self.dataset_class.__name__)
+        print(self.dataset_class())  # will trigger install
+
+        missing_dependencies = get_missing_dependencies(
+            self.dataset_class.dependencies)
+        assert_equal(0, len(missing_dependencies))
 
 
 @contextlib.contextmanager

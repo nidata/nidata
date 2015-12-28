@@ -1,6 +1,11 @@
-from . import MyConnectome2015Dataset
-from ...core._utils.testing import TestCaseWrapper
+from unittest import TestCase
+from nidata.multimodal import MyConnectome2015Dataset
+from nidata.core._utils.testing import DownloadTestMixin, InstallTestMixin
 
 
-class MyConnectome2015Test(TestCaseWrapper.DownloadTest):
+class MyConnectomeDownloadTest(DownloadTestMixin, TestCase):
+    dataset_class = MyConnectome2015Dataset
+
+
+class MyConnectomeInstallTest(InstallTestMixin, TestCase):
     dataset_class = MyConnectome2015Dataset

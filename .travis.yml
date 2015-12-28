@@ -5,23 +5,31 @@ python:
   - "2.7"
   - "3.5"
 
+addons:
+  apt:
+    packages:
+    - libblas-dev  # scipy
+    - liblapack-dev  # scipy
+    - gfortran  # scipy
+    - libhdf5-dev  # hdf5
+    - libhdf5-serial-dev  # hdf5
+
+cache:
+  - apt
+  - directories:
+    - $HOME/.cache/pip  # makes things go fast 2nd time around!
+
 notifications:
   email: false
 
 before_install:
-  # Setup anaconda
-  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b
-  - export PATH=/home/travis/miniconda/bin:/home/travis/miniconda2/bin:$PATH
-  - conda update --yes conda
+  - pip install -U pip
 
 install: # Install packages
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy h5py scipy scikit-learn
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION nose setuptools pep8 pyflakes coverage
-  - "pip install python-coveralls nose-cov"
-  - "pip install requests nilearn"  # so we can test HCP and Haxby datasets.
-  - "pip install profilehooks"
+  - pip install numpy virtualenv
+  - pip install nose setuptools pep8 pyflakes coverage
+  - pip install python-coveralls nose-cov
+  - pip install profilehooks
   - python setup.py install
 
 script: # Run test

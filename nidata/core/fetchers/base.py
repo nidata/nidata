@@ -14,9 +14,9 @@ import sys
 import time
 
 import numpy as np
-from six import string_types, with_metaclass
+from six import string_types
 
-from ..objdep import DependenciesMeta
+from ..objdep import ClassWithDependencies
 
 
 def format_time(t):
@@ -173,7 +173,7 @@ def chunk_report(bytes_so_far, total_size, initial_size, t0):
                format_time(time_remaining)))
 
 
-class Fetcher(with_metaclass(DependenciesMeta, object)):
+class Fetcher(ClassWithDependencies):
     dependencies = []
 
     def __init__(self, data_dir=None, verbose=1):
@@ -216,9 +216,13 @@ class Fetcher(with_metaclass(DependenciesMeta, object)):
 
 class FetcherFunctionFetcher(Fetcher):
 
-    def __init__(self, fetcher_function, data_dir=None, verbose=1):
-        super(FetcherFunctionFetcher, self).__init__(data_dir=data_dir,
-                                                     verbose=verbose)
+    def __init__(self, fetcher_function, dependencies=(), data_dir=None,
+                 verbose=1):
+        super(FetcherFunctionFetcher, self).__init__(
+            data_dir=data_dir, verbose=verbose)
+
+        self.install_missing_dependencies(dependencies)
+
         mod_path = '.'.join(fetcher_function.split('.')[:-1])
         mod = importlib.import_module(mod_path)
         func_name = fetcher_function.split('.')[-1]
