@@ -1,11 +1,8 @@
 from unittest import TestCase
+
 from nidata.atlas import Smith2009Dataset
-from nidata.core._utils.testing import DownloadTestMixin, InstallTestMixin
+from nidata.core._utils.testing import InstallThenDownloadTestMixin
 
 
-class Smith2009DownloadTest(DownloadTestMixin, TestCase):
-    dataset_class = Smith2009Dataset
-
-
-class Smith2009InstallTest(InstallTestMixin, TestCase):
+class Smith2009Test(InstallThenDownloadTestMixin, TestCase):
     dataset_class = Smith2009Dataset

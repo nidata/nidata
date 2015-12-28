@@ -1,11 +1,8 @@
 from unittest import TestCase
+
 from nidata.resting_state import AbidePcpDataset
-from nidata.core._utils.testing import DownloadTestMixin, InstallTestMixin
+from nidata.core._utils.testing import InstallThenDownloadTestMixin
 
 
-class AbidePcpDownloadTest(DownloadTestMixin, TestCase):
-    dataset_class = AbidePcpDataset
-
-
-class AbidePcpInstallTest(InstallTestMixin, TestCase):
+class AbidePcpTest(InstallThenDownloadTestMixin, TestCase):
     dataset_class = AbidePcpDataset

@@ -5,7 +5,7 @@ from nose.tools import assert_raises
 from unittest import TestCase
 
 from nidata.multimodal import HcpDataset
-from nidata.core._utils.testing import DownloadTestMixin, InstallTestMixin
+from nidata.core._utils.testing import (DownloadTestMixin, InstallTestMixin)
 
 
 @unittest.skipIf(os.environ.get('NIDATA_HCP_USERNAME') is None,
