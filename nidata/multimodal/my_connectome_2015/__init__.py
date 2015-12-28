@@ -75,8 +75,8 @@ class MyConnectome2015Dataset(HttpDataset):
                     files += [(uncompressed_dir, remote_url, opts)]
 
         # Now, fetch the files.
-        self.fetcher.fetch(files, resume=resume, force=force, verbose=verbose,
-                           delete_archive=False)
+        self.fetcher.fetch(files=files, resume=resume, force=force,
+                           verbose=verbose, delete_archive=False)
 
         # Group the data according to modality.
         out_dict = defaultdict(lambda: [])

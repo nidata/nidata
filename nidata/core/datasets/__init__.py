@@ -1,8 +1,11 @@
 """
 """
+
+import importlib
 import inspect
 import os
 import os.path as op
+import warnings
 
 from six import with_metaclass
 
@@ -18,18 +21,6 @@ def readlinkabs(link):
     if op.isabs(path):
         return path
     return op.join(op.dirname(link), path)
-
-
-def get_dataset_descr(ds_path, ds_name):
-    rst_path = op.join(ds_path, ds_name + '.rst')
-    try:
-        with open(rst_path) as rst_file:
-            descr = rst_file.read()
-    except IOError:
-        print("Warning: Could not find dataset description (%s)." % rst_path)
-        descr = ''
-
-    return descr
 
 
 def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
@@ -123,16 +114,34 @@ def get_dataset_dir(dataset_name, data_dir=None, env_vars=[],
 class Dataset(ClassWithDependencies):
     dependencies = []
 
-    def __init__(self, data_dir=None):
-        class_path = op.dirname(inspect.getfile(self.__class__))
+    @classmethod
+    def get_dataset_descr_path(cls):
+        class_path = op.dirname(inspect.getfile(cls))
+        name = op.basename(class_path)
+        return op.join(class_path, name + '.rst')
 
+    @classmethod
+    def get_dataset_descr(cls):
+        rst_path = cls.get_dataset_descr_path()
+        try:
+            with open(rst_path) as fp:
+                return fp.read()
+        except IOError:
+            warnings.warn("Could not find dataset description: %s" % rst_path)
+            return ''
+
+    def __init__(self, data_dir=None):
+        super(Dataset, self).__init__()
+        class_path = op.dirname(inspect.getfile(self.__class__))
         self.name = op.basename(class_path)
         self.modality = op.basename(op.dirname(class_path))  # assume
-        self.description = get_dataset_descr(ds_path=class_path,
-                                             ds_name=self.name)
-
+        self.description = self.get_dataset_descr()
         self.data_dir = get_dataset_dir(self.name, data_dir=data_dir)
         self.fetcher = getattr(self, 'fetcher', None)  # set to *something*.
+
+        # Feeling lazy... handle this here, for now.
+        if self.__class__.__doc__ is None:
+            self.__class__.__doc__ = self.description
 
     def clean_data_directory(self):
         """ Function that guarantees a data directory."""
@@ -151,32 +160,62 @@ class FetcherFunctionMeta(DependenciesMeta):
     """ Define fetcher_function; it will reset class docstring."""
 
     def __new__(cls, name, parents, props):
-        new_cls = DependenciesMeta.__new__(cls=cls, name=name, parents=parents,
-                                           props=props)
+        def _init__wrapper(init_fn):
+            # TODO: Docstring
+            def wrapper_fn(self, *args, **kwargs):
+                rv = init_fn(self, *args, **kwargs)  # install
+                mod_path = '.'.join(self.fetcher_function.split('.')[:-1])
+                func_name = self.fetcher_function.split('.')[-1]
+                mod = importlib.import_module(mod_path)
+                if not hasattr(mod, func_name):
+                    raise AttributeError("Module does not contain requested "
+                                         "function %s; only contains %s. "
+                                         "Downloaded from %s into to %s" % (
+                                             self.fetcher_function, dir(mod),
+                                             self.dependencies, mod.__file__))
+                func = getattr(mod, func_name)
+                self.__class__._func = func
+                return rv
+            return wrapper_fn
+
+        new_cls = super(FetcherFunctionMeta, cls) \
+            .__new__(cls=cls, name=name, parents=parents, props=props)
+
         if hasattr(new_cls, 'fetcher_function'):
-            # Create a fetcher just to parse off the docs.
-            from ..fetchers import FetcherFunctionFetcher
+            # Need to find the fetcher function
+            mod_path = '.'.join(new_cls.fetcher_function.split('.')[:-1])
+            func_name = new_cls.fetcher_function.split('.')[-1]
+
             try:
-                fetcher = FetcherFunctionFetcher(new_cls.fetcher_function)
+                mod = importlib.import_module(mod_path)
+                func = getattr(mod, func_name)
             except:
-                pass  # won't be able to have docs for that function...
+                # Module not installed; paste it on lazily
+                new_cls.__init__ = _init__wrapper(new_cls.__init__)
             else:
-                new_cls.__doc__ = fetcher.__doc__
+                # Module installed; we can paste it on now.
+                new_cls._func = func
+
         return new_cls
 
 
 class FetcherFunctionDataset(with_metaclass(FetcherFunctionMeta, Dataset)):
-
-    def __init__(self, data_dir=None):
-        super(FetcherFunctionDataset, self).__init__(data_dir=data_dir)
-        from ..fetchers import FetcherFunctionFetcher
-        self.fetcher = FetcherFunctionFetcher(self.fetcher_function,
-                                              dependencies=self.dependencies)
+    def fetch(self, *args, **kwargs):
+        return self._func(*args, **kwargs)
 
 
 class NilearnDataset(FetcherFunctionDataset):
     dependencies = (['numpy', 'scipy', 'sklearn', 'nilearn'] +
                     FetcherFunctionDataset.dependencies)
+
+    @classmethod
+    def get_dataset_descr_path(cls):
+        import nilearn.datasets.description as descr
+        class_path = op.dirname(inspect.getfile(cls))
+        name = getattr(cls, 'nilearn_name', op.basename(class_path))
+        descr_path = op.dirname(descr.__file__)
+        cls.rst_path = op.join(descr_path, '%s.rst' % name)
+        return cls.rst_path
 
 
 class NistatsDataset(FetcherFunctionDataset):

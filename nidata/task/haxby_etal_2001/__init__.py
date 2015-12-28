@@ -8,6 +8,7 @@ from ...core.datasets import NilearnDataset
 
 class Haxby2001Dataset(NilearnDataset):
     fetcher_function = 'nilearn.datasets.fetch_haxby'
+    nilearn_name = 'haxby2001'
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
