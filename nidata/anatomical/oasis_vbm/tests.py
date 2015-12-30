@@ -2,14 +2,10 @@ from nose.tools import assert_true
 from unittest import TestCase
 
 from nidata.anatomical import OasisVbmDataset
-from nidata.core._utils.testing import DownloadTestMixin, InstallTestMixin
+from nidata.core._utils.testing import InstallThenDownloadTestMixin
 
 
-class OasisVbmDownloadTest(DownloadTestMixin, TestCase):
-    dataset_class = OasisVbmDataset
-
-
-class OasisVbmInstallTest(InstallTestMixin, TestCase):
+class OasisVbmTest(InstallThenDownloadTestMixin, TestCase):
     dataset_class = OasisVbmDataset
 
     def test_doc(self):

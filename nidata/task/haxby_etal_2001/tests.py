@@ -1,11 +1,8 @@
 from unittest import TestCase
+
 from nidata.task import Haxby2001Dataset
-from nidata.core._utils.testing import DownloadTestMixin, InstallTestMixin
+from nidata.core._utils.testing import InstallThenDownloadTestMixin
 
 
-class Haxby2001DownloadTest(DownloadTestMixin, TestCase):
-    dataset_class = Haxby2001Dataset
-
-
-class Haxby2001InstallTest(InstallTestMixin, TestCase):
+class Haxby2001Test(InstallThenDownloadTestMixin, TestCase):
     dataset_class = Haxby2001Dataset

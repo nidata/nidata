@@ -1,11 +1,8 @@
 from unittest import TestCase
+
 from nidata.resting_state import NyuRestDataset
-from nidata.core._utils.testing import DownloadTestMixin, InstallTestMixin
+from nidata.core._utils.testing import InstallThenDownloadTestMixin
 
 
-class NyuRestDownloadTest(DownloadTestMixin, TestCase):
-    dataset_class = NyuRestDataset
-
-
-class NyuRestInstallTest(InstallTestMixin, TestCase):
+class NyuRestTest(InstallThenDownloadTestMixin, TestCase):
     dataset_class = NyuRestDataset

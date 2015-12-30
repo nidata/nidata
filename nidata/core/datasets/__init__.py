@@ -5,7 +5,6 @@ import importlib
 import inspect
 import os
 import os.path as op
-import warnings
 
 from six import with_metaclass
 
@@ -127,7 +126,6 @@ class Dataset(ClassWithDependencies):
             with open(rst_path) as fp:
                 return fp.read()
         except IOError:
-            warnings.warn("Could not find dataset description: %s" % rst_path)
             return ''
 
     def __init__(self, data_dir=None):
@@ -210,11 +208,16 @@ class NilearnDataset(FetcherFunctionDataset):
 
     @classmethod
     def get_dataset_descr_path(cls):
+        # Grab it from nilearn.
         import nilearn.datasets.description as descr
         class_path = op.dirname(inspect.getfile(cls))
         name = getattr(cls, 'nilearn_name', op.basename(class_path))
         descr_path = op.dirname(descr.__file__)
         cls.rst_path = op.join(descr_path, '%s.rst' % name)
+
+        # ...or locally.
+        if not op.exists(cls.rst_path):
+            cls.rst_path = FetcherFunctionDataset.get_dataset_descr_path()
         return cls.rst_path
 
 

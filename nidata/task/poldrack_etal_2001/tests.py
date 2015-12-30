@@ -1,11 +1,14 @@
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from nidata.task import PoldrackEtal2001Dataset
-from nidata.core._utils.testing import DownloadTestMixin  # , InstallTestMixin
+from nidata.core._utils.testing import InstallThenDownloadTestMixin
 
 
-class PoldrackEtal2001DownloadTest(DownloadTestMixin, TestCase):
-    dataset_class = PoldrackEtal2001Dataset
+class PoldrackTestDataset(PoldrackEtal2001Dataset):
+    def fetch(self, *args, **kwargs):
+        kwargs['preprocess_data'] = False
+        kwargs['convert'] = False
 
-# Super-dependencies, so skip it for now.
-# class PoldrackEtal2001InstallTest(InstallTestMixin, TestCase):
-#     dataset_class = PoldrackEtal2001Dataset
+
+@skipIf(True, 'test')
+class PoldrackEtal2001Test(InstallThenDownloadTestMixin, TestCase):
+    dataset_class = PoldrackTestDataset
