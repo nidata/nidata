@@ -12,7 +12,7 @@ class PINGDataset(AuthenticatedHttpDataset):
     TODO: PING docstring.
     """
     dependencies = OrderedDict(
-        [(mod, mod) for mod in (['requests', 'pandas'] +
+        [(mod, mod) for mod in (['pandas'] +
                                 AuthenticatedHttpDataset.dependencies)],
         ping='git+https://github.com/guruucsd/PING')
     USERNAME_ENV_VAR = 'PING_USERNAME'

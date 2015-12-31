@@ -8,14 +8,14 @@ from nidata.anatomical import PINGDataset
 from nidata.core._utils.testing import (DownloadTestMixin, InstallTestMixin)
 
 
-@unittest.skipIf(os.environ.get('NIDATA_PING_USERNAME') is None,
+@unittest.skipIf(os.environ.get(PINGDataset.USERNAME_ENV_VAR) is None,
                  "Authentication required.")
 class PINGDownloadTest(DownloadTestMixin, TestCase):
     dataset_class = PINGDataset
 
 
 class PINGFailDownloadTest(unittest.TestCase):
-    @unittest.skipIf(os.environ.get('NIDATA_PING_USERNAME') is not None,
+    @unittest.skipIf(os.environ.get(PINGDataset.USERNAME_ENV_VAR) is not None,
                      "Authentication required.")
     def test_error(self):
         assert_raises(ValueError, PINGDataset)
