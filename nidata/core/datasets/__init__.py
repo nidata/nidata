@@ -244,7 +244,7 @@ class AuthenticatedHttpDataset(HttpDataset):
         from ..fetchers import HttpFetcher  # avoid circular import
 
         username = username or os.environ.get(self.USERNAME_ENV_VAR)
-        passwd = passwd or os.environ.get(self.USERNAME_ENV_VAR)
+        passwd = passwd or os.environ.get(self.PASSWD_ENV_VAR)
         if username is None or passwd is None:
             raise ValueError("username/passwd must be passed in, or %s/%s "
                              "environment variables must be set." % (
