@@ -232,3 +232,27 @@ class HttpDataset(Dataset):
         from ..fetchers import HttpFetcher  # avoid circular import
         super(HttpDataset, self).__init__(data_dir=data_dir)
         self.fetcher = HttpFetcher(data_dir=self.data_dir)
+
+
+class AuthenticatedHttpDataset(HttpDataset):
+    USERNAME_ENV_VAR = None
+    PASSWD_ENV_VAR = None
+
+    def __init__(self, data_dir=None, username=None, passwd=None):
+        """
+        """
+        from ..fetchers import HttpFetcher  # avoid circular import
+
+        username = username or os.environ.get(self.USERNAME_ENV_VAR)
+        passwd = passwd or os.environ.get(self.USERNAME_ENV_VAR)
+        if username is None or passwd is None:
+            raise ValueError("username/passwd must be passed in, or %s/%s "
+                             "environment variables must be set." % (
+                                 self.USERNAME_ENV_VAR, self.PASSWD_ENV_VAR))
+        self.username = username
+        self.passwd = passwd
+
+        super(AuthenticatedHttpDataset, self).__init__(data_dir=data_dir)
+        self.fetcher = HttpFetcher(data_dir=self.data_dir,
+                                   username=self.username,
+                                   passwd=self.passwd)
