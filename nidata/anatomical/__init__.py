@@ -1,7 +1,4 @@
-"""
-Datasets with structural MRI and Voxel-based morphometry.
-"""
+from .oasis_vbm import OasisVbmDataset
+from .PING import PINGDataset
 
-import os.path as _osp
-from ..core._utils import import_all_submodules as _impall
-_impall(_osp.dirname(_osp.abspath(__file__)), locals(), globals())
+__all__ = ['OasisVbmDataset', 'PINGDataset']
