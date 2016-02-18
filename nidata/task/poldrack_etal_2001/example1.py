@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 import nibabel as nb
 import nireg as nr
-from nidata.functional.poldrack_etal_2001.datasets import PoldrackEtal2001Dataset
+from nidata.task.poldrack_etal_2001 import PoldrackEtal2001Dataset
 from nilearn.plotting import plot_stat_map
 from nipy.labs.viz import cm
 

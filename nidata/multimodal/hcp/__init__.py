@@ -75,16 +75,21 @@ class HcpDataset(Dataset):
             raise NotImplementedError(fetcher_type)
 
     def prepend(self, src_files):
-        """Prepends the proper absolute url to a list of files, based on fetcher type.
+        """
+        Prepends the proper absolute url to a list of files, based on fetcher type.
 
         Parameters
         ----------
+
         src_files: list of str
             uncompleted urls without the prepended fetcher type
 
+
         Returns
         -------
-        list of fully qualified urls"""
+
+        list of fully qualified urls
+        """
         files = []
         for src_file in src_files:
             if isinstance(self.fetcher, HttpFetcher):
@@ -96,10 +101,11 @@ class HcpDataset(Dataset):
         return files
 
     def get_subject_list(self, n_subjects=None):
-        """Get the list of subject IDs. Depends on the # of subjects,
+        """
+        Get the list of subject IDs. Depends on the # of subjects,
         which also corresponds to other things (license agreement,
-        type of data available, etc)"""
-
+        type of data available, etc)
+        """
         subj_file_info = (('S900.txt', 900),
                           ('S500.txt', 500),
                           ('U100.txt', 100))

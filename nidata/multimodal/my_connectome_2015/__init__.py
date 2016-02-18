@@ -1,6 +1,9 @@
 # *- encoding: utf-8 -*-
 # Author: Alison Campbell, Ben Cipollini
 # License: simplified BSD
+"""
+Docstring
+"""
 
 import glob
 import os.path as op
