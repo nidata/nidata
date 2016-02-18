@@ -95,13 +95,52 @@ class HcpDataset(Dataset):
                 files.append((src_file, 'HCP/' + src_file))
         return files
 
-    def get_subject_list(self, n_subjects=500):
+    def get_subject_list(self, n_subjects=None):
         """Get the list of subject IDs. Depends on the # of subjects,
         which also corresponds to other things (license agreement,
         type of data available, etc)"""
-        return ['100307']  # 992774']
+
+        subj_file_info = (('S900.txt', 900),
+                          ('S500.txt', 500),
+                          ('U100.txt', 100))
+
+        fil = None
+        errs = dict()
+        # Loop until we retreive a file that's good.
+        for fname, nsubj in subj_file_info:
+            try:
+                fil = self.fetcher.fetch(
+                    files=self.prepend([fname]), verbose=0)[0]
+                with open(fil, 'r') as fp:
+                    data = fp.read()
+
+                # Make sure it's a good file.
+                subject_ids = data.split('\n')
+                subject_ids = filter(lambda sid: sid != '',
+                                     [sid.strip() for sid in subject_ids])
+                if subject_ids < nsubj:
+                    os.remove(fil)  # corrupt
+                    raise ValueError("Removed corrupt file %s" % fil)
+                else:
+                    break
+            except Exception as e:
+                errs[fname] = e
+                continue
+
+        # Completed the loop. Make sure we succeeded,
+        # and that what's requested is possible.
+        if fil is None:
+            raise Exception("Failed to fetch subject list from any file. "
+                            "Error details: %s" % errs)
+        if n_subjects > nsubj:
+            raise IndexError("Subjects number requested is too high. Please "
+                             "enter a number <= %d." % nsubj)
+
+        return subject_ids[:n_subjects]
 
     def get_files(self, data_type, volume_type, subj_id):
+        assert subj_id is not None and subj_id != ''
+
         if self.fetcher_type == 'aws':
             # S3 bucket specific layout
             subj_path = '{subj_id}'
@@ -169,7 +208,6 @@ class HcpDataset(Dataset):
         else:
             raise NotImplementedError("Cannot (yet!) fetch '%s' files" % (
                 volume_type))
-
         return files
 
     def fetch(self, n_subjects=1, data_types=None, volume_types=None,
