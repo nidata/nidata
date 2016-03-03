@@ -3,7 +3,7 @@ HCP 900 Subjects Release Data
 
 Notes
 -----
-The Human Connectome Project seeks to map out the region-to-region structural and functional connections in the human brain. The 900 Subjects Release Data includes imaging data from over 900 healthy adult subjects collected from 2012 to spring of 2015. The data set not only includes MR scans, but also over 95 subjects with resting-state and task MEG scans.
+The Human Connectome Project is an effort to create a map of the neural pathways in the brain to help better understand brain structures and functions. For example, during the study, scientists on the projects have realized that contrary to the belief that the brain wiring is a chaotic mess, the brain fibers actually overlap at 90 degree angles and interweave much like fabric. It also seeks to amass a large body of data which can be used to help on research into many brain disorders, such as schizophrenia, autism, dyslexia, or Alzheimer's. In addition, Phase 2 of this study includes twins and their non-twin siblings, facilitating the understanding of the genome on the brain's circuitry. The 900 Subjects Release Data includes imaging data from over 900 healthy adult subjects collected from 2012 to spring of 2015.
 
 Content
 -------
