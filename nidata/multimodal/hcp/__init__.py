@@ -56,7 +56,7 @@ class HcpHttpFetcher(HttpFetcher):
 class HcpDataset(Dataset):
     """TODO: HcpDataset docstring"""
 
-    def __init__(self, data_dir=None, fetcher_type='http', profile_name=None,
+    def __init__(self, data_dir=None, fetcher_type='http', profile_name='hcp',
                  access_key=None, secret_access_key=None,
                  username=None, passwd=None):
         """fetcher_type: aws or XNAT"""
@@ -144,7 +144,41 @@ class HcpDataset(Dataset):
 
         return subject_ids[:n_subjects]
 
-    def get_files(self, data_type, volume_type, subj_id):
+    def get_diff_files(self, process, subj_id):
+        files = []
+
+        if process == False:
+            diff_path = '%s/unprocessed/3T/Diffusion' % subj_id
+            files += ['%s/%s_3T_BIAS_32CH.nii.gz' % (diff_path, subj_id)]
+            files += ['%s/%s_3T_BIAS_BC.nii.gz' % (diff_path, subj_id)]
+            files += ['%s/%s_3T_DWI_dir95_LR_SBRef.nii.gz' % (diff_path, subj_id)]
+            files += ['%s/%s_3T_DWI_dir95_LR.bval' % (diff_path, subj_id)]
+            files += ['%s/%s_3T_DWI_dir95_LR.bvec' % (diff_path, subj_id)]
+            files += ['%s/%s_3T_DWI_dir95_LR.nii.gz' % (diff_path, subj_id)]
+            files += ['%s/%s_3T_DWI_dir95_RL_SBRef.nii.gz' % (diff_path, subj_id)]
+            files += ['%s/%s_3T_DWI_dir95_RL.bval' % (diff_path, subj_id)]
+            files += ['%s/%s_3T_DWI_dir95_RL.bvec' % (diff_path, subj_id)]
+            files += ['%s/%s_3T_DWI_dir95_RL.nii.gz' % (diff_path, subj_id)]
+            files += ['%s/release-notes/Diffusion_unproc.txt' % subj_id]
+        else:
+            diff_path = '%s/T1w/Diffusion' % subj_id
+            files += ['%s/bvals' % diff_path]
+            files += ['%s/bvecs' % diff_path]
+            files += ['%s/data.nii.gz' % diff_path]
+        return files
+
+
+    def get_files(self, data_type, volume_type, process, subj_id):
+        assert subj_id is not None and subj_id != ''
+
+        files = []
+
+        if 'diff' in data_type:
+            files = self.get_diff_files(process, subj_id);
+        return files
+
+
+    """def get_files(self, data_type, volume_type, subj_id):
         assert subj_id is not None and subj_id != ''
 
         if self.fetcher_type == 'aws':
@@ -214,10 +248,10 @@ class HcpDataset(Dataset):
         else:
             raise NotImplementedError("Cannot (yet!) fetch '%s' files" % (
                 volume_type))
-        return files
+        return files"""
 
     def fetch(self, n_subjects=1, data_types=None, volume_types=None,
-              force=False, check=True, verbose=1):
+              force=False, check=True, verbose=1, process = None):
         """
         TODO: fetch docstring
         data_types is a list, can contain: anat, diff, func, rest, psyc, bgnd
@@ -226,6 +260,8 @@ class HcpDataset(Dataset):
             data_types = ['anat', 'diff', 'func', 'rest']
         if volume_types is None:
             volume_types = ['3T']  # fsaverage_LR32k, Native
+        if process is None:
+            process = [True, False]
 
         subj_ids = self.get_subject_list(n_subjects=n_subjects)
 
@@ -234,8 +270,10 @@ class HcpDataset(Dataset):
         for subj_id in subj_ids[:n_subjects]:
             for data_type in data_types:
                 for volume_type in volume_types:
-                    src_files += self.get_files(data_type=data_type,
+                    for pro in process:
+                        src_files += self.get_files(data_type=data_type,
                                                 volume_type=volume_type,
+                                                process=pro,
                                                 subj_id=subj_id)
 
         # Massage paths, based on fetcher type.
