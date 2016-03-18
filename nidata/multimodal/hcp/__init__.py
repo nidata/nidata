@@ -30,6 +30,7 @@ class HcpHttpFetcher(HttpFetcher):
         if self.jsession_id is None:
             # Log in to the website.
             import requests
+
             res = requests.post('https://db.humanconnectome.org/data/JSESSION',
                                 data={},
                                 auth=(self.username, self.passwd))
@@ -95,7 +96,7 @@ class HcpDataset(Dataset):
             if isinstance(self.fetcher, HttpFetcher):
                 files.append((src_file, 'https://db.humanconnectome.org/data/'
                                         'archive/projects/HCP_900/subjects/' +
-                                        src_file))
+                              src_file))
             elif isinstance(self.fetcher, AmazonS3Fetcher):
                 files.append((src_file, 'HCP/' + src_file))
         return files
@@ -147,8 +148,9 @@ class HcpDataset(Dataset):
     def get_diff_files(self, process, subj_id):
         files = []
 
-        if process == False:
+        if not process:
             diff_path = '%s/unprocessed/3T/Diffusion' % subj_id
+
             files += ['%s/%s_3T_BIAS_32CH.nii.gz' % (diff_path, subj_id)]
             files += ['%s/%s_3T_BIAS_BC.nii.gz' % (diff_path, subj_id)]
             files += ['%s/%s_3T_DWI_dir95_LR_SBRef.nii.gz' % (diff_path, subj_id)]
@@ -159,107 +161,247 @@ class HcpDataset(Dataset):
             files += ['%s/%s_3T_DWI_dir95_RL.bval' % (diff_path, subj_id)]
             files += ['%s/%s_3T_DWI_dir95_RL.bvec' % (diff_path, subj_id)]
             files += ['%s/%s_3T_DWI_dir95_RL.nii.gz' % (diff_path, subj_id)]
+
             files += ['%s/release-notes/Diffusion_unproc.txt' % subj_id]
         else:
             diff_path = '%s/T1w/Diffusion' % subj_id
+
             files += ['%s/bvals' % diff_path]
             files += ['%s/bvecs' % diff_path]
             files += ['%s/data.nii.gz' % diff_path]
+
+            files += ['%s/release-notes/Diffusion_preproc.txt' % subj_id]
         return files
 
+    def get_anat_files(self, process, subj_id, atlas, mni, property):
+        files = []
 
-    def get_files(self, data_type, volume_type, process, subj_id):
+        if not process:
+            anat_path = '%s/unprocessed/3T' % subj_id
+
+            files += ['%s/T1w_MPR1/%s_3T_AFI.nii.gz' % (anat_path, subj_id)]
+            files += ['%s/T1w_MPR1/%s_3T_BIAS_32CH.nii.gz' % (anat_path, subj_id)]
+            files += ['%s/T1w_MPR1/%s_3T_BIAS_BC.nii.gz' % (anat_path, subj_id)]
+            files += ['%s/T1w_MPR1/%s_3T_FieldMap_Magnitude.nii.gz' % (anat_path, subj_id)]
+            files += ['%s/T1w_MPR1/%s_3T_FieldMap_Phase.nii.gz' % (anat_path, subj_id)]
+            files += ['%s/T1w_MPR1/%s_3T_T1w_MPR1.nii.gz' % (anat_path, subj_id)]
+
+            files += ['%s/release-notes/Structural_unproc.txt' % subj_id]
+        else:
+            if not mni:
+                if atlas == 'native':
+                    anat_path = '%s/T1w/Native' % subj_id
+                    if property == 'thickness':
+                        files += ['%s/%s.L.midthickness.native.surf.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.midthickness.native.surf.gii' % (anat_path, subj_id)]
+                elif atlas == 'fsaverage':
+                    anat_path = '%s/T1w/fsaverage_LR32k' % subj_id
+                    if property == 'thickness':
+                        files += ['%s/%s.L.midthickness.32k_fs_LR.surf.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.midthickness.32k_fs_LR.surf.gii' % (anat_path, subj_id)]
+            else:
+                if atlas == 'native':
+                    anat_path = '%s/MNINonLinear/Native' % subj_id
+                    if property == 'thickness':
+                        files += ['%s/%s.corrThickness.native.dscalar.nii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.corrThickness.native.shape.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.midthickness.native.surf.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.thickness.native.shape.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.corrThickness.native.shape.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.midthickness.native.surf.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.thickness.native.shape.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.thickness.native.dscalar.nii' % (anat_path, subj_id)]
+                    elif property == 'curvature':
+                        files += ['%s/%s.curvature.native.dscalar.nii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.curvature.native.shape.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.curvature.native.shape.gii' % (anat_path, subj_id)]
+                    elif property == 'myelinmap':
+                        files += ['%s/%s.L.MyelinMap.native.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.MyelinMap_BC.native.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.SmoothedMyelinMap.native.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.SmoothedMyelinMap_BC.native.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.MyelinMap.native.dscalar.nii' % (anat_path, subj_id)]
+                        files += ['%s/%s.MyelinMap_BC.native.dscalar.nii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.MyelinMap.native.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.MyelinMap_BC.native.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.SmoothedMyelinMap.native.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.SmoothedMyelinMap_BC.native.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.SmoothedMyelinMap.native.dscalar.nii' % (anat_path, subj_id)]
+                        files += ['%s/%s.SmoothedMyelinMap_BC.native.dscalar.nii' % (anat_path, subj_id)]
+                elif atlas == 'fsaverage':
+                    anat_path = '%s/MNINonLinear/fsaverage_LR32k' % subj_id
+                    if property == 'thickness':
+                        files += ['%s/%s.corrThickness.32k_fs_LR.dscalar.nii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.corrThickness.32k_fs_LR.shape.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.midthickness.32k_fs_LR.surf.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.thickness.32k_fs_LR.shape.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.corrThickness.32k_fs_LR.shape.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.midthickness.32k_fs_LR.surf.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.thickness.32k_fs_LR.shape.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.thickness.32k_fs_LR.dscalar.nii' % (anat_path, subj_id)]
+                    elif property == 'curvature':
+                        files += ['%s/%s.curvature.32k_fs_LR.dscalar.nii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.curvature.32k_fs_LR.shape.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.curvature.32k_fs_LR.shape.gii' % (anat_path, subj_id)]
+                    elif property == 'myelinmap':
+                        files += ['%s/%s.L.MyelinMap.32k_fs_LR.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.MyelinMap_BC.32k_fs_LR.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.SmoothedMyelinMap.32k_fs_LR.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.L.SmoothedMyelinMap_BC.32k_fs_LR.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.MyelinMap.32k_fs_LR.dscalar.nii' % (anat_path, subj_id)]
+                        files += ['%s/%s.MyelinMap_BC.32k_fs_LR.dscalar.nii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.MyelinMap.32k_fs_LR.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.MyelinMap_BC.32k_fs_LR.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.SmoothedMyelinMap.32k_fs_LR.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.R.SmoothedMyelinMap_BC.32k_fs_LR.func.gii' % (anat_path, subj_id)]
+                        files += ['%s/%s.SmoothedMyelinMap.32k_fs_LR.dscalar.nii' % (anat_path, subj_id)]
+                        files += ['%s/%s.SmoothedMyelinMap_BC.32k_fs_LR.dscalar.nii' % (anat_path, subj_id)]
+
+            files += ['%s/release-notes/Structural_preproc.txt']
+        return files
+
+    def get_rest_files(self, process, subj_id):
+        files = []
+
+        if not process:
+            rest_path = '%s/unprocessed/3T' % subj_id
+
+            files += ['%s/rfMRI_REST1_LR/%s_3T_BIAS_32CH.nii.gz' % (rest_path, subj_id)]
+            files += ['%s/rfMRI_REST1_LR/%s_3T_BIAS_BC.nii.gz' % (rest_path, subj_id)]
+            files += ['%s/rfMRI_REST1_LR/%s_3T_rfMRI_REST1_LR_SBRef.nii.gz' % (rest_path, subj_id)]
+            files += ['%s/rfMRI_REST1_LR/%s_3T_rfMRI_REST1_LR.nii.gz' % (rest_path, subj_id)]
+            files += ['%s/rfMRI_REST1_LR/%s_3T_SpinEchoFieldMap_LR.nii.gz' % (rest_path, subj_id)]
+            files += ['%s/rfMRI_REST1_LR/%s_3T_SpinEchoFieldMap_RL.nii.gz' % (rest_path, subj_id)]
+            files += ['%s/rfMRI_REST1_LR/LINKED_DATA/PHYSIO/%s_3T_rfMRI_REST1_LR_Physio_log.txt' % (rest_path, subj_id)]
+
+            files += ['%s/release-notes/rfMRI_REST1_unproc.txt' % subj_id]
+            files += ['%s/release-notes/rfMRI_REST2_unproc.txt' % subj_id]
+        else:
+            rest_path = '%s/MNINonLinear/Results' % subj_id
+            files += ['%s/rfMRI_REST1_LR/brainmask_fs.2.nii.gz' % rest_path]
+            files += ['%s/rfMRI_REST1_LR/Movement_Regressors_dt.txt' % rest_path]
+            files += ['%s/rfMRI_REST1_LR/Movement_Regressors.txt' % rest_path]
+            files += ['%s/rfMRI_REST1_LR/Movement_AbsoluteRMS.txt' % rest_path]
+            files += ['%s/rfMRI_REST1_LR/Movement_AbsoluteRMS_mean.txt' % rest_path]
+            files += ['%s/rfMRI_REST1_LR/Movement_RelativeRMS.txt' % rest_path]
+            files += ['%s/rfMRI_REST1_LR/Movement_RelativeRMS_mean.txt' % rest_path]
+            files += ['%s/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas.dtseries.nii' % rest_path]
+            files += ['%s/rfMRI_REST1_LR/rfMRI_REST1_LR_Jacobian.nii.gz' % rest_path]
+            files += ['%s/rfMRI_REST1_LR/rfMRI_REST1_LR_SBRef.nii.gz' % rest_path]
+            files += ['%s/rfMRI_REST1_LR/rfMRI_REST1_LR.nii.gz' % rest_path]
+            files += ['%s/rfMRI_REST1_LR/rfMRI_REST1_LR_Physio_log.txt' % rest_path]
+            files += ['%s/rfMRI_REST1_LR/RibbonVolumeToSurfaceMapping/goodvoxels.nii.gz' % rest_path]
+
+            files += ['%s/release-notes/rfMRI_REST1_preproc.txt' % subj_id]
+            files += ['%s/release-notes/rfMRI_REST2_preproc.txt' % subj_id]
+        return files
+
+    def get_func_files(self, process, type, subj_id):
+        files = []
+
+        if not process:
+            func_path = '%s/unprocessed/3T' % subj_id
+
+            files += ['%s/tfMRI/EMOTION_LR/%s_3T_BIAS_32CH.nii.gz' % (func_path, subj_id)]
+            files += ['%s/tfMRI/EMOTION_LR/%s_3T_BIAS_BC.nii.gz' % (func_path, subj_id)]
+            files += ['%s/tfMRI/EMOTION_LR/%s_3T_SpinEchoFieldMap_LR.nii.gz' % (func_path, subj_id)]
+            files += ['%s/tfMRI/EMOTION_LR/%s_3T_SpinEchoFieldMap_RL.nii.gz' % (func_path, subj_id)]
+            files += ['%s/tfMRI/EMOTION_LR/%s_3T_tfMRI_EMOTION_LR.nii.gz' % (func_path, subj_id)]
+            files += ['%s/tfMRI/EMOTION_LR/%s_3T_tfMRI_EMOTION_LR_SBRef.nii.gz' % (func_path, subj_id)]
+            files += ['%s/tfMRI/EMOTION_LR/LINKED_DATA/EPRIME/%s_3T_EMOTION_run2_TAB.txt' % (func_path, subj_id)]
+            files += ['%s/tfMRI/EMOTION_LR/LINKED_DATA/EPRIME/EVs/EMOTION_Stats.csv' % (func_path)]
+            files += ['%s/tfMRI/EMOTION_LR/LINKED_DATA/EPRIME/EVs/fear.txt' % (func_path)]
+            files += ['%s/tfMRI/EMOTION_LR/LINKED_DATA/EPRIME/EVs/neut.txt' % (func_path)]
+            files += ['%s/tfMRI/EMOTION_LR/LINKED_DATA/EPRIME/EVs/Sync.txt' % (func_path)]
+
+            files += ['%s/release-notes/tfMRI_EMOTION_unproc.txt' % subj_id]
+            files += ['%s/release-notes/tfMRI_GAMBLING_unproc.txt' % subj_id]
+            files += ['%s/release-notes/tfMRI_LANGUAGE_unproc.txt' % subj_id]
+            files += ['%s/release-notes/tfMRI_MOTOR_unproc.txt' % subj_id]
+            files += ['%s/release-notes/tfMRI_RELATIONAL_unproc.txt' % subj_id]
+            files += ['%s/release-notes/tfMRI_SOCIAL_unproc.txt' % subj_id]
+            files += ['%s/release-notes/tfMRI_WM_unproc.txt' % subj_id]
+        else:
+            if type == 'emotion':
+                func_path = '%s/MNINonLinear/Results' % subj_id
+                files += ['%s/tfMRI_EMOTION_LR/brainmask_fs.2.nii.gz' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/EMOTION_run2_TAB.txt' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/Movement_Regressors_dt.txt' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/Movement_Regressors.txt' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/Movement_AbsoluteRMS.txt' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/Movement_AbsoluteRMS_mean.txt' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/Movement_RelativeRMS.txt' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/Movement_RelativeRMS_mean.txt' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/tfMRI_EMOTION_LR_Atlas.dtseries.nii' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/tfMRI_EMOTION_LR_Jacobian.nii.gz' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/tfMRI_EMOTION_LR_SBRef.nii.gz' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/tfMRI_EMOTION_LR.nii.gz' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/tfMRI_EMOTION_LR_Physio_log.txt' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/tfMRI_EMOTION_LR_hp200_s4_level1.fsf' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/RibbonVolumeToSurfaceMapping/goodvoxels.nii.gz' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/EVs/EMOTION_Stats.csv' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/EVs/fear.txt' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/EVs/neut.txt' % func_path]
+                files += ['%s/tfMRI_EMOTION_LR/EVs/Sync.txt' % func_path]
+                files += ['%s/tfMRI_EMOTION/tfMRI_EMOTION_hp200_s4_level2.fsf' % func_path]
+
+            files += ['%s/release-notes/tfMRI_EMOTION_preproc.txt' % subj_id]
+            files += ['%s/release-notes/tfMRI_GAMBLING_preproc.txt' % subj_id]
+            files += ['%s/release-notes/tfMRI_LANGUAGE_preproc.txt' % subj_id]
+            files += ['%s/release-notes/tfMRI_MOTOR_preproc.txt' % subj_id]
+            files += ['%s/release-notes/tfMRI_RELATIONAL_preproc.txt' % subj_id]
+            files += ['%s/release-notes/tfMRI_SOCIAL_preproc.txt' % subj_id]
+            files += ['%s/release-notes/tfMRI_WM_preproc.txt' % subj_id]
+        return files
+
+    def get_files(self, data_type, volume_type, type, process, subj_id, atlas, mni):
         assert subj_id is not None and subj_id != ''
 
         files = []
 
         if 'diff' in data_type:
-            files = self.get_diff_files(process, subj_id);
+            files += self.get_diff_files(process, subj_id)
+        if 'anat' in data_type:
+            files += self.get_anat_files(process, subj_id, atlas, mni, property)
+        if 'func' in data_type:
+            files += self.get_func_files(process, subj_id)
+        if 'rest' in data_type:
+            files += self.get_rest_files(process, subj_id)
         return files
 
-
-    """def get_files(self, data_type, volume_type, subj_id):
-        assert subj_id is not None and subj_id != ''
-
-        if self.fetcher_type == 'aws':
-            # S3 bucket specific layout
-            subj_path = '{subj_id}'
-        else:  # xnat/http
-            subj_path = ('{subj_id}/experiments/{subj_id}_CREST/resources/'
-                         '{subj_id}_CREST/files')
-
-        files = []
-
-        if volume_type == '3T' and data_type == 'anat':
-            anat_path = '%s/unprocessed/3T' % subj_path
-            files += [('%s/%s' % (anat_path, fil))
-                      .format(stype=stype, subj_id=subj_id)
-                      for stype in ['T1w_MPR1', 'T2w_SPC1']
-                      for fil in [
-                          '{stype}/{subj_id}_3T_AFI.nii.gz',
-                          '{stype}/{subj_id}_3T_BIAS_32CH.nii.gz',
-                          '{stype}/{subj_id}_3T_BIAS_BC.nii.gz',
-                          '{stype}/{subj_id}_3T_FieldMap_Magnitude.nii.gz',
-                          '{stype}/{subj_id}_3T_FieldMap_Phase.nii.gz',
-                          '{stype}/{subj_id}_3T_{stype}.nii.gz']]
-
-        elif volume_type == '3T' and data_type == 'diff':
-            diff_path = '%s/unprocessed/3T/Diffusion' % subj_path
-            files += [('%s/%s' % (diff_path, fil))
-                      .format(subj_id=subj_id, n_dirs=n_dirs)
-                      for n_dirs in [95]  # 96? 97?
-                      for fil in [
-                          '{subj_id}_3T_BIAS_32CH.nii.gz',
-                          '{subj_id}_3T_BIAS_BC.nii.gz',
-                          '{subj_id}_3T_DWI_dir{n_dirs}_LR.nii.gz',
-                          '{subj_id}_3T_DWI_dir{n_dirs}_LR.bval',
-                          '{subj_id}_3T_DWI_dir{n_dirs}_LR.bvec',
-                          '{subj_id}_3T_DWI_dir{n_dirs}_RL_SBRef.nii.gz']]
-
-        elif volume_type == '3T' and data_type == 'func':
-            rest_path = '%s/unprocessed/3T' % subj_path
-            files += [('%s/tfMRI_{scan}_{direction}/%s' % (rest_path, fil))
-                      .format(subj_id=subj_id, scan=scan, direction=direction)
-                      for scan in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR',
-                                   'RELATIONAL', 'SOCIAL', 'WM']
-                      for direction in ['LR', 'RL']
-                      for fil in [
-                          '{subj_id}_3T_BIAS_32CH.nii.gz',
-                          '{subj_id}_3T_BIAS_BC.nii.gz',
-                          '{subj_id}_3T_tfMRI_{scan}_{direction}_SBRef.nii.gz',
-                          '{subj_id}_3T_tfMRI_{scan}_{direction}.nii.gz',
-                          '{subj_id}_3T_SpinEchoFieldMap_LR.nii.gz',
-                          '{subj_id}_3T_SpinEchoFieldMap_RL.nii.gz']]
-
-        elif volume_type == '3T' and data_type == 'rest':
-            func_path = '%s/unprocessed/3T' % subj_path
-            files += [('%s/rfMRI_{scan}_{direction}/%s' % (func_path, fil))
-                      .format(subj_id=subj_id, scan=scan, direction=direction)
-                      for scan in ['REST1', 'REST2']
-                      for direction in ['LR', 'RL']
-                      for fil in [
-                          '{subj_id}_3T_BIAS_32CH.nii.gz',
-                          '{subj_id}_3T_BIAS_BC.nii.gz',
-                          '{subj_id}_3T_rfMRI_{scan}_{direction}_SBRef.nii.gz',
-                          '{subj_id}_3T_rfMRI_{scan}_{direction}.nii.gz',
-                          '{subj_id}_3T_SpinEchoFieldMap_LR.nii.gz',
-                          '{subj_id}_3T_SpinEchoFieldMap_RL.nii.gz']]
-
-        else:
-            raise NotImplementedError("Cannot (yet!) fetch '%s' files" % (
-                volume_type))
-        return files"""
-
-    def fetch(self, n_subjects=1, data_types=None, volume_types=None,
-              force=False, check=True, verbose=1, process = None):
+    def fetch(self, n_subjects=1, data_types=None,
+              types=None, atlases=None, mnis=None, force=False, check=True, verbose=1,
+              properties=None, process=None):
         """
-        TODO: fetch docstring
-        data_types is a list, can contain: anat, diff, func, rest, psyc, bgnd
+        Parameters
+        ----------
+        n_subjects : int
+            the number of subjects to fetch files from
+        data_types : list
+            the type of data to fetch,
+            can choose from anat, diff, func, or rest
+        types : list
+            the type of activity for functional data,
+            can choose from emotional, gambling, language, motor,
+            relational, social, and workingmemory
+        atlases : list
+            scope of surface data,
+            can choose from native or fsaverage
+        mnis : list
+            determines whether to use mninonlinear data or not,
+            can choose from true or false
         """
         if data_types is None:
             data_types = ['anat', 'diff', 'func', 'rest']
-        if volume_types is None:
-            volume_types = ['3T']  # fsaverage_LR32k, Native
+        if types is None:
+            types = ['emotional', 'gambling', 'language', 'motor',
+                     'relational', 'social', 'workingmemory']
+        if atlases is None:
+            atlas = ['native', 'fsaverage']
+        if mnis is None:
+            mni = [True, False]
+        if properties is None:
+            property = ['myelinmap', 'curvature', 'thickness']
         if process is None:
             process = [True, False]
 
@@ -269,12 +411,18 @@ class HcpDataset(Dataset):
         src_files = []
         for subj_id in subj_ids[:n_subjects]:
             for data_type in data_types:
-                for volume_type in volume_types:
-                    for pro in process:
-                        src_files += self.get_files(data_type=data_type,
-                                                volume_type=volume_type,
-                                                process=pro,
-                                                subj_id=subj_id)
+                for type in types:
+                    for atlas in atlases:
+                        for mni in mnis:
+                            for property in properties:
+                                for pro in process:
+                                    src_files += self.get_files(data_type=data_type,
+                                                                type=type,
+                                                                process=pro,
+                                                                subj_id=subj_id,
+                                                                atlas=atlas,
+                                                                property=property,
+                                                                mni=mni)
 
         # Massage paths, based on fetcher type.
         files = self.prepend(src_files)
