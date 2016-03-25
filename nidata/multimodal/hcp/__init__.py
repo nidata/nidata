@@ -96,7 +96,7 @@ class HcpDataset(Dataset):
             if isinstance(self.fetcher, HttpFetcher):
                 files.append((src_file, 'https://db.humanconnectome.org/data/'
                                         'archive/projects/HCP_900/subjects/' +
-                              src_file))
+                                        src_file))
             elif isinstance(self.fetcher, AmazonS3Fetcher):
                 files.append((src_file, 'HCP/' + src_file))
         return files
@@ -146,6 +146,15 @@ class HcpDataset(Dataset):
         return subject_ids[:n_subjects]
 
     def get_diff_files(self, process, subj_id):
+        """
+        Parameters
+        ----------
+        process : boolean
+            whether or not the data is processed or not
+            can choose from True or False
+        subj_id : String
+            the id of the subject the files are on
+        """
         files = []
 
         if not process:
@@ -174,6 +183,24 @@ class HcpDataset(Dataset):
         return files
 
     def get_anat_files(self, process, subj_id, atlas, mni, property):
+        """
+        Parameters
+        ----------
+        atlas : String
+            scope of surface data,
+            can choose from native or fsaverage
+        mni : boolean
+            determines whether to use mninonlinear data or not,
+            can choose from true or false
+        property : String
+            the chosen properties displayed in structural data files
+            can choose from myelinmap, curvature, thickness
+        process : boolean
+            whether or not the data is processed or not
+            can choose from True or False
+        subj_id : String
+            the id of the subject the files are on
+        """
         files = []
 
         if not process:
@@ -261,6 +288,15 @@ class HcpDataset(Dataset):
         return files
 
     def get_rest_files(self, process, subj_id):
+        """
+        Parameters
+        ----------
+        process : boolean
+            whether or not the data is processed or not
+            can choose from True or False
+        subj_id : String
+            the id of the subject the files are on
+        """
         files = []
 
         if not process:
@@ -293,10 +329,22 @@ class HcpDataset(Dataset):
             files += ['%s/rfMRI_REST1_LR/RibbonVolumeToSurfaceMapping/goodvoxels.nii.gz' % rest_path]
 
             files += ['%s/release-notes/rfMRI_REST1_preproc.txt' % subj_id]
-            files += ['%s/release-notes/rfMRI_REST2_preproc.txt' % subj_id]
         return files
 
-    def get_func_files(self, process, type, subj_id):
+    def get_task_files(self, process, task, subj_id):
+        """
+        Parameters
+        ----------
+        task : String
+            the type of activity for functional data,
+            can choose from emotional, gambling, language, motor,
+            relational, social, and workingmemory
+        process : boolean
+            whether or not the data is processed or not
+            can choose from True or False
+        subj_id : String
+            the id of the subject the files are on
+        """
         files = []
 
         if not process:
@@ -322,7 +370,7 @@ class HcpDataset(Dataset):
             files += ['%s/release-notes/tfMRI_SOCIAL_unproc.txt' % subj_id]
             files += ['%s/release-notes/tfMRI_WM_unproc.txt' % subj_id]
         else:
-            if type == 'emotion':
+            if task == 'emotion':
                 func_path = '%s/MNINonLinear/Results' % subj_id
                 files += ['%s/tfMRI_EMOTION_LR/brainmask_fs.2.nii.gz' % func_path]
                 files += ['%s/tfMRI_EMOTION_LR/EMOTION_run2_TAB.txt' % func_path]
@@ -354,7 +402,32 @@ class HcpDataset(Dataset):
             files += ['%s/release-notes/tfMRI_WM_preproc.txt' % subj_id]
         return files
 
-    def get_files(self, data_type, volume_type, type, process, subj_id, atlas, mni):
+    def get_files(self, data_type, property, task, process, subj_id, atlas, mni):
+        """
+        Parameters
+        ----------
+        data_type : String
+            the type of data to fetch,
+            can choose from anat, diff, func, or rest
+        task : String
+            the type of activity for functional data,
+            can choose from emotional, gambling, language, motor,
+            relational, social, and workingmemory
+        atlas : String
+            scope of surface data,
+            can choose from native or fsaverage
+        mni : boolean
+            determines whether to use mninonlinear data or not,
+            can choose from true or false
+        property : String
+            the chosen properties displayed in structural data files
+            can choose from myelinmap, curvature, thickness
+        process : boolean
+            whether or not the data is processed or not
+            can choose from True or False
+        subj_id : String
+            the id of the subject the files are on
+        """
         assert subj_id is not None and subj_id != ''
 
         files = []
@@ -364,13 +437,13 @@ class HcpDataset(Dataset):
         if 'anat' in data_type:
             files += self.get_anat_files(process, subj_id, atlas, mni, property)
         if 'func' in data_type:
-            files += self.get_func_files(process, subj_id)
+            files += self.get_task_files(process, task, subj_id)
         if 'rest' in data_type:
             files += self.get_rest_files(process, subj_id)
         return files
 
     def fetch(self, n_subjects=1, data_types=None,
-              types=None, atlases=None, mnis=None, force=False, check=True, verbose=1,
+              tasks=None, atlases=None, mnis=None, force=False, check=True, verbose=1,
               properties=None, process=None):
         """
         Parameters
@@ -380,7 +453,7 @@ class HcpDataset(Dataset):
         data_types : list
             the type of data to fetch,
             can choose from anat, diff, func, or rest
-        types : list
+        tasks : list
             the type of activity for functional data,
             can choose from emotional, gambling, language, motor,
             relational, social, and workingmemory
@@ -390,20 +463,26 @@ class HcpDataset(Dataset):
         mnis : list
             determines whether to use mninonlinear data or not,
             can choose from true or false
+        properties : list
+            the chosen properties displayed in structural data files
+            can choose from myelinmap, curvature, thickness
+        process : list
+            whether or not the data is processed or not
+            can choose from True or False
         """
         if data_types is None:
             data_types = ['anat', 'diff', 'func', 'rest']
-        if types is None:
-            types = ['emotional', 'gambling', 'language', 'motor',
+        if tasks is None:
+            tasks = ['emotional', 'gambling', 'language', 'motor',
                      'relational', 'social', 'workingmemory']
         if atlases is None:
-            atlas = ['native', 'fsaverage']
+            atlases = ['native', 'fsaverage']
         if mnis is None:
-            mni = [True, False]
+            mnis = [True, False]
         if properties is None:
-            property = ['myelinmap', 'curvature', 'thickness']
+            properties = ['myelinmap', 'curvature', 'thickness']
         if process is None:
-            process = [True, False]
+            process = [True]
 
         subj_ids = self.get_subject_list(n_subjects=n_subjects)
 
@@ -411,13 +490,13 @@ class HcpDataset(Dataset):
         src_files = []
         for subj_id in subj_ids[:n_subjects]:
             for data_type in data_types:
-                for type in types:
+                for task in tasks:
                     for atlas in atlases:
                         for mni in mnis:
                             for property in properties:
                                 for pro in process:
                                     src_files += self.get_files(data_type=data_type,
-                                                                type=type,
+                                                                task=task,
                                                                 process=pro,
                                                                 subj_id=subj_id,
                                                                 atlas=atlas,
