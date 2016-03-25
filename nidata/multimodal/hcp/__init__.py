@@ -284,7 +284,7 @@ class HcpDataset(Dataset):
                         files += ['%s/%s.SmoothedMyelinMap.32k_fs_LR.dscalar.nii' % (anat_path, subj_id)]
                         files += ['%s/%s.SmoothedMyelinMap_BC.32k_fs_LR.dscalar.nii' % (anat_path, subj_id)]
 
-            files += ['%s/release-notes/Structural_preproc.txt']
+            files += ['%s/release-notes/Structural_preproc.txt' % subj_id]
         return files
 
     def get_rest_files(self, process, subj_id):
@@ -311,7 +311,6 @@ class HcpDataset(Dataset):
             files += ['%s/rfMRI_REST1_LR/LINKED_DATA/PHYSIO/%s_3T_rfMRI_REST1_LR_Physio_log.txt' % (rest_path, subj_id)]
 
             files += ['%s/release-notes/rfMRI_REST1_unproc.txt' % subj_id]
-            files += ['%s/release-notes/rfMRI_REST2_unproc.txt' % subj_id]
         else:
             rest_path = '%s/MNINonLinear/Results' % subj_id
             files += ['%s/rfMRI_REST1_LR/brainmask_fs.2.nii.gz' % rest_path]
@@ -363,14 +362,8 @@ class HcpDataset(Dataset):
             files += ['%s/tfMRI/EMOTION_LR/LINKED_DATA/EPRIME/EVs/Sync.txt' % (func_path)]
 
             files += ['%s/release-notes/tfMRI_EMOTION_unproc.txt' % subj_id]
-            files += ['%s/release-notes/tfMRI_GAMBLING_unproc.txt' % subj_id]
-            files += ['%s/release-notes/tfMRI_LANGUAGE_unproc.txt' % subj_id]
-            files += ['%s/release-notes/tfMRI_MOTOR_unproc.txt' % subj_id]
-            files += ['%s/release-notes/tfMRI_RELATIONAL_unproc.txt' % subj_id]
-            files += ['%s/release-notes/tfMRI_SOCIAL_unproc.txt' % subj_id]
-            files += ['%s/release-notes/tfMRI_WM_unproc.txt' % subj_id]
         else:
-            if task == 'emotion':
+            if task == 'emotional':
                 func_path = '%s/MNINonLinear/Results' % subj_id
                 files += ['%s/tfMRI_EMOTION_LR/brainmask_fs.2.nii.gz' % func_path]
                 files += ['%s/tfMRI_EMOTION_LR/EMOTION_run2_TAB.txt' % func_path]
@@ -392,54 +385,7 @@ class HcpDataset(Dataset):
                 files += ['%s/tfMRI_EMOTION_LR/EVs/neut.txt' % func_path]
                 files += ['%s/tfMRI_EMOTION_LR/EVs/Sync.txt' % func_path]
                 files += ['%s/tfMRI_EMOTION/tfMRI_EMOTION_hp200_s4_level2.fsf' % func_path]
-
-            files += ['%s/release-notes/tfMRI_EMOTION_preproc.txt' % subj_id]
-            files += ['%s/release-notes/tfMRI_GAMBLING_preproc.txt' % subj_id]
-            files += ['%s/release-notes/tfMRI_LANGUAGE_preproc.txt' % subj_id]
-            files += ['%s/release-notes/tfMRI_MOTOR_preproc.txt' % subj_id]
-            files += ['%s/release-notes/tfMRI_RELATIONAL_preproc.txt' % subj_id]
-            files += ['%s/release-notes/tfMRI_SOCIAL_preproc.txt' % subj_id]
-            files += ['%s/release-notes/tfMRI_WM_preproc.txt' % subj_id]
-        return files
-
-    def get_files(self, data_type, property, task, process, subj_id, atlas, mni):
-        """
-        Parameters
-        ----------
-        data_type : String
-            the type of data to fetch,
-            can choose from anat, diff, func, or rest
-        task : String
-            the type of activity for functional data,
-            can choose from emotional, gambling, language, motor,
-            relational, social, and workingmemory
-        atlas : String
-            scope of surface data,
-            can choose from native or fsaverage
-        mni : boolean
-            determines whether to use mninonlinear data or not,
-            can choose from true or false
-        property : String
-            the chosen properties displayed in structural data files
-            can choose from myelinmap, curvature, thickness
-        process : boolean
-            whether or not the data is processed or not
-            can choose from True or False
-        subj_id : String
-            the id of the subject the files are on
-        """
-        assert subj_id is not None and subj_id != ''
-
-        files = []
-
-        if 'diff' in data_type:
-            files += self.get_diff_files(process, subj_id)
-        if 'anat' in data_type:
-            files += self.get_anat_files(process, subj_id, atlas, mni, property)
-        if 'func' in data_type:
-            files += self.get_task_files(process, task, subj_id)
-        if 'rest' in data_type:
-            files += self.get_rest_files(process, subj_id)
+                files += ['%s/release-notes/tfMRI_EMOTION_preproc.txt' % subj_id]
         return files
 
     def fetch(self, n_subjects=1, data_types=None,
@@ -490,20 +436,30 @@ class HcpDataset(Dataset):
         src_files = []
         for subj_id in subj_ids[:n_subjects]:
             for data_type in data_types:
-                for task in tasks:
-                    for atlas in atlases:
-                        for mni in mnis:
-                            for property in properties:
-                                for pro in process:
-                                    src_files += self.get_files(data_type=data_type,
-                                                                task=task,
-                                                                process=pro,
-                                                                subj_id=subj_id,
-                                                                atlas=atlas,
-                                                                property=property,
-                                                                mni=mni)
-
+                if data_type == 'diff':
+                    for pro in process:
+                        src_files += self.get_diff_files(process=pro,
+                                                         subj_id=subj_id)
+                if data_type == 'anat':
+                    for pro in process:
+                        for atlas in atlases:
+                            for mni in mnis:
+                                for property in properties:
+                                    src_files += self.get_anat_files(process=process,
+                                                                     subj_id=subj_id,
+                                                                     atlas=atlas,
+                                                                     mni=mni,
+                                                                     property=property)
+                if data_type == 'rest':
+                    for pro in process:
+                        src_files += self.get_rest_files(process=process,
+                                                         subj_id=subj_id)
+                if data_type == 'func':
+                    for pro in process:
+                        for task in tasks:
+                            src_files += self.get_task_files(process=process,
+                                                             task=task,
+                                                             subj_id=subj_id)
         # Massage paths, based on fetcher type.
         files = self.prepend(src_files)
-        return self.fetcher.fetch(files, force=force, check=check,
-                                  verbose=verbose)
+        return files
