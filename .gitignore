@@ -7,4 +7,4 @@ dist/
 build/
 nilearn_cache/
 .coverage
-
+.idea
