@@ -461,5 +461,5 @@ class HcpDataset(Dataset):
                                                              task=task,
                                                              subj_id=subj_id)
         # Massage paths, based on fetcher type.
-        files = self.prepend(src_files)
-        return files
+        out_files = self.fetcher.fetch(self.prepend(src_files))
+        return out_files
