@@ -444,20 +444,20 @@ class HcpDataset(Dataset):
                     for pro in process:
                         for atlas in atlases:
                             for mni in mnis:
-                                for property in properties:
-                                    src_files += self.get_anat_files(process=process,
+                                for prop in properties:
+                                    src_files += self.get_anat_files(process=pro,
                                                                      subj_id=subj_id,
                                                                      atlas=atlas,
                                                                      mni=mni,
-                                                                     property=property)
+                                                                     property=prop)
                 if data_type == 'rest':
                     for pro in process:
-                        src_files += self.get_rest_files(process=process,
+                        src_files += self.get_rest_files(process=pro,
                                                          subj_id=subj_id)
                 if data_type == 'func':
                     for pro in process:
                         for task in tasks:
-                            src_files += self.get_task_files(process=process,
+                            src_files += self.get_task_files(process=pro,
                                                              task=task,
                                                              subj_id=subj_id)
         # Massage paths, based on fetcher type.
