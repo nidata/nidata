@@ -3,6 +3,7 @@
 # License: simplified BSD
 
 import os
+import os.path as op
 
 from ...core.datasets import Dataset
 from ...core.fetchers import AmazonS3Fetcher, HttpFetcher
@@ -345,47 +346,54 @@ class HcpDataset(Dataset):
             the id of the subject the files are on
         """
         files = []
+        task = task.upper()
 
         if not process:
             func_path = '%s/unprocessed/3T' % subj_id
+            task_path = '%s/tfMRI/%s_LR' % (func_path, task)
 
-            files += ['%s/tfMRI/EMOTION_LR/%s_3T_BIAS_32CH.nii.gz' % (func_path, subj_id)]
-            files += ['%s/tfMRI/EMOTION_LR/%s_3T_BIAS_BC.nii.gz' % (func_path, subj_id)]
-            files += ['%s/tfMRI/EMOTION_LR/%s_3T_SpinEchoFieldMap_LR.nii.gz' % (func_path, subj_id)]
-            files += ['%s/tfMRI/EMOTION_LR/%s_3T_SpinEchoFieldMap_RL.nii.gz' % (func_path, subj_id)]
-            files += ['%s/tfMRI/EMOTION_LR/%s_3T_tfMRI_EMOTION_LR.nii.gz' % (func_path, subj_id)]
-            files += ['%s/tfMRI/EMOTION_LR/%s_3T_tfMRI_EMOTION_LR_SBRef.nii.gz' % (func_path, subj_id)]
-            files += ['%s/tfMRI/EMOTION_LR/LINKED_DATA/EPRIME/%s_3T_EMOTION_run2_TAB.txt' % (func_path, subj_id)]
-            files += ['%s/tfMRI/EMOTION_LR/LINKED_DATA/EPRIME/EVs/EMOTION_Stats.csv' % (func_path)]
-            files += ['%s/tfMRI/EMOTION_LR/LINKED_DATA/EPRIME/EVs/fear.txt' % (func_path)]
-            files += ['%s/tfMRI/EMOTION_LR/LINKED_DATA/EPRIME/EVs/neut.txt' % (func_path)]
-            files += ['%s/tfMRI/EMOTION_LR/LINKED_DATA/EPRIME/EVs/Sync.txt' % (func_path)]
+            files += ['%s/%s_3T_BIAS_32CH.nii.gz' % (task_path, subj_id)]
+            files += ['%s/%s_3T_BIAS_BC.nii.gz' % (task_path, subj_id)]
+            files += ['%s/%s_3T_SpinEchoFieldMap_LR.nii.gz' % (task_path, subj_id)]
+            files += ['%s/%s_3T_SpinEchoFieldMap_RL.nii.gz' % (task_path, subj_id)]
+            files += ['%s/%s_3T_tfMRI_%s_LR.nii.gz' % (task_path, subj_id, task)]
+            files += ['%s/%s_3T_tfMRI_%s_LR_SBRef.nii.gz' % (task_path, subj_id, task)]
+            files += ['%s/LINKED_DATA/EPRIME/%s_3T_%s_run2_TAB.txt' % (task_path, subj_id, task)]
+            files += ['%s/LINKED_DATA/EPRIME/EVs/%s_Stats.csv' % (task_path, task)]
+            files += ['%s/LINKED_DATA/EPRIME/EVs/fear.txt' % (func_path, task)]
+            files += ['%s/LINKED_DATA/EPRIME/EVs/neut.txt' % (task_path)]
+            files += ['%s/LINKED_DATA/EPRIME/EVs/Sync.txt' % (task_path)]
+            files += ['%s/release-notes/tfMRI_%s_unproc.txt' % (subj_id, task)]
 
-            files += ['%s/release-notes/tfMRI_EMOTION_unproc.txt' % subj_id]
         else:
-            if task == 'emotional':
-                func_path = '%s/MNINonLinear/Results' % subj_id
-                files += ['%s/tfMRI_EMOTION_LR/brainmask_fs.2.nii.gz' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/EMOTION_run2_TAB.txt' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/Movement_Regressors_dt.txt' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/Movement_Regressors.txt' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/Movement_AbsoluteRMS.txt' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/Movement_AbsoluteRMS_mean.txt' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/Movement_RelativeRMS.txt' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/Movement_RelativeRMS_mean.txt' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/tfMRI_EMOTION_LR_Atlas.dtseries.nii' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/tfMRI_EMOTION_LR_Jacobian.nii.gz' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/tfMRI_EMOTION_LR_SBRef.nii.gz' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/tfMRI_EMOTION_LR.nii.gz' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/tfMRI_EMOTION_LR_Physio_log.txt' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/tfMRI_EMOTION_LR_hp200_s4_level1.fsf' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/RibbonVolumeToSurfaceMapping/goodvoxels.nii.gz' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/EVs/EMOTION_Stats.csv' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/EVs/fear.txt' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/EVs/neut.txt' % func_path]
-                files += ['%s/tfMRI_EMOTION_LR/EVs/Sync.txt' % func_path]
-                files += ['%s/tfMRI_EMOTION/tfMRI_EMOTION_hp200_s4_level2.fsf' % func_path]
-                files += ['%s/release-notes/tfMRI_EMOTION_preproc.txt' % subj_id]
+            func_path = '%s/MNINonLinear/Results' % subj_id
+            task_path = '%s/tfMRI_%s_LR' % (func_path, task)
+
+            files += ['%s/brainmask_fs.2.nii.gz' % (task_path)]
+            files += ['%s/%s_run2_TAB.txt' % (task_path, task)]
+            files += ['%s/Movement_Regressors_dt.txt' % (task_path)]
+            files += ['%s/Movement_Regressors.txt' % (task_path)]
+            files += ['%s/Movement_AbsoluteRMS.txt' % (task_path)]
+            files += ['%s/Movement_AbsoluteRMS_mean.txt' % (task_path)]
+            files += ['%s/Movement_RelativeRMS.txt' % (task_path)]
+            files += ['%s/Movement_RelativeRMS_mean.txt' % (task_path)]
+            files += ['%s/tfMRI_%s_LR_Atlas.dtseries.nii' % (task_path, task)]
+            files += ['%s/tfMRI_%s_LR_Jacobian.nii.gz' % (task_path, task)]
+            files += ['%s/tfMRI_%s_LR_SBRef.nii.gz' % (task_path, task)]
+            files += ['%s/tfMRI_%s_LR.nii.gz' % (task_path, task)]
+            files += ['%s/tfMRI_%s_LR_Physio_log.txt' % (task_path, task)]
+            files += ['%s/tfMRI_%s_LR_hp200_s4_level1.fsf' % (task_path, task)]
+            files += ['%s/RibbonVolumeToSurfaceMapping/goodvoxels.nii.gz' % (task_path)]
+            files += ['%s/EVs/%s_Stats.csv' % (task_path, task)]
+            files += ['%s/tfMRI_%s/tfMRI_%s_hp200_s4_level2.fsf' % (func_path, task, task)]
+            files += ['%s/release-notes/tfMRI_%s_preproc.txt' % (subj_id, task)]
+
+            # Task-specific-files:
+            if task == 'emotion':
+                files += ['%s/EVs/fear.txt' % (task_path)]
+                files += ['%s/EVs/neut.txt' % (task_path)]
+                files += ['%s/EVs/Sync.txt' % (task_path)]
+
         return files
 
     def fetch(self, n_subjects=1, data_types=None,
@@ -417,10 +425,10 @@ class HcpDataset(Dataset):
             can choose from True or False
         """
         if data_types is None:
-            data_types = ['anat', 'diff', 'func', 'rest']
+            data_types = ['anat', 'diff', 'task', 'rest']
         if tasks is None:
-            tasks = ['emotional', 'gambling', 'language', 'motor',
-                     'relational', 'social', 'workingmemory']
+            tasks = ['emotion', 'gambling', 'language', 'motor',
+                     'relational', 'social', 'wm']
         if atlases is None:
             atlases = ['native', 'fsaverage']
         if mnis is None:
@@ -454,7 +462,8 @@ class HcpDataset(Dataset):
                     for pro in process:
                         src_files += self.get_rest_files(process=pro,
                                                          subj_id=subj_id)
-                if data_type == 'func':
+                if data_type == 'task':
+                    print process, tasks
                     for pro in process:
                         for task in tasks:
                             src_files += self.get_task_files(process=pro,
