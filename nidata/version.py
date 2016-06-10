@@ -56,17 +56,5 @@ MAJOR = _version_major
 MINOR = _version_minor
 MICRO = _version_micro
 VERSION = __version__
-PACKAGES = ['nidata',
-            'nidata.anatomical',
-            'nidata.atlas',
-            'nidata.core',
-            'nidata.core._external',
-            'nidata.core._utils',
-            'nidata.diffusion',
-            'nidata.core.fetchers',
-            'nidata.localizer',
-            'nidata.multimodal',
-            'nidata.resting_state',
-            'nidata.task']
 PACKAGE_DATA = {}
 REQUIRES = ["numpy", "nibabel", "six"]

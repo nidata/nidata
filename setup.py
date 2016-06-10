@@ -1,5 +1,5 @@
 import os.path as op
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # Get version and release info, which is all stored in nidata/version.py
 ver_file = op.join('nidata', 'version.py')
@@ -20,9 +20,10 @@ opts = dict(name=NAME,
             author_email=AUTHOR_EMAIL,
             platforms=PLATFORMS,
             version=VERSION,
-            packages=PACKAGES,
+            packages=find_packages(),
             package_data=PACKAGE_DATA,
-            install_requires=REQUIRES)
+            install_requires=REQUIRES,
+            zip_safe=False)
 
 
 if __name__ == '__main__':
