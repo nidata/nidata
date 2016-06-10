@@ -7,7 +7,7 @@ dataset = HcpDataset(fetcher_type='aws')
 # only fetch anatomical files.
 files = dataset.fetch(n_subjects=1, data_types=['anat'])
 for fil in files:
-    print fil
+    print(fil)
 
 import matplotlib
 import matplotlib.pyplot as plt

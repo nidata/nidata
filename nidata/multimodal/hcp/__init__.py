@@ -463,7 +463,6 @@ class HcpDataset(Dataset):
                         src_files += self.get_rest_files(process=pro,
                                                          subj_id=subj_id)
                 if data_type == 'task':
-                    print process, tasks
                     for pro in process:
                         for task in tasks:
                             src_files += self.get_task_files(process=pro,

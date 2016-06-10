@@ -11,8 +11,8 @@ from nipy.labs.viz import cm
 
 pold_dataset = PoldrackEtal2001Dataset()
 data_dict = pold_dataset.fetch(preprocess_data=True)
-print data_dict['anat'][0:2]
-print data_dict['func'][0:2]
+print(data_dict['anat'][0:2])
+print(data_dict['func'][0:2])
 
 func = nb.load(data_dict['func'][0])
 anat = nb.load(data_dict['anat'][0])
