@@ -3,7 +3,6 @@
 # License: simplified BSD
 
 import os
-import os.path as op
 
 from ...core.datasets import Dataset
 from ...core.fetchers import AmazonS3Fetcher, HttpFetcher
@@ -78,7 +77,8 @@ class HcpDataset(Dataset):
 
     def prepend(self, src_files):
         """
-        Prepends the proper absolute url to a list of files, based on fetcher type.
+        Prepends the proper absolute url to a list of files,
+        based on fetcher type.
 
         Parameters
         ----------
