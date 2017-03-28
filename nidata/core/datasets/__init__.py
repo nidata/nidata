@@ -5,6 +5,7 @@ import importlib
 import inspect
 import os
 import os.path as op
+import shutil
 
 from six import with_metaclass
 
@@ -145,7 +146,7 @@ class Dataset(ClassWithDependencies):
         """ Function that guarantees a data directory."""
 
         if os.path.exists(self.data_dir):
-            os.remove(self.data_dir)
+            shutil.rmtree(self.data_dir)
         os.makedirs(self.data_dir)
 
     def fetch(self, force=False, verbose=1, *args, **kwargs):
